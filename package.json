@@ -1,0 +1,28 @@
+{
+  "name": "formal-math-curriculum.github.io",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.23.0",
+  "engines": {
+    "node": "24.19.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "check": "astro check && node scripts/validate-boundaries.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "build:astro": "astro build",
+    "build:search": "pagefind --site dist",
+    "build": "pnpm run check && pnpm run test && pnpm run build:astro && pnpm run build:search"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "0.41.7",
+    "astro": "7.2.4",
+    "pagefind": "1.5.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "typescript": "6.0.3"
+  }
+}
+
