@@ -16,8 +16,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24.19.0
+          package-manager-cache: false
       - name: Install pnpm
         run: npm install --global pnpm@11.23.0
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-
