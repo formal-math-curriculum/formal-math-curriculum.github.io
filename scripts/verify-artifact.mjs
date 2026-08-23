@@ -18,6 +18,7 @@ async function walk(directory) {
     if (stat.isSymbolicLink()) throw new Error(`Pages artifact must not contain symlink: ${relative(dist, path)}`);
     if (stat.isDirectory()) await walk(path);
     if (stat.isFile()) {
+      if (relative(dist, path) === '_provenance/artifact.json') continue;
       const content = await readFile(path);
       bytes += content.byteLength;
       files.push({ path: relative(dist, path), bytes: content.byteLength, sha256: createHash('sha256').update(content).digest('hex') });
@@ -28,6 +29,12 @@ await walk(dist);
 if (files.length > 10000) throw new Error('bounded artifact file limit exceeded');
 if (bytes > 1_000_000_000) throw new Error('bounded artifact byte limit exceeded');
 
-const manifest = { artifact_manifest_version: 'm5.4-pages-artifact/v1', files, file_count: files.length, total_bytes: bytes };
+const manifest = {
+  artifact_manifest_version: 'm5.4-pages-artifact/v1',
+  manifest_self_excluded: true,
+  payload_files: files,
+  payload_file_count: files.length,
+  payload_total_bytes: bytes
+};
 await writeFile(resolve(dist, '_provenance/artifact.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-console.log(`verified Pages artifact: ${files.length} files, ${bytes} bytes`);
+console.log(`verified Pages artifact payload: ${files.length} files, ${bytes} bytes, plus this manifest`);
