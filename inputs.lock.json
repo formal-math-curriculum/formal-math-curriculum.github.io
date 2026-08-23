@@ -1,0 +1,24 @@
+{
+  "lock_version": "m5.4-input-lock/v1",
+  "site_base_revision": "2caead4d4222d98e8be73b851f8e8d5fba265218",
+  "consumed": {
+    "content": {
+      "repository": "formal-math-curriculum/content",
+      "revision": "fb3df63b27ae54d4dc237a421dd241d4c59330e4",
+      "manifest_path": "fixtures/minimal/manifest.json",
+      "manifest_sha256": "d0aeec037358655271b52c13e57e66c2a47ca44ba8f572ef4c95e49e8eb85642",
+      "validator_path": "scripts/validate.mjs",
+      "validator_sha256": "dfb6147ff81cc1224d200a814be99694e13dfccc20476576d5b41041e9f4c49b",
+      "schema_version": "p5-content-manifest/v1"
+    }
+  },
+  "recorded_not_consumed": {
+    "lean": {
+      "repository": "formal-math-curriculum/lean",
+      "revision": "3f1a315f438af37a327eaf8b9b9c1dbc6f409394"
+    },
+    "mathlib": {
+      "revision": "db584cd6d46c92f209a44c0f1c829460d327499d"
+    }
+  }
+}
