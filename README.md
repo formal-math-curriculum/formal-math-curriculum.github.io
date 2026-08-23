@@ -18,9 +18,13 @@ and Pagefind indexes are disposable build outputs.
 pnpm install --frozen-lockfile
 pnpm check
 pnpm test
-pnpm build
+CONTENT_INPUT_DIR=.inputs/content pnpm build
 ```
 
 This bootstrap contains no production course corpus, external taxonomy snapshot,
 Portuguese translation, or release qualification.
 
+`inputs.lock.json` freezes every cross-repository subject. The build refuses a
+different checkout, source hash, schema version, or unqualified content manifest.
+PR CI produces a seven-day `site-preview` artifact; production Pages deployment is
+manual until MAT-374 qualifies repository Pages settings, HTTPS, and the root URL.
