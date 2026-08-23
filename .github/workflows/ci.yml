@@ -1,0 +1,23 @@
+name: Validate static platform
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24.19.0
+      - name: Install pnpm
+        run: npm install --global pnpm@11.23.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
