@@ -1,6 +1,6 @@
 # M5.7 integrated candidate validation
 
-MAT-377 validates the static-search and relation-navigation cores together without changing either implementation. The frozen core subject is website commit `6adab87f4feaba4c957df189936fbe0dd1e726b8`, tree `01e0277a7996d39cc193cc603cc20f8a94946b8d`. A source-diff gate rejects any MAT-377 change outside the validation record, selector, validator, tests, this document and package pipeline wiring.
+MAT-377 validates the static-search and relation-navigation cores together without changing either implementation. The frozen core subject is website commit `6adab87f4feaba4c957df189936fbe0dd1e726b8`, tree `01e0277a7996d39cc193cc603cc20f8a94946b8d`. A source-diff gate rejects any MAT-377 change outside the validation record, selector, validator, tests, this document and package/CI pipeline wiring. The primary checkout retains full history so the gate can prove the exact frozen core tree, ancestry and complete changed-path set rather than trusting a shallow checkout.
 
 ## Evidence layers
 

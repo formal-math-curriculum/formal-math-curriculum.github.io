@@ -71,7 +71,7 @@
   },
   "validationOnlyDiff": {
     "coreProductMutationAllowed": false,
-    "allowedPrefixes": ["docs/architecture/m5-7-candidate-validation.md", "package.json", "scripts/validate-m5-7-integrated-candidate.mjs", "tests/m5-7-candidate.test.mjs", "tests/integrated-validation.test.mjs", "validation/m5-7-candidate-v1.json", "validation/m5-7-current.json"]
+    "allowedPrefixes": [".github/workflows/ci.yml", "docs/architecture/m5-7-candidate-validation.md", "package.json", "scripts/validate-m5-7-integrated-candidate.mjs", "tests/m5-7-candidate.test.mjs", "tests/integrated-validation.test.mjs", "validation/m5-7-candidate-v1.json", "validation/m5-7-current.json"]
   },
   "limitations": [
     "representative_slice_not_full_course",

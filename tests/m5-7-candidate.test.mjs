@@ -30,9 +30,10 @@ test('MAT-377 candidate preserves exact model, scale and no-coverage boundaries'
 });
 
 test('integrated candidate gate requires executed reports and forbids core-product mutation', async () => {
-  const [script, documentation, pkg] = await Promise.all([
+  const [script, documentation, workflow, pkg] = await Promise.all([
     read('scripts/validate-m5-7-integrated-candidate.mjs'),
     read('docs/architecture/m5-7-candidate-validation.md'),
+    read('.github/workflows/ci.yml'),
     read('package.json').then(JSON.parse)
   ]);
   assert.equal(pkg.scripts['validate:m5-7-candidate'], 'node scripts/validate-m5-7-integrated-candidate.mjs');
@@ -42,6 +43,7 @@ test('integrated candidate gate requires executed reports and forbids core-produ
   assert.match(script, /92/u);
   assert.match(documentation, /Source presence is not execution evidence/u);
   assert.match(documentation, /does not repair a core defect in place/u);
+  assert.match(workflow, /fetch-depth: 0/u);
 });
 
 test('M5.7 candidate selector cannot authorize the existing production release gate', async () => {
