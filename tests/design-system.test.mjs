@@ -50,6 +50,7 @@ test('pre-paint provider and module store share the one exact key', () => {
   }
   assert.doesNotMatch(provider + controls + store, /starlight-theme/);
   assert.doesNotMatch(controls, /localStorage/);
+  assert.match(provider, /Astro injects the define:vars bindings/);
 });
 
 test('preference controls use native labels, bounded choices, disabled unqualified widths, and reset', () => {

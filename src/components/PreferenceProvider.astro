@@ -15,6 +15,7 @@ import {
     values: PREFERENCE_VALUES
   }}
 >
+  // @ts-nocheck -- Astro injects the define:vars bindings into this pre-paint inline script.
   (() => {
     const copyDefaults = () => ({ ...defaults, typography: { ...defaults.typography } });
     const oneOf = (value, allowed) => typeof value === 'string' && allowed.includes(value);
@@ -90,4 +91,3 @@ import {
     root.style.colorScheme = dark ? 'dark' : 'light';
   })();
 </script>
-
