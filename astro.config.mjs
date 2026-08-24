@@ -9,6 +9,10 @@ export default defineConfig({
       title: 'Formal Mathematics Curriculum',
       description: 'A bounded, versioned course connecting mathematical exposition and Lean 4 evidence.',
       customCss: ['./src/styles/custom.css'],
+      components: {
+        ThemeProvider: './src/components/PreferenceProvider.astro',
+        ThemeSelect: './src/components/PreferenceControls.astro'
+      },
       defaultLocale: 'root',
       locales: {
         root: { label: 'English', lang: 'en' }

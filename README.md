@@ -21,10 +21,16 @@ pnpm test
 CONTENT_INPUT_DIR=.inputs/content pnpm build
 ```
 
-This bootstrap contains no production course corpus, external taxonomy snapshot,
-Portuguese translation, or release qualification.
+The M5.5 design-system baseline adds four semantic themes, bounded typography,
+one validated preference store, forced-colors/reduced-motion behavior, and global
+preference controls through documented Starlight component overrides. See
+`docs/architecture/preferences.md`.
+
+This repository still contains no production course corpus, external taxonomy
+snapshot, Portuguese translation, multi-representation block, five-projection
+navigator, or release qualification.
 
 `inputs.lock.json` freezes every cross-repository subject. The build refuses a
 different checkout, source hash, schema version, or unqualified content manifest.
-PR CI produces a seven-day `site-preview` artifact; production Pages deployment is
-manual until MAT-374 qualifies repository Pages settings, HTTPS, and the root URL.
+PR CI produces a seven-day `site-preview` artifact; production Pages deployment
+remains the separately governed manual workflow.

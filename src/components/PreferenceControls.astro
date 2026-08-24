@@ -1,0 +1,135 @@
+<fmc-preference-controls>
+  <details class="fmc-preferences">
+    <summary data-fmc-control>Display preferences</summary>
+    <div class="fmc-preferences__panel">
+      <label>
+        <span>Theme</span>
+        <select data-fmc-control data-fmc-field="themePreference">
+          <option value="system">Follow system</option>
+          <option value="light">Light</option>
+          <option value="light-high-contrast">Light high contrast</option>
+          <option value="dark">Dark</option>
+          <option value="dark-high-contrast">Dark high contrast</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Text family</span>
+        <select data-fmc-control data-fmc-field="typography.family">
+          <option value="sans-serif">Sans serif</option>
+          <option value="serif">Serif</option>
+          <option value="condensed" disabled>Condensed — not yet qualified</option>
+          <option value="expanded" disabled>Expanded — not yet qualified</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Text size</span>
+        <select data-fmc-control data-fmc-field="typography.size">
+          <option value="small">Small</option>
+          <option value="default">Default</option>
+          <option value="large">Large</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Text weight</span>
+        <select data-fmc-control data-fmc-field="typography.weight">
+          <option value="regular">Regular</option>
+          <option value="medium">Medium</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Default mathematical view</span>
+        <select data-fmc-control data-fmc-field="representationDefault">
+          <option value="rendered">Rendered mathematics</option>
+          <option value="latex">LaTeX source</option>
+          <option value="lean">Lean source</option>
+        </select>
+      </label>
+
+      <p class="fmc-preferences__note">
+        Projection selection is added by the five-projection navigator. Reset still restores Course.
+      </p>
+      <button type="button" data-fmc-control data-fmc-reset>Reset preferences</button>
+      <p class="fmc-preferences__status" role="status" aria-live="polite" data-fmc-status></p>
+      <noscript>
+        <p>Interactive preferences require JavaScript. System color and readable static styles remain active.</p>
+      </noscript>
+    </div>
+  </details>
+</fmc-preference-controls>
+
+<script>
+  import { createPreferenceStore } from '../lib/preferences.mjs';
+
+  declare global {
+    interface Window {
+      FMCPreferenceStore?: ReturnType<typeof createPreferenceStore>;
+    }
+  }
+
+  const preferenceWindow = window;
+  const store = preferenceWindow.FMCPreferenceStore ?? createPreferenceStore();
+  preferenceWindow.FMCPreferenceStore = store;
+
+  class FMCPreferenceControls extends HTMLElement {
+    unsubscribe?: () => void;
+
+    connectedCallback() {
+      const fields = [...this.querySelectorAll<HTMLSelectElement>('[data-fmc-field]')];
+      const reset = this.querySelector<HTMLButtonElement>('[data-fmc-reset]');
+      const status = this.querySelector<HTMLElement>('[data-fmc-status]');
+
+      const render = (detail: ReturnType<typeof store.getSnapshot> & { source?: string; persisted?: boolean }) => {
+        const preferences = detail.preferences;
+        for (const field of fields) {
+          const name = field.dataset.fmcField;
+          if (name === 'themePreference') field.value = preferences.themePreference;
+          if (name === 'typography.family') field.value = preferences.typography.family;
+          if (name === 'typography.size') field.value = preferences.typography.size;
+          if (name === 'typography.weight') field.value = preferences.typography.weight;
+          if (name === 'representationDefault') field.value = preferences.representationDefault;
+        }
+
+        if (!status) return;
+        if (detail.status) {
+          status.textContent = detail.status;
+        } else if (detail.source === 'reset') {
+          status.textContent = 'Preferences reset. Course and rendered mathematics are the defaults.';
+        } else if (detail.source === 'control') {
+          status.textContent = detail.persisted
+            ? 'Preference saved.'
+            : 'Preference applied for this page but not saved.';
+        } else {
+          status.textContent = '';
+        }
+      };
+
+      this.addEventListener('change', (event) => {
+        const field = event.target;
+        if (!(field instanceof HTMLSelectElement)) return;
+
+        const name = field.dataset.fmcField;
+        if (!name) return;
+        if (name.startsWith('typography.')) {
+          store.set({ typography: { [name.split('.')[1]]: field.value } }, 'control');
+        } else {
+          store.set({ [name]: field.value }, 'control');
+        }
+      });
+
+      reset?.addEventListener('click', () => store.reset());
+      this.unsubscribe = store.subscribe(render);
+    }
+
+    disconnectedCallback() {
+      this.unsubscribe?.();
+    }
+  }
+
+  if (!customElements.get('fmc-preference-controls')) {
+    customElements.define('fmc-preference-controls', FMCPreferenceControls);
+  }
+</script>
