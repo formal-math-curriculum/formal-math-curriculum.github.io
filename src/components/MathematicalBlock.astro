@@ -12,6 +12,25 @@ interface Props {
   block: unknown;
 }
 
+type RepresentationView = 'rendered' | 'latex' | 'lean';
+
+interface RepresentationRecord {
+  availability: string;
+  correspondence: string;
+  provenance: { subject: string; revision: string };
+  payloadAvailable: boolean;
+  renderer?: string | null;
+  source?: string;
+  note?: string;
+}
+
+interface RepresentationBlockValue {
+  schemaVersion: 1;
+  identity: { contentId: string; blockId: string; revision: string };
+  title: string;
+  representations: Record<RepresentationView, RepresentationRecord>;
+}
+
 const { block } = Astro.props;
 const parsed = validateRepresentationBlock(block, {
   hasRenderedContent: Astro.slots.has('rendered')
@@ -21,13 +40,14 @@ if (!parsed.ok || !parsed.value) {
   throw new Error(`MAT-360 representation block rejected: ${parsed.errors.join('; ')}`);
 }
 
-const value = parsed.value;
+const value = parsed.value as RepresentationBlockValue;
+const representationLabels = REPRESENTATION_LABELS as Record<RepresentationView, string>;
 const domId = createRepresentationDomId(value.identity);
-const operableViews = getOperableViews(value);
+const operableViews = getOperableViews(value) as RepresentationView[];
 const initialView = operableViews.includes('rendered') ? 'rendered' : (operableViews[0] ?? null);
-const isOperable = (view: string) => operableViews.includes(view);
+const isOperable = (view: RepresentationView) => operableViews.includes(view);
 const statusLabel = (value: string) => value.replaceAll('-', ' ');
-const sourcePayload = (view: 'latex' | 'lean') =>
+const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
   encodeSourcePayload(value.representations[view].source ?? '');
 ---
 
@@ -71,7 +91,7 @@ const sourcePayload = (view: 'latex' | 'lean') =>
           data-fmc-panel-id={`${domId}-panel-${view}`}
           hidden
         >
-          {REPRESENTATION_LABELS[view]}
+          {representationLabels[view]}
         </button>
       ))}
     </div>
@@ -167,11 +187,11 @@ const sourcePayload = (view: 'latex' | 'lean') =>
   <aside class="fmc-representation-provenance" aria-labelledby={`${domId}-provenance-title`}>
     <h3 id={`${domId}-provenance-title`}>Representation status and provenance</h3>
     <ul>
-      {REPRESENTATION_VIEWS.map((view) => {
+      {(REPRESENTATION_VIEWS as readonly RepresentationView[]).map((view) => {
         const representation = value.representations[view];
         return (
           <li data-fmc-representation-state={view}>
-            <strong>{REPRESENTATION_LABELS[view]}:</strong>{' '}
+            <strong>{representationLabels[view]}:</strong>{' '}
             <span>availability {statusLabel(representation.availability)};</span>{' '}
             <span>correspondence {statusLabel(representation.correspondence)};</span>{' '}
             <span>
@@ -200,6 +220,10 @@ const sourcePayload = (view: 'latex' | 'lean') =>
     REPRESENTATION_VIEWS
   } from '../lib/representation-block.mjs';
 
+  type RepresentationView = 'rendered' | 'latex' | 'lean';
+  const representationLabels = REPRESENTATION_LABELS as Record<RepresentationView, string>;
+  const representationViews = REPRESENTATION_VIEWS as readonly RepresentationView[];
+
   declare global {
     interface Window {
       FMCPreferenceStore?: ReturnType<typeof createPreferenceStore>;
@@ -220,7 +244,9 @@ const sourcePayload = (view: 'latex' | 'lean') =>
 
       const operableViews = (this.dataset.fmcOperable ?? '')
         .split(' ')
-        .filter((view) => REPRESENTATION_VIEWS.includes(view));
+        .filter((view): view is RepresentationView =>
+          representationViews.includes(view as RepresentationView)
+        );
       const initialGlobal = document.documentElement.dataset.fmcRepresentation ?? 'rendered';
       const controller = createRepresentationController(operableViews, initialGlobal);
       this.controller = controller;
@@ -257,8 +283,8 @@ const sourcePayload = (view: 'latex' | 'lean') =>
       };
 
       const viewLabel = (view: string | null | undefined) =>
-        view && REPRESENTATION_LABELS[view]
-          ? REPRESENTATION_LABELS[view]
+        view && representationViews.includes(view as RepresentationView)
+          ? representationLabels[view as RepresentationView]
           : 'no available representation';
 
       const render = (detail: ReturnType<typeof controller.getSnapshot>) => {
@@ -357,7 +383,7 @@ const sourcePayload = (view: 'latex' | 'lean') =>
         if (this.unsubscribeStore) return;
         const snapshot = store.getSnapshot();
         controller.updateGlobal(snapshot.preferences.representationDefault, 'global-init');
-        this.unsubscribeStore = store.subscribe((detail) => {
+        this.unsubscribeStore = store.subscribe((detail: ReturnType<typeof store.getSnapshot> & { source?: string }) => {
           if (detail.source === 'reset') {
             controller.reset(detail.preferences.representationDefault);
           } else {
