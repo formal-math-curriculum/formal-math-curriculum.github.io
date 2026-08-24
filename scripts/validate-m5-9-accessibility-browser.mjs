@@ -118,7 +118,22 @@ const allowedHarnessPaths = new Set([
   'scripts/validate-m5-9-accessibility-browser.mjs',
   'scripts/validate-m5-9-security-integrity.mjs',
   'tests/m5-9-qualification.test.mjs',
-  'tests/m5-9-security-integrity.test.mjs'
+  'tests/m5-9-security-integrity.test.mjs',
+  '.github/workflows/deploy-pages.yml',
+  'docs/operations/m5-10-public-release.md',
+  'scripts/package-release.mjs',
+  'scripts/prepare-release.mjs',
+  'scripts/validate-m5-10-release.mjs',
+  'scripts/validate-pipeline.mjs',
+  'scripts/verify-public-release.mjs',
+  'tests/integrated-validation.test.mjs',
+  'tests/m5-10-release.test.mjs',
+  'tests/m5-7-candidate.test.mjs',
+  'tests/package-release.test.mjs',
+  'tests/pipeline.test.mjs',
+  'tests/release-gate.test.mjs',
+  'validation/m5-10-current.json',
+  'validation/m5-10-release-v1.json'
 ]);
 const applicationDrift = harnessChangedPaths.filter((path) => !allowedHarnessPaths.has(path));
 const bundledBrowsers = Object.fromEntries(browserManifest.browsers

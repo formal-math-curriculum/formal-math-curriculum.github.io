@@ -22,8 +22,8 @@ test('production event mutation is rejected semantically', () => {
 });
 
 test('job-level permission shadowing is rejected', () => {
-  const mutated = deploySource.replace('  build:\n    runs-on:', '  build:\n    permissions:\n      contents: write\n    runs-on:');
-  assert.throws(() => validatePipeline({ ciSource, deploySource: mutated, lock }), /build job must inherit/);
+  const mutated = deploySource.replace('      contents: read\n      id-token: write\n      attestations: write', '      contents: write\n      id-token: write\n      attestations: write');
+  assert.throws(() => validatePipeline({ ciSource, deploySource: mutated, lock }), /build attestation authority drift/);
 });
 
 test('mutable action tag is rejected', () => {

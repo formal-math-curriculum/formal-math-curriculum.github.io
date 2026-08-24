@@ -99,11 +99,11 @@ test('MAT-394 executes graded relevance, isolated scale and semantic reproducibi
   assert.match(deploy, /fetch-depth: 0/u);
 });
 
-test('M5.7 candidate selector cannot authorize the existing production release gate', async () => {
+test('M5.7 candidate selector cannot authorize the M5.10 production release gate', async () => {
   const [release, pipeline] = await Promise.all([
     read('scripts/prepare-release.mjs'),
     read('scripts/validate-pipeline.mjs')
   ]);
   assert.doesNotMatch(release, /m5-7-current/u);
-  assert.match(pipeline, /prepare-release\.mjs validation\/m5-6-current\.json/u);
+  assert.match(pipeline, /prepare-release\.mjs validation\/m5-10-current\.json/u);
 });

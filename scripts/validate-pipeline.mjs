@@ -8,6 +8,8 @@ const exactActions = new Set([
   'actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444',
   'actions/cache@caa296126883cff596d87d8935842f9db880ef25',
   'actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f',
+  'actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131',
+  'actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6',
   'actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b',
   'actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128'
 ]);
@@ -50,10 +52,16 @@ export function validatePipeline({ ciSource, deploySource, lock }) {
   invariant(deploy.concurrency?.group === 'pages-production', 'production concurrency group drift');
   invariant(deploy.concurrency?.['cancel-in-progress'] === false, 'production deploy must not cancel in-flight work');
   invariant(deploy.env?.ASTRO_TELEMETRY_DISABLED === '1', 'deploy must disable Astro telemetry');
-  invariant(deploy.jobs?.build && !deploy.jobs.build.permissions, 'build job must inherit read-only contents authority');
+  invariant(sameObject(deploy.jobs?.build?.permissions, { contents: 'read', 'id-token': 'write', attestations: 'write' }), 'build attestation authority drift');
+  invariant(sameObject(deploy.jobs?.release_draft?.permissions, { contents: 'write' }), 'release draft authority drift');
+  invariant(deploy.jobs?.release_draft?.needs === 'build', 'release draft must require the qualified build');
   invariant(sameObject(deploy.jobs?.deploy?.permissions, { pages: 'write', 'id-token': 'write' }), 'Pages least privilege missing');
   invariant(deploy.jobs?.deploy?.environment?.name === 'github-pages', 'Pages environment missing');
-  invariant(deploy.jobs?.deploy?.needs === 'build', 'deploy must require the qualified build');
+  invariant(deploy.jobs?.deploy?.needs === 'release_draft', 'deploy must require the durable release draft');
+  invariant(deploy.jobs?.verify_public?.needs === 'deploy', 'public verification must require deployment');
+  invariant(sameObject(deploy.jobs?.verify_public?.permissions, { contents: 'read' }), 'public verification authority drift');
+  invariant(deploy.jobs?.publish_release?.needs === 'verify_public', 'release publication must require public verification');
+  invariant(sameObject(deploy.jobs?.publish_release?.permissions, { contents: 'write' }), 'release publication authority drift');
 
   for (const step of [...actionSteps(ci), ...actionSteps(deploy)]) {
     invariant(/^[^@\s]+@[0-9a-f]{40}$/.test(step.uses), `mutable or malformed action ref: ${step.uses}`);
@@ -79,6 +87,11 @@ export function validatePipeline({ ciSource, deploySource, lock }) {
   invariant(preview?.with?.['if-no-files-found'] === 'error', 'missing preview artifact must fail');
   const pagesArtifact = actionSteps(deploy).find(step => step.uses.startsWith('actions/upload-pages-artifact@'));
   invariant(pagesArtifact?.with?.path === 'dist', 'Pages artifact path drift');
+  const attestation = actionSteps(deploy).find(step => step.uses.startsWith('actions/attest@'));
+  invariant(attestation?.with?.['subject-path'] === 'release-assets/site-dist.tar.zst', 'durable distributable attestation drift');
+  const transfer = actionSteps(deploy).find(step => step.uses.startsWith('actions/upload-artifact@'));
+  invariant(transfer?.with?.name === 'p5-web-v0.1.0-release-assets', 'durable release transfer identity drift');
+  invariant(transfer?.with?.['retention-days'] === 7 && transfer?.with?.['if-no-files-found'] === 'error', 'release transfer retention/failure contract drift');
 
   for (const workflow of [ci, deploy]) {
     const build = steps(workflow).find(step => step.run === 'pnpm build');
@@ -86,8 +99,11 @@ export function validatePipeline({ ciSource, deploySource, lock }) {
     invariant(!Object.hasOwn(build?.env ?? {}, 'FMC_SKIP_BROWSER'), 'CI must not skip browser qualification');
   }
   const releaseGate = steps(deploy).find(step => String(step.run ?? '').includes('prepare-release.mjs'));
-  invariant(releaseGate?.run === 'node scripts/prepare-release.mjs validation/m5-6-current.json', 'M5.6 current selector release gate drift');
+  invariant(releaseGate?.run === 'node scripts/prepare-release.mjs validation/m5-10-current.json', 'M5.10 current selector release gate drift');
   invariant(steps(deploy).indexOf(releaseGate) < steps(deploy).indexOf(pagesArtifact), 'release gate must precede Pages upload');
+  const releaseDraft = steps(deploy).find(step => String(step.run ?? '').includes('gh release create p5-web-v0.1.0'));
+  const releasePublish = steps(deploy).find(step => String(step.run ?? '').includes('gh release edit p5-web-v0.1.0'));
+  invariant(releaseDraft && releasePublish, 'draft-before-publish release lifecycle is incomplete');
 
   return true;
 }
