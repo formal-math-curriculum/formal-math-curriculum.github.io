@@ -117,17 +117,21 @@ test('qualification documentation preserves the audit and release interpretation
   assert.match(documentation, /must not be interpreted as a public curriculum route/i);
 });
 
-test('MAT-398 release workflow advances to the corrected selector before Pages upload', async () => {
+test('M5.10 release workflow advances from exact authority through durable draft and Pages upload', async () => {
   const workflow = await read('.github/workflows/deploy-pages.yml');
   const gate = await read('scripts/prepare-release.mjs');
-  const documentation = await read('docs/architecture/m5-6-requalification-v2.md');
-  assert.match(workflow, /prepare-release\.mjs validation\/m5-6-current\.json/);
+  const documentation = await read('docs/operations/m5-10-public-release.md');
+  assert.match(workflow, /validate-m5-10-release\.mjs validation\/m5-10-current\.json/);
+  assert.match(workflow, /prepare-release\.mjs validation\/m5-10-current\.json/);
   assert.ok(workflow.indexOf('prepare-release.mjs') < workflow.indexOf('actions/upload-pages-artifact'));
+  assert.match(workflow, /actions\/attest@[0-9a-f]{40}/u);
+  assert.match(workflow, /gh release create p5-web-v0\.1\.0[\s\S]*--draft/u);
+  assert.match(workflow, /verify-public-release\.mjs[\s\S]*gh release edit p5-web-v0\.1\.0/u);
   assert.match(gate, /deploymentAuthorized !== true/);
   assert.match(gate, /unresolvedFindings\?\.Blocker !== 0/);
-  assert.match(gate, /validation.+m5-6/u);
-  assert.match(documentation, /deploymentAuthorized=false/);
-  assert.match(documentation, /does not authorize public deployment/i);
+  assert.match(gate, /validation.+m5-10/u);
+  assert.match(documentation, /A10 remains `blocked_manual_required`/u);
+  assert.match(documentation, /no WCAG or screen-reader conformance claim/i);
 });
 
 test('MAT-398 versions all immutable audit dispositions and makes only a bounded M5.7 readiness decision', async () => {

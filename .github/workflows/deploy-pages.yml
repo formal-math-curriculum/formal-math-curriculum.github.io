@@ -16,7 +16,11 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -40,22 +44,84 @@ jobs:
       - run: node .inputs/content/scripts/validate-m5-8-snapshots.mjs .inputs/content/source/m5-8/external-snapshot-policy.json .inputs/content/fixtures/m5-8/snapshot-cases.json
       - run: pnpm licenses:check
       - run: pnpm validate:m5-8-operations
+      - name: Validate exact M5.10 release authority
+        run: node scripts/validate-m5-10-release.mjs validation/m5-10-current.json
       - run: pnpm build
         env:
           FMC_REQUIRE_BROWSER: '1'
           FMC_SOURCE_REVISION: ${{ github.sha }}
           FMC_RUNNER_IMAGE_LABEL: ubuntu-24.04
       - name: Enforce release authorization and prepare public artifact
-        run: node scripts/prepare-release.mjs validation/m5-6-current.json
+        run: node scripts/prepare-release.mjs validation/m5-10-current.json
+      - name: Regenerate manifest for the prepared public artifact
+        run: node scripts/verify-artifact.mjs
+      - name: Package durable release assets
+        run: node scripts/package-release.mjs validation/m5-10-current.json
+      - name: Verify durable asset checksums
+        run: sha256sum --check release-assets/SHA256SUMS
+      - name: Attest public distributable
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: release-assets/site-dist.tar.zst
+      - name: Upload durable release transfer bundle
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: p5-web-v0.1.0-release-assets
+          path: release-assets
+          if-no-files-found: error
+          retention-days: 7
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
           path: dist
 
-  deploy:
+  release_draft:
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download exact durable release assets
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: p5-web-v0.1.0-release-assets
+          path: release-assets
+      - name: Recheck transfer integrity
+        run: sha256sum --check release-assets/SHA256SUMS
+      - name: Create immutable release draft before deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view p5-web-v0.1.0 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/p5-web-v0.1.0" --jq '.draft')" = "true"
+            test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/p5-web-v0.1.0" --jq '.object.sha')" = "$GITHUB_SHA"
+            mkdir existing-release-assets
+            gh release download p5-web-v0.1.0 --repo "$GITHUB_REPOSITORY" --dir existing-release-assets
+            for asset in site-dist.tar.zst release-tuple.json software-dependencies.json THIRD_PARTY_NOTICES.md THIRD_PARTY_LICENSES.txt SHA256SUMS; do
+              cmp "release-assets/$asset" "existing-release-assets/$asset"
+            done
+          else
+            gh release create p5-web-v0.1.0 \
+              release-assets/site-dist.tar.zst \
+              release-assets/release-tuple.json \
+              release-assets/software-dependencies.json \
+              release-assets/THIRD_PARTY_NOTICES.md \
+              release-assets/THIRD_PARTY_LICENSES.txt \
+              release-assets/SHA256SUMS \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "Formal Mathematics Curriculum 0.1.0" \
+              --notes "First bounded, qualified public web-course release. A10 manual assistive-technology execution remains explicitly unavailable under P5-DEC-033; no accessibility-conformance claim is made." \
+              --draft
+          fi
+
+  deploy:
+    needs: release_draft
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     permissions:
       pages: write
       id-token: write
@@ -66,3 +132,38 @@ jobs:
       - name: Deploy immutable artifact
         id: deployment
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+
+  verify_public:
+    needs: deploy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 24.19.0
+          package-manager-cache: false
+      - name: Verify exact public origin and provenance
+        run: node scripts/verify-public-release.mjs
+        env:
+          FMC_PUBLIC_ROOT: ${{ needs.deploy.outputs.page_url }}
+          FMC_SOURCE_REVISION: ${{ github.sha }}
+
+  publish_release:
+    needs: verify_public
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Verify immutable tag target and publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag_revision="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/p5-web-v0.1.0" --jq '.object.sha')"
+          test "$tag_revision" = "$GITHUB_SHA"
+          gh release edit p5-web-v0.1.0 --repo "$GITHUB_REPOSITORY" --draft=false --latest

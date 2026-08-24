@@ -1,0 +1,127 @@
+{
+  "schemaVersion": "p5-m5.10-public-release/v1",
+  "issue": "MAT-350",
+  "deploymentAuthorized": true,
+  "release": {
+    "version": "0.1.0",
+    "candidateTag": "p5-web-v0.1.0-rc.1",
+    "tag": "p5-web-v0.1.0",
+    "canonicalRoot": "https://formal-math-curriculum.github.io/",
+    "repository": "formal-math-curriculum/formal-math-curriculum.github.io",
+    "workflow": ".github/workflows/deploy-pages.yml",
+    "event": "workflow_dispatch"
+  },
+  "authority": {
+    "applicationCandidateRevision": "cc137e0f47e324acbb8b864212a1dd4387c54d23",
+    "applicationCandidateTree": "99033aa8185141b7b5a5346ea70533086af2eb24",
+    "qualificationHarnessRevision": "5f6333691212286d625f325a7f7bf63a832ffd9a",
+    "integratedM59Revision": "f28129382128eddf21d94188e1977af3dfc7c3ae",
+    "integratedM59Tree": "d9bb31fd73e8be2c4f79454bf3abb717bc664544",
+    "contentRevision": "3a1e87c7c55c7b17e9fa7b3eb4deafd8b991e828",
+    "contentTree": "59d0e0c49851b534bf528e46dd6ce74f46173c6c",
+    "leanRevision": "3f1a315f438af37a327eaf8b9b9c1dbc6f409394",
+    "leanCoreRevision": "d8b18978322de05a8f3dba51ef03cf5461676c17",
+    "mathlibRevision": "db584cd6d46c92f209a44c0f1c829460d327499d",
+    "formalDependencySha256": "f8c79c8d196952e4827c72d394039862935689b2e100f821697c41bad8cb1438",
+    "inputLockSha256": "bc53a66a9ee05a4bd2bec67bd8761bda0c31be74a798a8e6ad8d5a518fd6e46d",
+    "pnpmLockSha256": "5bc6e61817b88aa16ddde81d8d4453ec340013a203a0efc582864b6d2816f21f",
+    "softwareInventorySha256": "4e6403a7c242b59b550804d767eb4a8423890f582a0e79e7f41edb46b2e2b4a1",
+    "releasePolicySha256": "ac2f5916f6686f8d048ecb47a27eed28d96d7f36e15542549a6d430cf744aaea",
+    "operationsValidatorSha256": "50820ada07c543f536ad6c757b57ad50428e2437aa6a698f57735c6ae6e68d29",
+    "externalSnapshotPolicySha256": "bd864c4d98cde7f2e0ad16de29d230d5f4e6a87a3a6d7904547e8a7b12df5d01",
+    "externalSnapshotSchemaSha256": "a1b66ea6843362fc58f256de9efaa49f41652192af1bb2729ba851c120fb34ae",
+    "externalSnapshotValidatorSha256": "5550d69ba94fda2299fd2235f31ffa81d7ff177fbdbdbf2fa0ae414870867cb2",
+    "contentManifestSha256": "7bd7020156e0d20767e06d5fcb48f1eebfa1f0d24dd52b749135d16e39f7ed60",
+    "outlineManifestSha256": "b94d8a104a91f768ab5002cc8d505fb98bd537794a02c82e38a1ff7da48a2ed6",
+    "contentValidatorSha256": "fc8625ceb464adb1d9f776422933a6819a3b7612e06ae559458df4269ac77932",
+    "formalAuthoritySha256": "9018ec2f4651efdfe51806386648aa831b27d37308a504624849165fdea6f347"
+  },
+  "qualification": {
+    "workflowRunId": 32753029555,
+    "workflowConclusion": "success",
+    "qualificationArtifactId": 9529908448,
+    "qualificationArtifactDigest": "sha256:4071038d24dcae6b15b4f33cacb8148c4424e85b81b85762d142691141247b52",
+    "previewArtifactId": 9529909346,
+    "previewArtifactDigest": "sha256:90fb0cb99614fde37889ce190f8cac356bc32a0aab4bf0580b7bc7c2380b53f6",
+    "accessibilityFunctionalRowsPassed": 15,
+    "accessibilityFunctionalRowsTotal": 16,
+    "securityRowsPassed": 15,
+    "securityRowsTotal": 15,
+    "mandatoryFailures": 0
+  },
+  "unresolvedFindings": {
+    "Blocker": 0,
+    "Material": 0,
+    "Minor": 0
+  },
+  "acceptedAccessibilityRisk": {
+    "decision": "P5-DEC-033",
+    "row": "A10",
+    "status": "blocked_manual_required",
+    "scope": "manual assistive-technology execution unavailable",
+    "blocking": false,
+    "retainedAsPass": false,
+    "conformanceClaimAuthorized": false
+  },
+  "claims": {
+    "wcagConformance": false,
+    "screenReaderConformance": false,
+    "fullCourseCompleteness": false,
+    "externalClassificationCompleteness": false
+  },
+  "changeWindow": {
+    "baseRevision": "f28129382128eddf21d94188e1977af3dfc7c3ae",
+    "applicationDriftAllowed": false,
+    "scope": "release-control, validation, test, workflow, documentation and evidence files only",
+    "allowedPaths": [
+      ".github/workflows/ci.yml",
+      ".github/workflows/deploy-pages.yml",
+      "docs/operations/m5-10-public-release.md",
+      "docs/qualification/m5-9-accessibility-browser.md",
+      "docs/qualification/m5-9-security-integrity.md",
+      "scripts/package-release.mjs",
+      "scripts/prepare-release.mjs",
+      "scripts/validate-m5-10-release.mjs",
+      "scripts/validate-m5-9-accessibility-browser.mjs",
+      "scripts/validate-m5-9-security-integrity.mjs",
+      "scripts/validate-pipeline.mjs",
+      "scripts/verify-public-release.mjs",
+      "tests/integrated-validation.test.mjs",
+      "tests/m5-10-release.test.mjs",
+      "tests/m5-7-candidate.test.mjs",
+      "tests/m5-9-qualification.test.mjs",
+      "tests/m5-9-security-integrity.test.mjs",
+      "tests/package-release.test.mjs",
+      "tests/pipeline.test.mjs",
+      "tests/release-gate.test.mjs",
+      "validation/m5-10-current.json",
+      "validation/m5-10-release-v1.json"
+    ]
+  },
+  "durableRelease": {
+    "provider": "github_release",
+    "draftBeforePublish": true,
+    "attestationRequired": true,
+    "requiredAssets": [
+      "site-dist.tar.zst",
+      "release-tuple.json",
+      "software-dependencies.json",
+      "THIRD_PARTY_NOTICES.md",
+      "THIRD_PARTY_LICENSES.txt",
+      "SHA256SUMS"
+    ]
+  },
+  "rollback": {
+    "strategy": "reviewed_pr_rebuild_and_manual_dispatch",
+    "completeTupleOnly": true,
+    "forceMoveMainOrPublishedTag": false,
+    "reuseActionsPreviewArtifact": false,
+    "sameQualificationGatesRequired": true
+  },
+  "knownLimitations": [
+    "A10 manual assistive-technology execution is unavailable and is not represented as pass.",
+    "No WCAG or screen-reader conformance claim is authorized.",
+    "The publication is the bounded qualified corpus, not a claim of full-course completeness.",
+    "External classifications remain explicit governed snapshots and unknown states; no completeness claim is made."
+  ]
+}
