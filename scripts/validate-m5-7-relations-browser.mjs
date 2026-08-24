@@ -188,7 +188,7 @@ try {
   await row('R13', 'Blocker', 'projection switch preserves pathname, content identity and relation focus', async () => {
     await open(page, '/content/p5m56c0004/natural-number-operation-laws/#relation-downstream');
     const before = await page.evaluate(() => ({ path: location.pathname, hash: location.hash, identity: document.querySelector('fmc-relation-navigator')?.getAttribute('data-fmc-current-content-id'), fingerprint: document.querySelector('fmc-relation-navigator')?.getAttribute('data-fmc-relation-fingerprint') }));
-    await page.locator('[data-fmc-projection]').selectOption('lean-mathlib');
+    await page.locator('select[data-fmc-projection]').selectOption('lean-mathlib');
     await page.waitForFunction(() => document.querySelector('[data-fmc-outline-context]')?.textContent?.includes('Lean / mathlib'));
     const after = await page.evaluate(() => ({ path: location.pathname, hash: location.hash, identity: document.querySelector('fmc-relation-navigator')?.getAttribute('data-fmc-current-content-id'), fingerprint: document.querySelector('fmc-relation-navigator')?.getAttribute('data-fmc-relation-fingerprint') }));
     return { pass: JSON.stringify(before) === JSON.stringify(after), actual: { before, after } };
