@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "p5-m5.8-dogfood-candidate/v2",
+  "issue": "MAT-396",
+  "candidateId": "P5-M5.8-CANDIDATE-v2",
+  "status": "candidate_requires_required_ci_and_remediation_disposition",
+  "exactBases": {
+    "site": "e036b5554f5e8d5d7cbb897443a45b454cf5d80d",
+    "siteTree": "106058314620b41a9f105ade454563f043cee2dd",
+    "content": "3a1e87c7c55c7b17e9fa7b3eb4deafd8b991e828",
+    "contentTree": "59d0e0c49851b534bf528e46dd6ce74f46173c6c",
+    "lean": "3f1a315f438af37a327eaf8b9b9c1dbc6f409394",
+    "mathlib": "db584cd6d46c92f209a44c0f1c829460d327499d"
+  },
+  "matrix": {
+    "path": "validation/m5-8-dogfood-matrix-v2.json",
+    "sha256": "21498b6916b48fbd2e1fbe9877196e9970b6f8357b3ea4beca7a0e0f3a1e6608"
+  },
+  "coreContracts": {
+    "editorialPolicy": {
+      "path": ".inputs/content/source/m5-8/editorial-workflow-policy.json",
+      "sha256": "021f98f27cca533139b9c36218542ee025e22cd63b40980e7c7bf5587172e474"
+    },
+    "snapshotPolicy": {
+      "path": ".inputs/content/source/m5-8/external-snapshot-policy.json",
+      "sha256": "bd864c4d98cde7f2e0ad16de29d230d5f4e6a87a3a6d7904547e8a7b12df5d01"
+    },
+    "releasePolicy": {
+      "path": "operations/m5-8/release-policy.json",
+      "sha256": "f5619c2e5c7922e71f7624675c9cdf6e71e18daac6292cf827ae6ac9f32edac8"
+    },
+    "softwareInventory": {
+      "path": "generated/licenses/software-dependencies.json",
+      "sha256": "e53b97bf67898a87e16697f61f24d8905a5106748d3e2940778ca215f0ffdf12",
+      "metadataOnlyReleaseBlockers": 9
+    }
+  },
+  "requiredEvidence": {
+    "dogfoodCases": 20,
+    "negativeControls": 12,
+    "hostedBrowserAcceptanceRows": 121,
+    "contentSnapshotCases": 10,
+    "cleanProcessContributor": true,
+    "organizationalIndependenceClaimed": false,
+    "deploymentAuthorized": false
+  },
+  "auditDisposition": {
+    "immutableAudit": "P5-M5.8-AUDIT-v1",
+    "auditIssue": "MAT-385",
+    "remediationIssue": "MAT-396",
+    "materialFindings": ["MAT385-F01", "MAT385-F02"],
+    "requiredBeforeQualification": [
+      "exact hosted-browser report schema/source binding with stale and incompatible negative controls",
+      "clean-process contributor evidence with procedural role separation only"
+    ],
+    "observationsRetained": ["MAT385-O01", "MAT385-O02"]
+  },
+  "knownLimitations": [
+    "nine installed packages require source-archive license-text review before public release",
+    "no external taxonomy snapshot or mapping is eligible for public projection",
+    "Portuguese is a future locale only; no translation coverage is claimed",
+    "the candidate validates static Chrome behavior but does not claim manual screen-reader or cross-engine conformance",
+    "clean-process contributor evidence establishes reproducibility and procedural role separation, not human usability or organizational independence",
+    "preview artifacts expire after seven days and are not release or rollback authority"
+  ],
+  "revalidationTriggers": [
+    "any editorial, translation, snapshot, release, privacy, redirect or rollback policy/schema change",
+    "any site, content, Lean, mathlib, Node, pnpm, runner, browser or dependency revision change",
+    "any change to hosted-browser report schema, provenance, evidence breakdown or subject binding",
+    "any change to authority ownership, canonical identity, locale routing, analytics or durable release assets",
+    "any audit finding disposition or candidate selector change"
+  ],
+  "handoff": {
+    "nextIssue": "MAT-338",
+    "mutationPolicy": "this_candidate_requires_new_version_after_qualification",
+    "findingSeverityOrder": ["Blocker", "Material", "Minor", "Observation"]
+  },
+  "deploymentAuthorized": false
+}
