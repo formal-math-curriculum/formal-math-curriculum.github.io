@@ -287,7 +287,7 @@ try {
       contentId: document.querySelector('fmc-mathematical-block')?.dataset.fmcContentId,
       blockView: document.querySelector('fmc-mathematical-block')?.dataset.fmcEffectiveView,
       requestedProjection: window.FMCPreferenceStore.getSnapshot().preferences.outlineProjection,
-      selectorFocused: document.activeElement === document.querySelector('[data-fmc-projection]')
+      selectorFocused: document.activeElement === document.querySelector('select[data-fmc-projection]')
     }));
     return {
       pass: JSON.stringify(before) === JSON.stringify({ href: after.href, canonical: after.canonical, blockId: after.blockId, contentId: after.contentId })
@@ -343,7 +343,7 @@ try {
       href: location.href,
       preferences: window.FMCPreferenceStore.getSnapshot().preferences,
       blockView: document.querySelector('fmc-mathematical-block')?.dataset.fmcEffectiveView,
-      projectionValue: document.querySelector('[data-fmc-projection]')?.value,
+      projectionValue: document.querySelector('select[data-fmc-projection]')?.value,
       query: document.querySelector('[data-fmc-outline-query]')?.value
     }));
     return {
@@ -548,7 +548,7 @@ try {
   await deniedPage.goto(fixtureUrl, { waitUntil: 'networkidle' });
   await waitForEnhancement(deniedPage);
   await row('B17', 'Material', 'Denied Web Storage keeps all three surfaces coherent and operable in memory', async () => {
-    const selector = deniedPage.locator('[data-fmc-projection]');
+    const selector = deniedPage.locator('select[data-fmc-projection]');
     await selector.selectOption('msc2020');
     await deniedPage.locator('fmc-mathematical-block').getByRole('tab', { name: 'Lean source' }).click();
     const actual = await deniedPage.evaluate(() => ({
@@ -740,7 +740,8 @@ const report = {
 writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 
 if (failed.length > 0) {
-  const summary = failed.map((result) => `${result.id}: ${result.actual}`).join('\n');
+  console.log(JSON.stringify(report, null, 2));
+  const summary = failed.map((result) => `${result.id}: ${JSON.stringify(result.actual)}`).join('\n');
   throw new Error(`M5.5 browser qualification failed ${failed.length}/${results.length} rows:\n${summary}`);
 }
 
