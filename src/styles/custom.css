@@ -346,6 +346,307 @@ fmc-preference-controls {
   }
 }
 
+/* MAT-364: independently typed learning and dependency navigation. */
+.fmc-course-section--relations {
+  min-inline-size: 0;
+}
+
+.fmc-relation-navigator {
+  display: block;
+  min-inline-size: 0;
+}
+
+.fmc-relation-header,
+.fmc-relation-map__heading,
+.fmc-relation-list__primary {
+  align-items: start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fmc-space-3);
+  justify-content: space-between;
+}
+
+.fmc-relation-header > div,
+.fmc-relation-map__heading > div,
+.fmc-relation-list__primary > :first-child {
+  min-inline-size: 0;
+}
+
+.fmc-relation-eyebrow,
+.fmc-relation-authority {
+  color: var(--fmc-accent-strong);
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.fmc-relation-eyebrow {
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.fmc-relation-jumps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fmc-space-2);
+}
+
+.fmc-relation-jumps a {
+  border: 1px solid var(--fmc-border);
+  border-radius: var(--fmc-radius-sm);
+  padding: 0.55rem 0.75rem;
+}
+
+.fmc-relation-map {
+  background: color-mix(in srgb, var(--fmc-surface) 92%, var(--fmc-accent));
+  border: 1px solid var(--fmc-border);
+  border-radius: var(--fmc-radius-md);
+  margin-block: var(--fmc-space-5);
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  overflow: clip;
+  padding: var(--fmc-space-4);
+}
+
+.fmc-relation-map h3,
+.fmc-relation-map p {
+  margin-block-start: 0;
+}
+
+.fmc-relation-zoom {
+  display: flex;
+  gap: var(--fmc-space-1);
+}
+
+.fmc-relation-zoom button {
+  min-block-size: 2.75rem;
+  min-inline-size: 2.75rem;
+}
+
+.fmc-relation-map__status {
+  min-block-size: 1.4em;
+}
+
+.fmc-relation-map__edges {
+  display: grid;
+  font-size: calc(1rem * var(--fmc-relation-zoom));
+  gap: var(--fmc-space-3);
+  list-style: none;
+  margin: 0;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  padding: 0;
+  transition: font-size 120ms ease-out;
+}
+
+.fmc-relation-map__edges li {
+  align-items: center;
+  display: grid;
+  gap: var(--fmc-space-2);
+  grid-template-columns: minmax(0, 1fr) minmax(7rem, 0.8fr) minmax(0, 1fr);
+  min-inline-size: 0;
+}
+
+.fmc-relation-map__node {
+  background: var(--fmc-surface-raised);
+  border: 2px solid var(--fmc-border);
+  border-radius: var(--fmc-radius-md);
+  display: block;
+  font-weight: 700;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  padding: 0.7em;
+  text-align: center;
+}
+
+.fmc-relation-map__node.is-current {
+  border-color: var(--fmc-accent-strong);
+  box-shadow: inset 0 0 0 2px var(--fmc-surface-raised), inset 0 0 0 4px var(--fmc-accent-strong);
+}
+
+.fmc-relation-map__node.is-current::before {
+  content: "Current · ";
+}
+
+.fmc-relation-map__node.is-unresolved {
+  border-style: dashed;
+}
+
+.fmc-relation-map__edge {
+  display: grid;
+  gap: 0.15rem;
+  min-inline-size: 0;
+  text-align: center;
+}
+
+.fmc-relation-map__edge small,
+.fmc-relation-map__edge strong {
+  overflow-wrap: anywhere;
+}
+
+.fmc-relation-grid {
+  display: grid;
+  gap: var(--fmc-space-4);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-inline-size: 0;
+}
+
+.fmc-relation-panel {
+  border: 1px solid var(--fmc-border);
+  border-radius: var(--fmc-radius-md);
+  min-inline-size: 0;
+  padding: var(--fmc-space-4);
+  scroll-margin-block-start: 5rem;
+}
+
+.fmc-relation-panel--wide {
+  grid-column: 1 / -1;
+}
+
+.fmc-relation-panel h3 {
+  margin-block-start: 0;
+}
+
+.fmc-relation-list,
+.fmc-relation-placement-list {
+  display: grid;
+  gap: var(--fmc-space-3);
+  padding-inline-start: 1.25rem;
+}
+
+.fmc-relation-list li,
+.fmc-relation-placement-list li {
+  min-inline-size: 0;
+}
+
+.fmc-relation-list p {
+  margin-block: 0.35rem 0;
+}
+
+.fmc-relation-list code,
+.fmc-relation-placement-list code,
+.fmc-relation-provenance code,
+.fmc-relation-completeness code {
+  overflow-wrap: anywhere;
+}
+
+.fmc-relation-state {
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  color: var(--fmc-accent-strong);
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+}
+
+.fmc-relation-empty {
+  border-inline-start: 0.25rem solid var(--fmc-border);
+  padding-inline-start: var(--fmc-space-3);
+}
+
+.fmc-relation-course-nav {
+  display: grid;
+  gap: var(--fmc-space-2);
+}
+
+.fmc-relation-course-nav > * {
+  border-inline-start: 0.2rem solid var(--fmc-border);
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  padding: 0.45rem 0.7rem;
+}
+
+.fmc-relation-course-nav [aria-current="page"] {
+  border-inline-start-color: var(--fmc-accent-strong);
+  font-weight: 800;
+}
+
+.fmc-relation-placement-list span {
+  display: block;
+  font-size: 0.8125rem;
+}
+
+.fmc-relation-formal-body {
+  min-inline-size: 0;
+  padding-block-start: var(--fmc-space-3);
+}
+
+.fmc-relation-provenance {
+  display: grid;
+  gap: var(--fmc-space-2);
+  margin-block: var(--fmc-space-4);
+}
+
+.fmc-relation-provenance > div {
+  display: grid;
+  gap: var(--fmc-space-2);
+  grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr);
+}
+
+.fmc-relation-provenance dt {
+  font-weight: 800;
+}
+
+.fmc-relation-provenance dd {
+  margin: 0;
+  min-inline-size: 0;
+}
+
+.fmc-relation-completeness {
+  margin-block-start: var(--fmc-space-5);
+}
+
+@media (max-width: 50rem) {
+  .fmc-relation-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fmc-relation-panel--wide {
+    grid-column: auto;
+  }
+
+  .fmc-relation-map__edges li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fmc-relation-map__edge {
+    padding-block: var(--fmc-space-1);
+  }
+
+  .fmc-relation-map__edge span {
+    transform: rotate(90deg);
+  }
+
+  .fmc-relation-provenance > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fmc-relation-map__edges {
+    transition: none !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .fmc-relation-map,
+  .fmc-relation-map__node,
+  .fmc-relation-panel,
+  .fmc-relation-jumps a,
+  .fmc-relation-state {
+    background: Canvas;
+    border-color: CanvasText;
+    color: CanvasText;
+    forced-color-adjust: auto;
+  }
+
+  .fmc-relation-map__node.is-current {
+    border-color: Highlight;
+    box-shadow: inset 0 0 0 2px Canvas, inset 0 0 0 4px Highlight;
+  }
+}
+
 /* MAT-360 multi-representation block. Static sections are visible until enhancement. */
 fmc-mathematical-block {
   background: var(--fmc-surface-raised);

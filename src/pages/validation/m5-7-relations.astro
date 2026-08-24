@@ -1,0 +1,130 @@
+---
+import PreferenceControls from '../../components/PreferenceControls.astro';
+import PreferenceProvider from '../../components/PreferenceProvider.astro';
+import RelationNavigator from '../../components/RelationNavigator.astro';
+import { loadSiteBundle, makeValidationOutline } from '../../lib/m5-6-publication.mjs';
+import { generateScaleRelationFixture, makePageRelations } from '../../lib/m5-7-relations.mjs';
+import '../../styles/custom.css';
+
+export const prerender = true;
+
+const bundle = await loadSiteBundle();
+const outline = makeValidationOutline(bundle);
+const entity = bundle.publication.content.find((candidate: Record<string, any>) => candidate.content_id === bundle.validationFixture.subject_content_id);
+if (!entity) throw new Error(`M5.7 relation validation subject missing: ${bundle.validationFixture.subject_content_id}`);
+const relations = makePageRelations(bundle, entity, { outline });
+const scale = generateScaleRelationFixture(bundle);
+const finalCycleEdge = scale.invalidFixtures.cycle.at(-1);
+if (!finalCycleEdge) throw new Error('M5.7 relation validation cycle fixture is empty');
+const cyclePath = [...scale.invalidFixtures.cycle.map((edge: Record<string, any>) => edge.from), finalCycleEdge.to];
+const unresolvedRows = scale.formal.unresolvedEdges;
+const staleRevision = '0'.repeat(40);
+---
+
+<!doctype html>
+<html lang="en" data-fmc-m5-7-relation-validation={scale.fingerprint}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="description" content="Validation-only M5.7 relation navigation, failure-state and scale harness." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>M5.7 relation navigation validation harness</title>
+    <PreferenceProvider />
+  </head>
+  <body>
+    <main id="main-content" data-pagefind-ignore="all">
+      <header class="validation-header">
+        <div>
+          <p class="validation-kicker">MAT-364 · validation only · no publication coverage</p>
+          <h1>M5.7 relation navigation harness</h1>
+          <p>
+            This noindex route combines the exact T0 subject with the synthetic all-projection fixture
+            and deterministic T2 summaries. Reserved IDs never enter public routes, Pagefind or the sitemap.
+          </p>
+        </div>
+        <PreferenceControls />
+      </header>
+
+      <RelationNavigator model={relations} heading="Validation-only multi-parent and relation surface" />
+
+      <section class="validation-relation-section" aria-labelledby="scale-title" data-fmc-scale-fixture={scale.fixtureId}>
+        <h2 id="scale-title">Deterministic bounded-scale evidence</h2>
+        <dl class="fmc-relation-provenance">
+          <div><dt>Documents</dt><dd data-fmc-scale-documents>{scale.documents.length}</dd></div>
+          <div><dt>Placements</dt><dd data-fmc-scale-placements>{scale.placements.length}</dd></div>
+          <div><dt>Prerequisite nodes</dt><dd data-fmc-scale-prerequisite-nodes>{scale.prerequisite.nodes.length}</dd></div>
+          <div><dt>Direct formal edges</dt><dd data-fmc-scale-formal-direct>{scale.formal.directEdges.length}</dd></div>
+          <div><dt>Two-hop chains</dt><dd data-fmc-scale-formal-two-hop>{scale.formal.twoHopChains.length}</dd></div>
+          <div><dt>Unresolved formal edges</dt><dd data-fmc-scale-formal-unresolved>{scale.formal.unresolvedEdges.length}</dd></div>
+          <div><dt>Production eligible</dt><dd>false</dd></div>
+          <div><dt>Fingerprint</dt><dd><code>{scale.fingerprint}</code></dd></div>
+        </dl>
+        <h3>Unresolved nodes</h3>
+        <ul data-fmc-unresolved-list>
+          {unresolvedRows.map((edge) => (
+            <li data-fmc-unresolved-id={edge.id}>
+              <strong>{edge.unresolvedTarget}</strong> — {edge.reason}; no guessed target and no link.
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section class="validation-relation-section" aria-labelledby="failures-title">
+        <h2 id="failures-title">Fail-closed diagnostic states</h2>
+        <ul class="fmc-relation-list" data-fmc-invalid-relation-fixtures>
+          <li data-fmc-invalid-case="stale-revision">
+            <strong>stale/incompatible</strong> — expected mathlib <code>{relations.authority.mathlibRevision}</code>,
+            received <code>{staleRevision}</code>; no mixed graph is rendered.
+          </li>
+          <li data-fmc-invalid-case="self-edge">
+            <strong>rejected</strong> — self-edge <code>{scale.invalidFixtures.selfEdge.from} → {scale.invalidFixtures.selfEdge.to}</code>.
+          </li>
+          <li data-fmc-invalid-case="cycle">
+            <strong>rejected</strong> — complete cycle path <code>{cyclePath.join(' → ')}</code>.
+          </li>
+          <li data-fmc-invalid-case="dangling-edge">
+            <strong>rejected</strong> — exact missing ID <code>{scale.invalidFixtures.danglingEdge.to}</code>.
+          </li>
+          <li data-fmc-invalid-case="type-conversion">
+            <strong>rejected</strong> — <code>{scale.invalidFixtures.invalidTypeConversion.relation}</code> cannot become learner prerequisite authority.
+          </li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  #main-content {
+    inline-size: min(100%, 92rem);
+    margin-inline: auto;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    padding: clamp(0.75rem, 2vw, 2rem);
+  }
+  .validation-header {
+    align-items: start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fmc-space-4);
+    justify-content: space-between;
+    margin-block-end: var(--fmc-space-5);
+  }
+  .validation-header > div { max-inline-size: 60rem; }
+  .validation-kicker {
+    color: var(--fmc-accent-strong);
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .validation-relation-section {
+    border-block-start: 0.125rem solid var(--fmc-border);
+    margin-block-start: var(--fmc-space-5);
+    min-inline-size: 0;
+    padding-block-start: var(--fmc-space-4);
+  }
+</style>

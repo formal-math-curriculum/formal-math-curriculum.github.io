@@ -1,0 +1,275 @@
+---
+interface Props {
+  model: Record<string, any>;
+  heading?: string;
+}
+
+const { model, heading = 'Learning and dependency navigation' } = Astro.props;
+const componentId = `fmc-relations-${model.currentContent.contentId.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+const nodeById = new Map(model.visual.nodes.map((node: Record<string, any>) => [node.id, node]));
+const systemById = new Map([
+  ['learner-prerequisite', 'Learner prerequisite'],
+  ['downstream-use', 'Downstream use'],
+  ['generated-formal-dependency', 'Generated formal dependency']
+]);
+const visualRows = model.visual.edges.map((edge: Record<string, any>) => ({
+  edge,
+  from: nodeById.get(edge.from) as Record<string, any>,
+  to: nodeById.get(edge.to) as Record<string, any>,
+  systemLabel: systemById.get(edge.system) ?? edge.system
+}));
+const formalRows = model.formalRecords.map((record: Record<string, any>) => ({
+  ...record,
+  directRows: record.directEdges.map((edge: Record<string, any>) => ({
+    edge,
+    from: nodeById.get(edge.from) as Record<string, any>,
+    to: nodeById.get(edge.to) as Record<string, any>
+  })),
+  transitiveRows: record.transitivePaths.map((path: Record<string, any>) => ({
+    path,
+    target: nodeById.get(path.to) as Record<string, any>,
+    viaLabels: path.via.map((id: string) => (nodeById.get(id) as Record<string, any>).label).join(' → ')
+  }))
+}));
+---
+
+<fmc-relation-navigator
+  class="fmc-relation-navigator"
+  data-fmc-relation-fingerprint={model.fingerprint}
+  data-fmc-relation-corpus-fingerprint={model.corpusFingerprint}
+  data-fmc-current-content-id={model.currentContent.contentId}
+  data-fmc-canonical-route={model.currentContent.canonicalRoute}
+>
+  <header class="fmc-relation-header">
+    <div>
+      <p class="fmc-relation-eyebrow">Independent governed relation systems</p>
+      <h2 id={`${componentId}-title`}>{heading}</h2>
+      <p>
+        Course order, readiness, external classifications and formal dependencies keep their own
+        authorities. This page records no reading progress.
+      </p>
+    </div>
+    <nav aria-label="Relation sections" class="fmc-relation-jumps">
+      <a href="#relation-prerequisites">Prerequisites</a>
+      <a href="#relation-downstream">Downstream</a>
+      <a href="#relation-course-path">Course path</a>
+      <a href="#relation-formal">Formal</a>
+    </nav>
+  </header>
+
+  <section class="fmc-relation-map" aria-labelledby={`${componentId}-map-title`} data-fmc-relation-map style="--fmc-relation-zoom: 1">
+    <div class="fmc-relation-map__heading">
+      <div>
+        <h3 id={`${componentId}-map-title`}>Relationship map</h3>
+        <p>Visual enhancement of the complete lists below. Ordering is deterministic.</p>
+      </div>
+      <div class="fmc-relation-zoom" data-fmc-relation-enhancement hidden aria-label="Relationship map zoom">
+        <button type="button" data-fmc-control data-fmc-relation-zoom-out aria-label="Zoom relationship map out">−</button>
+        <button type="button" data-fmc-control data-fmc-relation-zoom-reset>100%</button>
+        <button type="button" data-fmc-control data-fmc-relation-zoom-in aria-label="Zoom relationship map in">+</button>
+      </div>
+    </div>
+    <p class="fmc-relation-map__status" role="status" aria-live="polite" data-fmc-relation-zoom-status></p>
+    {visualRows.length ? (
+      <ol class="fmc-relation-map__edges" aria-hidden="true">
+        {visualRows.map((row: any) => (
+            <li data-fmc-relation-system={row.edge.system}>
+              <span class:list={['fmc-relation-map__node', { 'is-current': row.from?.id === model.visual.currentNodeId, 'is-unresolved': row.from?.state !== 'current' && row.from?.state !== 'resolved' }]}>{row.from?.label}</span>
+              <span class="fmc-relation-map__edge">
+                <small>{row.systemLabel}</small>
+                <strong>{row.edge.label}</strong>
+                <span aria-hidden="true">→</span>
+              </span>
+              <span class:list={['fmc-relation-map__node', { 'is-current': row.to?.id === model.visual.currentNodeId, 'is-unresolved': row.to?.state !== 'current' && row.to?.state !== 'resolved' }]}>{row.to?.label}</span>
+            </li>
+        ))}
+      </ol>
+    ) : (
+      <p class="fmc-relation-empty">No governed prerequisite, downstream-use or generated formal edge targets this page.</p>
+    )}
+  </section>
+
+  <div class="fmc-relation-grid" aria-labelledby={`${componentId}-title`}>
+    <section id="relation-prerequisites" class="fmc-relation-panel" tabindex="-1" aria-labelledby={`${componentId}-prerequisite-title`}>
+      <h3 id={`${componentId}-prerequisite-title`}>Learner prerequisites</h3>
+      <p class="fmc-relation-authority">Authority: Project-1 readiness records; not Course order.</p>
+      {model.prerequisites.length ? (
+        <ul class="fmc-relation-list" data-fmc-prerequisite-list>
+          {model.prerequisites.map((item: any) => (
+            <li data-fmc-relation-id={item.edge.relationId} data-fmc-relation-state={item.edge.state}>
+              <div class="fmc-relation-list__primary">
+                {item.source.route ? <a href={item.source.route}>{item.source.label}</a> : <strong>{item.source.label}</strong>}
+                <span class="fmc-relation-state">{item.edge.state.replaceAll('-', ' ')}</span>
+              </div>
+              <p><code>{item.edge.relationId}</code> · {item.edge.label} this page.</p>
+              <p>{item.edge.scope}. Confidence: {item.edge.confidence}; source <code>{item.edge.authority}</code>.</p>
+              {!item.source.route ? <p>No canonical page is fabricated for <code>{item.source.candidateId}</code>.</p> : null}
+            </li>
+          ))}
+        </ul>
+      ) : <p class="fmc-relation-empty">No strict learner prerequisite is disclosed for this page in the bounded input.</p>}
+    </section>
+
+    <section id="relation-downstream" class="fmc-relation-panel" tabindex="-1" aria-labelledby={`${componentId}-downstream-title`}>
+      <h3 id={`${componentId}-downstream-title`}>Downstream uses</h3>
+      <p class="fmc-relation-authority">Exact inverse view of validated readiness edges; separately labeled.</p>
+      {model.downstreamUses.length ? (
+        <ul class="fmc-relation-list" data-fmc-downstream-list>
+          {model.downstreamUses.map((item: any) => (
+            <li data-fmc-relation-id={item.edge.relationId}>
+              <div class="fmc-relation-list__primary">
+                <a href={item.target.route}>{item.target.label}</a>
+                <span class="fmc-relation-state">resolved</span>
+              </div>
+              <p><code>{item.edge.relationId}</code> · this page {item.edge.label} that content.</p>
+              <p>{item.edge.scope}.</p>
+            </li>
+          ))}
+        </ul>
+      ) : <p class="fmc-relation-empty">No downstream use is present in the bounded readiness graph.</p>}
+    </section>
+
+    <section id="relation-course-path" class="fmc-relation-panel" tabindex="-1" aria-labelledby={`${componentId}-course-title`}>
+      <h3 id={`${componentId}-course-title`}>Course path</h3>
+      <p class="fmc-relation-authority">Authored pedagogy membership/order; no prerequisite edge is inferred.</p>
+      <nav aria-label="Progress-free Course path" class="fmc-relation-course-nav">
+        <a href={model.course.root.route}>Start: {model.course.root.label}</a>
+        {model.course.previous ? <a rel="prev" href={model.course.previous.route}>Previous: {model.course.previous.label}</a> : <span>No previous Course item</span>}
+        <span aria-current="page">Current: {model.currentContent.label}</span>
+        {model.course.next ? <a rel="next" href={model.course.next.route}>Next: {model.course.next.label}</a> : <span>No next Course item</span>}
+      </nav>
+      <h4>Exact placements</h4>
+      <ul class="fmc-relation-placement-list" data-fmc-course-placement-list>
+        {model.course.placements.map((placement: any) => (
+          <li data-fmc-reference-id={placement.referenceId}>
+            <a href={placement.canonicalRoute}>{model.currentContent.label}</a>
+            <span>
+              <code>{placement.referenceId}</code> · {placement.role};
+              {placement.parentContentId ? <> parent <code>{placement.parentContentId}</code></> : <> Course root authority</>}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section id="relation-external" class="fmc-relation-panel" tabindex="-1" aria-labelledby={`${componentId}-external-title`}>
+      <h3 id={`${componentId}-external-title`}>External classification placements</h3>
+      <p class="fmc-relation-authority">Alignment contexts only; never canonical identity or readiness.</p>
+      <ul class="fmc-relation-list" data-fmc-external-systems>
+        {model.externalSystems.map((system: any) => (
+          <li data-fmc-external-system={system.projectionId} data-fmc-external-state={system.state}>
+            <div class="fmc-relation-list__primary">
+              <strong>{system.label}</strong>
+              <span class="fmc-relation-state">{system.state.replaceAll('-', ' ')}</span>
+            </div>
+            {system.placements.length ? (
+              <ul>
+                {system.placements.map((placement: any) => (
+                  <li data-fmc-reference-id={placement.referenceId}>
+                    <a href={placement.canonicalRoute}>{placement.label}</a>
+                    <span> — {placement.state.replaceAll('-', ' ')}; context {placement.context.join(' → ')}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : <p>No governed placement is available for this page; no identifier or hierarchy is invented.</p>}
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section id="relation-formal" class="fmc-relation-panel fmc-relation-panel--wide" tabindex="-1" aria-labelledby={`${componentId}-formal-title`}>
+      <h3 id={`${componentId}-formal-title`}>Generated Lean / mathlib dependency drill-down</h3>
+      <p class="fmc-relation-authority">Exact generated fact, revisions and fingerprint; not learner readiness or Course order.</p>
+      {formalRows.length ? formalRows.map((record: any) => (
+        <details open data-fmc-formal-record={record.id}>
+          <summary data-fmc-control>{record.state} generated chain · {record.generator}</summary>
+          <div class="fmc-relation-formal-body">
+            <h4>Direct steps</h4>
+            <ol class="fmc-relation-list" data-fmc-formal-direct-list>
+              {record.directRows.map((row: any) => (
+                <li><span>{row.from.label}</span> <strong>{row.edge.label}</strong> {row.to.route ? <a href={row.to.route}>{row.to.label}</a> : <span>{row.to.label}</span>}</li>
+              ))}
+            </ol>
+            <h4>Transitive reachability</h4>
+            <ul class="fmc-relation-list" data-fmc-formal-transitive-list>
+              {record.transitiveRows.map((row: any) => (
+                <li>{row.path.label}: <a href={row.target.route}>{row.target.label}</a> · depth {row.path.depth}; via {row.viaLabels}</li>
+              ))}
+            </ul>
+            <dl class="fmc-relation-provenance">
+              <div><dt>Schema</dt><dd><code>{record.schemaVersion}</code></dd></div>
+              <div><dt>Generator</dt><dd><code>{record.generator}</code></dd></div>
+              <div><dt>Project revision</dt><dd><code>{record.revisions.project}</code></dd></div>
+              <div><dt>Lean core revision</dt><dd><code>{record.revisions.leanCore}</code></dd></div>
+              <div><dt>mathlib revision</dt><dd><code>{record.revisions.mathlib}</code></dd></div>
+              <div><dt>Fingerprint</dt><dd><code>{record.fingerprint}</code></dd></div>
+            </dl>
+            <p>Unresolved generated edges: {record.unresolved.length}. Direct and transitive facts remain separately labeled.</p>
+          </div>
+        </details>
+      )) : <p class="fmc-relation-empty">No exact generated dependency record targets this page in the bounded input.</p>}
+    </section>
+
+    <section id="relation-import-build" class="fmc-relation-panel fmc-relation-panel--wide" tabindex="-1" aria-labelledby={`${componentId}-import-title`}>
+      <h3 id={`${componentId}-import-title`}>Lean import/build detail</h3>
+      <p class="fmc-relation-authority">Technical import/build facts require their own generated authority.</p>
+      <p class="fmc-relation-empty" data-fmc-import-build-state={model.technicalImportBuild.state}>{model.technicalImportBuild.reason}</p>
+    </section>
+  </div>
+
+  <details class="fmc-relation-completeness">
+    <summary data-fmc-control>Complete relation-system and release boundary</summary>
+    <ul>
+      <li>Course membership/order</li>
+      <li>Learner prerequisite/readiness</li>
+      <li>Downstream use</li>
+      <li>OntoMathPRO placement</li>
+      <li>MSC 2020 placement</li>
+      <li>arXiv placement</li>
+      <li>Generated Lean/mathlib formal dependency</li>
+      <li>Technical Lean import/build detail</li>
+    </ul>
+    <p>Relation state persistence: false. Progress tracking: false. Deployment authorized: false.</p>
+    <p>Model <code>{model.fingerprint}</code>; corpus <code>{model.corpusFingerprint}</code>.</p>
+  </details>
+
+  <noscript>
+    <p>The complete relation lists and ordinary deep links remain available. Only bounded map zoom controls require JavaScript.</p>
+  </noscript>
+</fmc-relation-navigator>
+
+<script>
+  // @ts-nocheck -- the server validates and freezes the relation payload before enhancement.
+  class FMCRelationNavigator extends HTMLElement {
+    scale = 100;
+
+    connectedCallback() {
+      const enhancement = this.querySelector('[data-fmc-relation-enhancement]');
+      const map = this.querySelector('[data-fmc-relation-map]');
+      const status = this.querySelector('[data-fmc-relation-zoom-status]');
+      if (!enhancement || !map || !status) return;
+      enhancement.removeAttribute('hidden');
+      const apply = (message = '') => {
+        map.style.setProperty('--fmc-relation-zoom', String(this.scale / 100));
+        const reset = this.querySelector('[data-fmc-relation-zoom-reset]');
+        if (reset) reset.textContent = `${this.scale}%`;
+        status.textContent = message;
+      };
+      this.querySelector('[data-fmc-relation-zoom-out]')?.addEventListener('click', () => {
+        this.scale = Math.max(80, this.scale - 10);
+        apply(`Relationship map zoom ${this.scale} percent.`);
+      });
+      this.querySelector('[data-fmc-relation-zoom-reset]')?.addEventListener('click', () => {
+        this.scale = 100;
+        apply('Relationship map zoom reset to 100 percent.');
+      });
+      this.querySelector('[data-fmc-relation-zoom-in]')?.addEventListener('click', () => {
+        this.scale = Math.min(130, this.scale + 10);
+        apply(`Relationship map zoom ${this.scale} percent.`);
+      });
+      apply();
+    }
+  }
+
+  if (!customElements.get('fmc-relation-navigator')) customElements.define('fmc-relation-navigator', FMCRelationNavigator);
+</script>

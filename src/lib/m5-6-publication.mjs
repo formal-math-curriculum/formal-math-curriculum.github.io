@@ -13,6 +13,9 @@ export const CONTENT_TREE = contentLock.tree;
 export const SOURCE_IDENTITY = contentLock.source_identity;
 export const SELECTOR_SHA256 = contentLock.selector_sha256;
 export const FORMAL_DEPENDENCY_SHA256 = contentLock.formal_dependency_sha256;
+export const LEAN_PROJECT_REVISION = inputLock.recorded_not_consumed?.lean?.revision;
+export const LEAN_CORE_REVISION = inputLock.recorded_not_consumed?.lean_core?.revision;
+export const MATHLIB_REVISION = inputLock.recorded_not_consumed?.mathlib?.revision;
 
 const bundleNames = [
   'content-manifest.json',

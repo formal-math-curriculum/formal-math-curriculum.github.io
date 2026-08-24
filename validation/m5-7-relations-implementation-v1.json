@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "p5-m5.7-relations-implementation/v1",
+  "issue": "MAT-364",
+  "decisionDocument": "98581591-9ec3-481c-90a5-f0fe88280e40",
+  "freezeDocument": "d879fd37-8602-4cf2-b3a8-aa19d0a6e588",
+  "entryBaseline": {
+    "websiteCommit": "0987304c8c1c26b8f84f8b207b5324fd3be802fe",
+    "websiteTree": "b8e991535867d0e6b34ce24d7ab4d44eb1d399c9",
+    "contentCommit": "2da8fdb43074d00fea5fc6201d239e5f26a43250",
+    "contentTree": "d51b0c7cfe44feec2b6eb176fd6ce1825a8ab458"
+  },
+  "authority": {
+    "sourceIdentity": "P5-M5.6-CONTENT-v1",
+    "selectorSha256": "280ad055d9235077b398d26dd6abb40c9d13ae089ad6d5a8fd0b11baed805aaf",
+    "formalDependencySha256": "f8c79c8d196952e4827c72d394039862935689b2e100f821697c41bad8cb1438",
+    "leanProjectRevision": "3f1a315f438af37a327eaf8b9b9c1dbc6f409394",
+    "leanCoreRevision": "d8b18978322de05a8f3dba51ef03cf5461676c17",
+    "mathlibRevision": "db584cd6d46c92f209a44c0f1c829460d327499d"
+  },
+  "relationModel": {
+    "schemaVersion": "p5-m5.7-relation-navigation/v1",
+    "fingerprint": "sha256:5431b20b93dc0045933a74e92c9b1f9fbd74412be2bb556bd46c33f57cca67e8",
+    "systems": [
+      "course-order",
+      "learner-prerequisite",
+      "downstream-use",
+      "ontomathpro-placement",
+      "msc2020-placement",
+      "arxiv-placement",
+      "generated-formal-dependency",
+      "technical-import-build"
+    ],
+    "governed": {
+      "learnerPages": 15,
+      "coursePlacements": 16,
+      "courseReferenceEdges": 15,
+      "readinessAuthorities": 2,
+      "prerequisitePageEdges": 3,
+      "downstreamInverseEdges": 3,
+      "generatedFormalRecords": 1,
+      "externalPayloads": 0
+    }
+  },
+  "scaleFixture": {
+    "schemaVersion": "p5-m5.7-scale-relation-fixture/v1",
+    "fingerprint": "sha256:24a49b6c6cf902702c6ff5df1e9e14927ea9eefcfa9293cbdaf0e3b8b15fb5b6",
+    "documents": 2000,
+    "placements": 2200,
+    "prerequisiteNodes": 120,
+    "prerequisiteEdges": 119,
+    "directFormalEdges": 150,
+    "twoHopFormalChains": 25,
+    "unresolvedFormalEdges": 10,
+    "invalidCases": [
+      "stale-revision",
+      "self-edge",
+      "cycle",
+      "dangling-edge",
+      "type-conversion"
+    ],
+    "validationOnly": true,
+    "generatedInProductionArtifact": false
+  },
+  "qualification": {
+    "nodeRows": "R01-R14 plus structural and scale checks",
+    "browserRows": "R01-R14 and A01-A08",
+    "browserRequiredInCI": true,
+    "browserLocalSkipMustBeExplicit": true,
+    "artifactGate": "scripts/validate-m5-7-relations-artifact.mjs"
+  },
+  "boundaries": {
+    "backend": false,
+    "externalRuntimeRequests": false,
+    "relationStatePersistence": false,
+    "progressTracking": false,
+    "relationNavigationInSearchIndex": false,
+    "courseOrderAsReadinessAuthority": false,
+    "inferredExternalPlacements": false,
+    "inferredTechnicalImportBuildEdges": false,
+    "validationIdentifiersInProductionPages": false,
+    "failureBehavior": "reject_stale_cycle_self_dangling_and_invalid_type_conversion"
+  },
+  "deploymentAuthorized": false,
+  "nextIssue": "MAT-377",
+  "excludedClaims": [
+    "full-course relation coverage",
+    "licensed external-classification payload availability",
+    "qualified raw Lean import/build dependency coverage",
+    "manual screen-reader conformance",
+    "cross-engine conformance",
+    "public deployment authorization"
+  ]
+}
