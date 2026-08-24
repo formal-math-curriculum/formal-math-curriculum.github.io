@@ -103,17 +103,18 @@ export function validatePipeline({ ciSource, deploySource, lock }) {
   const releaseGate = steps(deploy).find(step => String(step.run ?? '').includes('prepare-release.mjs'));
   invariant(releaseGate?.run === 'node scripts/prepare-release.mjs validation/m5-10-current.json', 'M5.10 current selector release gate drift');
   invariant(steps(deploy).indexOf(releaseGate) < steps(deploy).indexOf(pagesArtifact), 'release gate must precede Pages upload');
-  const releaseDraft = steps(deploy).find(step => String(step.run ?? '').includes('gh release create p5-web-v0.1.0'));
-  const releasePublish = steps(deploy).find(step => String(step.run ?? '').includes('gh release edit p5-web-v0.1.0'));
+  const releaseDraft = steps(deploy).find(step => String(step.run ?? '').includes('uploads.github.com'));
+  const releasePublish = steps(deploy).find(step => String(step.run ?? '').includes('-F draft=false'));
   invariant(releaseDraft && releasePublish, 'draft-before-publish release lifecycle is incomplete');
   const draftRun = String(releaseDraft.run);
   invariant(draftRun.includes('refs/tags/$tag') && draftRun.includes('git/refs'), 'release draft must explicitly bind an exact tag ref');
-  invariant(draftRun.indexOf('git/refs') < draftRun.indexOf('gh release create'), 'exact tag binding must precede draft creation');
-  invariant(draftRun.includes('gh release upload "$tag"') && draftRun.includes('--clobber'), 'partial-run draft recovery must replace assets');
-  invariant(draftRun.includes('gh release download "$tag"') && draftRun.includes('cmp "release-assets/$asset"'), 'staged release assets must be byte-compared');
+  invariant(draftRun.includes('git/refs/tags/$tag') && draftRun.includes('-F force=true'), 'partial-run tag movement must be explicit and draft-guarded');
+  invariant(draftRun.indexOf("--jq '.draft')\" = \"true\"") < draftRun.indexOf('git/refs/tags/$tag'), 'a mismatched tag may move only for an existing draft');
+  invariant(draftRun.includes('releases/assets/$asset_id') && draftRun.includes('uploads.github.com'), 'partial-run draft recovery must replace assets by release ID');
+  invariant(draftRun.includes('Accept: application/octet-stream') && draftRun.includes('cmp "release-assets/$asset"'), 'staged release assets must be downloaded and byte-compared');
   const publishRun = String(releasePublish.run);
-  invariant(publishRun.indexOf("--jq '.draft')\" = \"true\"") < publishRun.indexOf('gh release edit'), 'release must remain draft until public verification completes');
-  invariant(publishRun.indexOf('gh release edit') < publishRun.lastIndexOf("--jq '.draft')\" = \"false\""), 'release publication must be confirmed');
+  invariant(publishRun.indexOf("--jq '.draft')\" = \"true\"") < publishRun.indexOf('-F draft=false'), 'release must remain draft until public verification completes');
+  invariant(publishRun.indexOf('-F draft=false') < publishRun.lastIndexOf("--jq '.draft')\" = \"false\""), 'release publication must be confirmed');
 
   return true;
 }

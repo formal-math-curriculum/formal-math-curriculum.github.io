@@ -126,11 +126,10 @@ test('M5.10 release workflow advances from exact authority through durable draft
   assert.ok(workflow.indexOf('prepare-release.mjs') < workflow.indexOf('actions/upload-pages-artifact'));
   assert.match(workflow, /actions\/attest@[0-9a-f]{40}/u);
   assert.equal((workflow.match(/\(cd release-assets && sha256sum --check SHA256SUMS\)/gu) ?? []).length, 2);
-  assert.match(workflow, /gh release create p5-web-v0\.1\.0[\s\S]*--draft/u);
-  assert.match(workflow, /git\/refs[\s\S]*refs\/tags\/\$tag[\s\S]*gh release create/u);
-  assert.match(workflow, /gh release upload "\$tag"[\s\S]*--clobber[\s\S]*gh release download "\$tag"[\s\S]*cmp/u);
-  assert.match(workflow, /verify-public-release\.mjs[\s\S]*gh release edit p5-web-v0\.1\.0/u);
-  assert.match(workflow, /gh release edit p5-web-v0\.1\.0[\s\S]*'\.draft'\)" = "false"/u);
+  assert.match(workflow, /releases\?per_page=100[\s\S]*git\/refs\/tags\/\$tag[\s\S]*-F force=true/u);
+  assert.match(workflow, /releases\/assets\/\$asset_id[\s\S]*uploads\.github\.com[\s\S]*Accept: application\/octet-stream[\s\S]*cmp/u);
+  assert.match(workflow, /verify-public-release\.mjs[\s\S]*-F draft=false/u);
+  assert.match(workflow, /-F draft=false[\s\S]*'\.draft'\)" = "false"/u);
   assert.match(gate, /deploymentAuthorized !== true/);
   assert.match(gate, /unresolvedFindings\?\.Blocker !== 0/);
   assert.match(gate, /validation.+m5-10/u);
