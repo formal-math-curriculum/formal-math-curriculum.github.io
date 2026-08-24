@@ -14,8 +14,8 @@ const evidenceDirectory = join(dist, '_validation', 'm5-9-accessibility-v1');
 const reportPath = join(evidenceDirectory, 'report.json');
 const manifestPath = join(evidenceDirectory, 'manifest.json');
 const candidateRevision = process.env.FMC_M59_CANDIDATE_REVISION
-  ?? '01c09041aaed77db164a060e6a1aecc889ab861f';
-const expectedCandidateTree = 'b7da7512ff507b86eab2e5953af4d28c7f27318e';
+  ?? 'cc137e0f47e324acbb8b864212a1dd4387c54d23';
+const expectedCandidateTree = '99033aa8185141b7b5a5346ea70533086af2eb24';
 const expectedContentRevision = '3a1e87c7c55c7b17e9fa7b3eb4deafd8b991e828';
 const expectedContentTree = '59d0e0c49851b534bf528e46dd6ce74f46173c6c';
 const expectedLeanRevision = '3f1a315f438af37a327eaf8b9b9c1dbc6f409394';

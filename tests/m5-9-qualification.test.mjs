@@ -8,8 +8,8 @@ const procedure = readFileSync(new URL('../docs/qualification/m5-9-accessibility
 
 test('M59-A01 qualification binds the exact candidate and source revisions', () => {
   for (const identity of [
-    '01c09041aaed77db164a060e6a1aecc889ab861f',
-    'b7da7512ff507b86eab2e5953af4d28c7f27318e',
+    'cc137e0f47e324acbb8b864212a1dd4387c54d23',
+    '99033aa8185141b7b5a5346ea70533086af2eb24',
     '3a1e87c7c55c7b17e9fa7b3eb4deafd8b991e828',
     '59d0e0c49851b534bf528e46dd6ce74f46173c6c',
     '3f1a315f438af37a327eaf8b9b9c1dbc6f409394',

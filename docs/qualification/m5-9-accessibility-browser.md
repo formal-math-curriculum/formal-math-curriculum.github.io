@@ -6,8 +6,8 @@ candidate. This repository owns the executable website qualification harness.
 It does not change curriculum, editorial content or formal facts.
 
 The harness compares its revision with website commit
-`01c09041aaed77db164a060e6a1aecc889ab861f` (tree
-`b7da7512ff507b86eab2e5953af4d28c7f27318e`) and rejects every changed path
+`cc137e0f47e324acbb8b864212a1dd4387c54d23` (tree
+`99033aa8185141b7b5a5346ea70533086af2eb24`) and rejects every changed path
 except the paired accessibility/security harness, their procedures and contract
 tests, and CI wiring. It then runs fresh Chromium, Firefox, WebKit and branded
 Chrome evidence against the built static subject. Earlier M5.8 evidence is not
@@ -22,12 +22,12 @@ Use Ubuntu 24.04, Node 24.19.0 and pnpm 11.23.0. Check out content commit
 pnpm install --frozen-lockfile
 pnpm exec playwright-core install --with-deps chromium firefox webkit
 FMC_REQUIRE_BROWSER=1 \
-FMC_M59_CANDIDATE_REVISION=01c09041aaed77db164a060e6a1aecc889ab861f \
+FMC_M59_CANDIDATE_REVISION=cc137e0f47e324acbb8b864212a1dd4387c54d23 \
 FMC_M59_HARNESS_REVISION=$(git rev-parse HEAD) \
 FMC_RUNNER_IMAGE_LABEL=ubuntu-24.04 \
 pnpm build
 FMC_REQUIRE_BROWSER=1 \
-FMC_M59_CANDIDATE_REVISION=01c09041aaed77db164a060e6a1aecc889ab861f \
+FMC_M59_CANDIDATE_REVISION=cc137e0f47e324acbb8b864212a1dd4387c54d23 \
 FMC_M59_HARNESS_REVISION=$(git rev-parse HEAD) \
 FMC_RUNNER_IMAGE_LABEL=ubuntu-24.04 \
 node scripts/validate-m5-9-accessibility-browser.mjs

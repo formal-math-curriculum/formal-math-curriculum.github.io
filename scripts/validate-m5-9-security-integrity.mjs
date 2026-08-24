@@ -23,8 +23,8 @@ const manifestPath = resolve(evidenceDirectory, 'manifest.json');
 const auditEvidencePath = resolve(evidenceDirectory, 'audit.json');
 
 const candidate = Object.freeze({
-  siteRevision: '01c09041aaed77db164a060e6a1aecc889ab861f',
-  siteTree: 'b7da7512ff507b86eab2e5953af4d28c7f27318e',
+  siteRevision: 'cc137e0f47e324acbb8b864212a1dd4387c54d23',
+  siteTree: '99033aa8185141b7b5a5346ea70533086af2eb24',
   contentRevision: '3a1e87c7c55c7b17e9fa7b3eb4deafd8b991e828',
   contentTree: '59d0e0c49851b534bf528e46dd6ce74f46173c6c',
   leanRevision: '3f1a315f438af37a327eaf8b9b9c1dbc6f409394',
