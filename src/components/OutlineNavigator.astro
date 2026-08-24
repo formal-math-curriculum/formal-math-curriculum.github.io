@@ -66,6 +66,11 @@ const componentId = `fmc-outline-${value.currentContent.contentId.replace(/[^a-z
   >Open outline</button>
 
   <dialog id={`${componentId}-dialog`} class="fmc-outline-panel" data-fmc-outline-dialog open>
+    <span
+      class="fmc-outline-focus-sentinel"
+      tabindex="-1"
+      data-fmc-focus-sentinel="start"
+    ></span>
     <nav aria-labelledby={`${componentId}-title`}>
       <header class="fmc-outline-header">
         <div>
@@ -152,6 +157,11 @@ const componentId = `fmc-outline-${value.currentContent.contentId.replace(/[^a-z
         <p>Course navigation and all ordinary links remain available. Projection switching, search and filters require JavaScript.</p>
       </noscript>
     </nav>
+    <span
+      class="fmc-outline-focus-sentinel"
+      tabindex="-1"
+      data-fmc-focus-sentinel="end"
+    ></span>
   </dialog>
 </fmc-outline-navigator>
 
@@ -219,18 +229,28 @@ const componentId = `fmc-outline-${value.currentContent.contentId.replace(/[^a-z
       const dialog = this.querySelector('[data-fmc-outline-dialog]');
       const trigger = this.querySelector('[data-fmc-outline-open]');
       const close = this.querySelector('[data-fmc-outline-close]');
+      const startSentinel = this.querySelector('[data-fmc-focus-sentinel="start"]');
+      const endSentinel = this.querySelector('[data-fmc-focus-sentinel="end"]');
       this.narrowQuery = matchMedia('(max-width: 50rem)');
 
       const focusableDialogControls = () => [...dialog.querySelectorAll(
         'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'
-      )].filter((element) => element.getClientRects().length > 0);
+      )].filter((element) => !element.hasAttribute('data-fmc-focus-sentinel')
+        && element.tabIndex >= 0
+        && element.getClientRects().length > 0);
+      const setSentinels = (tabIndex) => {
+        startSentinel.tabIndex = tabIndex;
+        endSentinel.tabIndex = tabIndex;
+      };
 
       this.syncDrawerMode = () => {
         if (this.narrowQuery.matches) {
           if (dialog.open && dialog.dataset.fmcModal !== 'true') dialog.close();
+          if (!dialog.matches(':modal')) setSentinels(-1);
         } else {
           if (dialog.open && dialog.dataset.fmcModal === 'true') dialog.close();
           dialog.dataset.fmcModal = 'false';
+          setSentinels(-1);
           if (!dialog.open) dialog.show();
         }
       };
@@ -240,15 +260,26 @@ const componentId = `fmc-outline-${value.currentContent.contentId.replace(/[^a-z
       trigger.addEventListener('click', () => {
         this.lastTrigger = trigger;
         dialog.dataset.fmcModal = 'true';
+        setSentinels(0);
         if (!dialog.open) dialog.showModal();
         close.focus();
       });
       const closeDrawer = () => {
         if (this.narrowQuery.matches && dialog.open) dialog.close();
+        setSentinels(-1);
         this.lastTrigger?.focus();
       };
       close.addEventListener('click', closeDrawer);
-      dialog.addEventListener('cancel', () => queueMicrotask(() => this.lastTrigger?.focus()));
+      dialog.addEventListener('cancel', () => queueMicrotask(() => {
+        setSentinels(-1);
+        this.lastTrigger?.focus();
+      }));
+      startSentinel.addEventListener('focus', () => {
+        if (dialog.matches(':modal')) focusableDialogControls().at(-1)?.focus();
+      });
+      endSentinel.addEventListener('focus', () => {
+        if (dialog.matches(':modal')) focusableDialogControls()[0]?.focus();
+      });
       dialog.addEventListener('keydown', (event) => {
         if (event.key !== 'Tab' || dialog.dataset.fmcModal !== 'true' || !dialog.matches(':modal')) return;
         const controls = focusableDialogControls();

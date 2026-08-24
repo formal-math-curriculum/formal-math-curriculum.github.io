@@ -189,6 +189,9 @@ test('N17 narrow modal uses showModal, native cancel, explicit close and trigger
   assert.match(componentSource, /addEventListener\('cancel'/);
   assert.match(componentSource, /addEventListener\('keydown'/);
   assert.match(componentSource, /event\.key !== 'Tab'/);
+  assert.equal((componentSource.match(/class="fmc-outline-focus-sentinel"/g) ?? []).length, 2);
+  assert.match(componentSource, /startSentinel\.addEventListener\('focus'/);
+  assert.match(componentSource, /endSentinel\.addEventListener\('focus'/);
   assert.match(componentSource, /data-fmc-outline-close/);
   assert.match(componentSource, /lastTrigger\?\.focus\(\)/);
   assert.match(componentSource, /event\.target === dialog/);

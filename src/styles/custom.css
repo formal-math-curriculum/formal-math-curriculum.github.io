@@ -633,6 +633,14 @@ fmc-outline-navigator [hidden] {
   position: static;
 }
 
+.fmc-outline-focus-sentinel {
+  block-size: 1px;
+  clip-path: inset(50%);
+  inline-size: 1px;
+  overflow: hidden;
+  position: fixed;
+}
+
 .fmc-outline-panel::backdrop {
   background: color-mix(in srgb, var(--fmc-text) 58%, transparent);
 }
