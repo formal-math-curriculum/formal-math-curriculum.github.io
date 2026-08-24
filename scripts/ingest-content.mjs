@@ -22,7 +22,7 @@ export async function ingest({
   publicProvenancePath = resolve(root, 'public/_provenance/input.json')
 } = {}) {
   const lock = JSON.parse(await readFile(lockPath, 'utf8'));
-  if (lock.lock_version !== 'p5-m5.6-site-input-lock/v2') throw new Error('unsupported input lock version');
+  if (lock.lock_version !== 'p5-m5.8-site-input-lock/v1') throw new Error('unsupported input lock version');
 
   const content = lock.consumed?.content;
   if (!content || content.repository !== 'formal-math-curriculum/content') throw new Error('content authority mismatch');

@@ -1,5 +1,7 @@
 # Pages release, rollback, and recovery
 
+For the complete M5.8 versioning, durable-asset, retention, licensing, privacy, redirect, and deprecation contract, use [the M5.8 runbook](./m5-8-release-runbook.md). The shorter procedure below remains the Pages-specific operational checklist.
+
 ## Release gate
 
 1. Require green PR CI and review the exact site head, content revision, artifact

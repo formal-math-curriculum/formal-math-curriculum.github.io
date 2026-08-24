@@ -81,7 +81,7 @@ test('MAT-394 executes graded relevance, isolated scale and semantic reproducibi
     read('.github/workflows/deploy-pages.yml')
   ]);
   assert.equal(pkg.scripts['validate:m5-7-candidate'], 'node scripts/validate-m5-7-remediated-candidate.mjs');
-  assert.equal(pkg.scripts['build:astro'], 'node scripts/clean-build-output.mjs && astro build');
+  assert.equal(pkg.scripts['build:astro'], 'node scripts/clean-build-output.mjs && ASTRO_TELEMETRY_DISABLED=1 astro build');
   assert.match(pkg.scripts.build, /build:m5-7-scale[\s\S]*test:m5-7-remediation-baseline[\s\S]*build:search[\s\S]*test:m5-7-remediation-final[\s\S]*validate:m5-7-scale-artifact[\s\S]*validate:m5-7-candidate/u);
   for (let id = 1; id <= 20; id += 1) assert.match(relevance, new RegExp(`G${String(id).padStart(2, '0')}`));
   assert.match(browser, /Network\.emulateNetworkConditions/u);

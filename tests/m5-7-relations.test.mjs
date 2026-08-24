@@ -29,8 +29,8 @@ test('relation corpus preserves all eight systems and exact frozen authority', (
   assert.equal(corpus.readiness.prerequisiteEdges.length, 3);
   assert.equal(corpus.readiness.downstreamEdges.length, 3);
   assert.equal(corpus.formal.records.length, 1);
-  assert.equal(corpus.authority.contentRevision, '2da8fdb43074d00fea5fc6201d239e5f26a43250');
-  assert.equal(corpus.authority.contentTree, 'd51b0c7cfe44feec2b6eb176fd6ce1825a8ab458');
+  assert.equal(corpus.authority.contentRevision, '3a1e87c7c55c7b17e9fa7b3eb4deafd8b991e828');
+  assert.equal(corpus.authority.contentTree, '59d0e0c49851b534bf528e46dd6ce74f46173c6c');
   assert.equal(corpus.authority.mathlibRevision, 'db584cd6d46c92f209a44c0f1c829460d327499d');
   assert.match(corpus.fingerprint, /^sha256:[a-f0-9]{64}$/u);
   assert.equal(buildRelationCorpus(bundle).fingerprint, corpus.fingerprint);

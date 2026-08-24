@@ -1,0 +1,152 @@
+{
+  "schema_version": "p5-m5.8-release-operations-policy/v1",
+  "issue": "MAT-367",
+  "authority": {
+    "site_base_revision": "1533b529fc2d7513fc51cdd28182f2a5eca65279",
+    "content_revision": "3a1e87c7c55c7b17e9fa7b3eb4deafd8b991e828",
+    "content_tree": "59d0e0c49851b534bf528e46dd6ce74f46173c6c",
+    "lean_revision": "3f1a315f438af37a327eaf8b9b9c1dbc6f409394",
+    "mathlib_revision": "db584cd6d46c92f209a44c0f1c829460d327499d",
+    "pnpm_lock_sha256": "5bc6e61817b88aa16ddde81d8d4453ec340013a203a0efc582864b6d2816f21f"
+  },
+  "versioning": {
+    "scheme": "semver",
+    "package_version": "0.1.0",
+    "candidate_tag_pattern": "p5-web-v<major>.<minor>.<patch>-rc.<positive-integer>",
+    "release_tag_pattern": "p5-web-v<major>.<minor>.<patch>",
+    "candidate_example": "p5-web-v0.1.0-rc.1",
+    "release_example": "p5-web-v0.1.0",
+    "changelog_required_sections": [
+      "Added",
+      "Changed",
+      "Deprecated",
+      "Removed",
+      "Fixed",
+      "Security"
+    ],
+    "release_states": [
+      "policy_defined_no_candidate",
+      "draft_candidate",
+      "qualified_candidate",
+      "immutable_release",
+      "superseded"
+    ],
+    "current_state": "policy_defined_no_candidate",
+    "incompatible_schema_behavior": "fail_closed_new_candidate_required",
+    "deprecation_behavior": "preserve_immutable_tag_and_publish_a_superseding_release"
+  },
+  "release_tuple": {
+    "atomic": true,
+    "required_fields": [
+      "site_revision",
+      "content_revision",
+      "content_tree",
+      "lean_revision",
+      "mathlib_revision",
+      "input_lock_sha256",
+      "pnpm_lock_sha256",
+      "software_inventory_sha256",
+      "external_snapshot_policy_sha256",
+      "external_snapshot_schema_sha256",
+      "content_validator_sha256",
+      "site_operations_validator_sha256",
+      "node_version",
+      "pnpm_version",
+      "runner_image",
+      "artifact_manifest_sha256"
+    ],
+    "mixed_tuple_allowed": false,
+    "stale_candidate_reuse_allowed": false
+  },
+  "artifacts": {
+    "preview": {
+      "provider": "github_actions_artifact",
+      "retention_days": 7,
+      "durable_release_authority": false,
+      "purpose": "diagnostic_review_only"
+    },
+    "durable_release": {
+      "provider": "github_release",
+      "draft_before_publish": true,
+      "immutable_after_publish": true,
+      "asset_digest": "sha256",
+      "attestation_required": true,
+      "required_assets": [
+        "site-dist.tar.zst",
+        "release-tuple.json",
+        "software-dependencies.json",
+        "THIRD_PARTY_NOTICES.md",
+        "THIRD_PARTY_LICENSES.txt",
+        "SHA256SUMS"
+      ]
+    },
+    "actions_logs_max_days": 90,
+    "durability_rule": "actions_artifacts_and_logs_are_not_release_or_rollback_authority"
+  },
+  "reproducibility": {
+    "network_fetch_during_build": false,
+    "frozen_lockfile": true,
+    "exact_action_commits": true,
+    "exact_content_checkout": true,
+    "runtime_dependencies": "none_static_output",
+    "runner_image": "ubuntu-24.04",
+    "node_version": "24.19.0",
+    "pnpm_version": "11.23.0"
+  },
+  "rollback": {
+    "strategy": "reviewed_pr_rebuild_and_manual_dispatch",
+    "complete_tuple_only": true,
+    "force_move_main_or_release_tag": false,
+    "reuse_actions_preview_artifact": false,
+    "record_new_decision": true,
+    "recovery_requires_same_qualification_gates": true
+  },
+  "redirects": {
+    "maximum_raw_edges": 8,
+    "maximum_terminal_hops": 1,
+    "cycles_allowed": false,
+    "ambiguous_target_behavior": "serve_recovery_page_with_canonical_options",
+    "deleted_identifier_behavior": "serve_deprecation_page_with_last_qualified_version"
+  },
+  "privacy": {
+    "application_analytics": "none",
+    "optional_tracking": "none",
+    "application_cookies": "none",
+    "accounts": "none",
+    "consent_banner_required": false,
+    "local_storage_keys": [
+      "formal-math-curriculum:preferences:v1"
+    ],
+    "provider_operational_logs_are_application_analytics": false,
+    "astro_telemetry_environment": {
+      "ASTRO_TELEMETRY_DISABLED": "1"
+    }
+  },
+  "licensing": {
+    "inventory_schema": "p5-m5.8-software-license-inventory/v1",
+    "inventory_subject": "installed_linux_x64_glibc_build_graph",
+    "expected_lock_packages": 551,
+    "expected_lock_snapshots": 552,
+    "expected_installed_unique_name_versions": 440,
+    "metadata_only_texts_block_public_release": true,
+    "allowed_expressions": [
+      "Apache-2.0",
+      "BlueOak-1.0.0",
+      "BSD-2-Clause",
+      "BSD-3-Clause",
+      "CC0-1.0",
+      "ISC",
+      "LGPL-3.0-or-later",
+      "MIT",
+      "MPL-2.0",
+      "Python-2.0"
+    ],
+    "content_external_snapshots_must_be_public_projection_eligible": true
+  },
+  "deployment": {
+    "authorized": false,
+    "workflow_event": "workflow_dispatch",
+    "authorization_rule": "a_separate_qualified_release_record_must_explicitly_authorize_deployment",
+    "reason": "MAT-367 defines policy and evidence contracts; it does not create or authorize a release candidate"
+  }
+}

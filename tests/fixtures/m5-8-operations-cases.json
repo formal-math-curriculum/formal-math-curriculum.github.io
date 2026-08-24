@@ -1,0 +1,75 @@
+{
+  "schema_version": "p5-m5.8-operations-fixtures/v1",
+  "cases": [
+    {
+      "id": "valid-current-policy",
+      "expect": "pass"
+    },
+    {
+      "id": "negative-deployment-authorized",
+      "expect": "fail",
+      "mutation": { "path": "deployment.authorized", "value": true },
+      "message": "must not authorize deployment"
+    },
+    {
+      "id": "negative-analytics-enabled",
+      "expect": "fail",
+      "mutation": { "path": "privacy.application_analytics", "value": "plausible" },
+      "message": "application analytics"
+    },
+    {
+      "id": "negative-telemetry-enabled",
+      "expect": "fail",
+      "mutation": { "path": "privacy.astro_telemetry_environment.ASTRO_TELEMETRY_DISABLED", "value": "0" },
+      "message": "Astro telemetry"
+    },
+    {
+      "id": "stale-preview-retention",
+      "expect": "fail",
+      "mutation": { "path": "artifacts.preview.retention_days", "value": 91 },
+      "message": "preview retention"
+    },
+    {
+      "id": "negative-actions-artifact-durability",
+      "expect": "fail",
+      "mutation": { "path": "artifacts.preview.durable_release_authority", "value": true },
+      "message": "preview artifact"
+    },
+    {
+      "id": "negative-invalid-candidate-tag",
+      "expect": "fail",
+      "mutation": { "path": "versioning.candidate_example", "value": "latest" },
+      "message": "candidate tag"
+    },
+    {
+      "id": "incompatible-policy-schema",
+      "expect": "fail",
+      "mutation": { "path": "schema_version", "value": "p5-m5.8-release-operations-policy/v2" },
+      "message": "schema is incompatible"
+    },
+    {
+      "id": "stale-license-count",
+      "expect": "fail",
+      "mutation": { "path": "licensing.expected_installed_unique_name_versions", "value": 439 },
+      "message": "installed package count"
+    },
+    {
+      "id": "negative-incomplete-release-tuple",
+      "expect": "fail",
+      "mutation": { "path": "release_tuple.required_fields", "operation": "pop" },
+      "message": "release tuple"
+    },
+    {
+      "id": "negative-mixed-rollback",
+      "expect": "fail",
+      "mutation": { "path": "rollback.complete_tuple_only", "value": false },
+      "message": "complete tuple"
+    },
+    {
+      "id": "negative-redirect-bound",
+      "expect": "fail",
+      "mutation": { "path": "redirects.maximum_raw_edges", "value": 9 },
+      "message": "redirect"
+    }
+  ]
+}
