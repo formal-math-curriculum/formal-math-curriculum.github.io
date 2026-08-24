@@ -80,5 +80,5 @@ test('M5.10 release selector and record cannot escape validation authority', asy
 
 test('M5.10 release preparation requires an exact runtime source revision', async () => {
   const root = await fixture(true);
-  await assert.rejects(() => prepareRelease({ root }), /exact FMC_SOURCE_REVISION/u);
+  await assert.rejects(() => prepareRelease({ root, sourceRevision: '' }), /exact FMC_SOURCE_REVISION/u);
 });
