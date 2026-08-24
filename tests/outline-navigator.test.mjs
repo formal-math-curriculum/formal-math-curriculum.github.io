@@ -166,6 +166,7 @@ test('N14 expand/collapse targets only visible groups in the active filtered pro
     structuralFilters: { 'msc-section': ['20'] }
   });
   assert.deepEqual(getEligibleExpansionIds(result.nodes), ['msc:20']);
+  assert.match(componentSource, /result\.context\.query[\s\S]*expandedReferenceIds = getEligibleExpansionIds\(result\.nodes\)/);
   assert.doesNotMatch(componentSource, /document\.querySelectorAll/);
 });
 
