@@ -1,3 +1,16 @@
+export const MAX_PAGEFIND_CANDIDATES = 250;
+export const MAX_RENDERED_SEARCH_RESULTS = 100;
+export const CONTENT_KIND_RANKING_PRIOR = Object.freeze({
+  editorial_unit: 5,
+  theorem: 4,
+  exercise: 3,
+  definition: 2,
+  unit: 1,
+  learning_path: 0.5,
+  module: 0,
+  example: 0
+});
+
 export function normalizeSearchToken(value) {
   return String(value ?? '')
     .normalize('NFKC')
@@ -25,7 +38,9 @@ export function sortSearchRows(rows, query) {
     const rightExact = exactValues(right).includes(normalized);
     if (leftExact !== rightExact) return leftExact ? -1 : 1;
     if (leftExact && rightExact) return String(left.url).localeCompare(String(right.url), 'en');
-    const score = Number(right.score ?? 0) - Number(left.score ?? 0);
+    const leftPrior = CONTENT_KIND_RANKING_PRIOR[left?.meta?.['content-kind']] ?? 0;
+    const rightPrior = CONTENT_KIND_RANKING_PRIOR[right?.meta?.['content-kind']] ?? 0;
+    const score = (Number(right.score ?? 0) + rightPrior) - (Number(left.score ?? 0) + leftPrior);
     return score || String(left.url).localeCompare(String(right.url), 'en');
   });
 }

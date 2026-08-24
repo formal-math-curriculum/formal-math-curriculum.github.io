@@ -10,15 +10,17 @@ interface Props {
   filters: SearchFilter[];
   ranking: Record<string, unknown>;
   fingerprint: string;
+  pagefindPath?: string;
 }
 
-const { documentCount, filters, ranking, fingerprint } = Astro.props;
+const { documentCount, filters, ranking, fingerprint, pagefindPath = '/pagefind/pagefind.js' } = Astro.props;
 ---
 
 <fmc-global-search
   data-fmc-document-count={documentCount}
   data-fmc-ranking={JSON.stringify(ranking)}
   data-fmc-index-fingerprint={fingerprint}
+  data-fmc-pagefind-path={pagefindPath}
 >
   <details class="fmc-global-search">
     <summary data-fmc-control aria-keyshortcuts="/">Search course</summary>
@@ -66,7 +68,7 @@ const { documentCount, filters, ranking, fingerprint } = Astro.props;
 </fmc-global-search>
 
 <script>
-  import { buildPagefindFilters, filterSearchRows, normalizeSearchToken, sortSearchRows } from '../lib/m5-7-search-client.mjs';
+  import { buildPagefindFilters, filterSearchRows, MAX_PAGEFIND_CANDIDATES, MAX_RENDERED_SEARCH_RESULTS, normalizeSearchToken, sortSearchRows } from '../lib/m5-7-search-client.mjs';
 
   interface PagefindResult {
     id: string;
@@ -129,7 +131,7 @@ const { documentCount, filters, ranking, fingerprint } = Astro.props;
 
       const loadPagefind = () => {
         if (!this.pagefind) {
-          const pagefindUrl = '/pagefind/pagefind.js';
+          const pagefindUrl = this.dataset.fmcPagefindPath ?? '/pagefind/pagefind.js';
           this.pagefind = import(/* @vite-ignore */ pagefindUrl).then(async (module) => {
             const pagefind = module as unknown as PagefindModule;
             const configured = JSON.parse(this.dataset.fmcRanking ?? '{}') as Record<string, unknown>;
@@ -155,15 +157,19 @@ const { documentCount, filters, ranking, fingerprint } = Astro.props;
         try {
           const pagefind = await loadPagefind();
           const response = await pagefind.search(query || null, { filters });
-          const rows = await Promise.all(response.results.map(async (result) => ({
+          const candidateResults = response.results.slice(0, MAX_PAGEFIND_CANDIDATES);
+          const rows = await Promise.all(candidateResults.map(async (result) => ({
             ...(await result.data()),
             score: result.score
           })));
           if (sequence !== this.requestSequence) return;
           const sorted = sortSearchRows(filterSearchRows(rows, query), query);
-          renderRows(sorted);
-          empty.hidden = sorted.length !== 0;
-          status.textContent = `${sorted.length} matching governed learner ${sorted.length === 1 ? 'page' : 'pages'}.`;
+          const rendered = sorted.slice(0, MAX_RENDERED_SEARCH_RESULTS);
+          renderRows(rendered);
+          empty.hidden = rendered.length !== 0;
+          status.textContent = sorted.length > rendered.length
+            ? `Showing ${rendered.length} of at least ${sorted.length} matching governed learner pages.`
+            : `${rendered.length} matching governed learner ${rendered.length === 1 ? 'page' : 'pages'}.`;
         } catch (error) {
           if (sequence !== this.requestSequence) return;
           results.replaceChildren();

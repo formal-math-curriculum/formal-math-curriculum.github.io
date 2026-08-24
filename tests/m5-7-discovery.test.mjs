@@ -8,6 +8,7 @@ import {
   searchDiscoveryDocuments
 } from '../src/lib/m5-7-discovery.mjs';
 import { buildPagefindFilters, filterSearchRows, normalizeSearchToken, sortSearchRows } from '../src/lib/m5-7-search-client.mjs';
+import { computeRelevanceMetrics, FROZEN_RELEVANCE_JUDGMENTS } from '../src/lib/m5-7-relevance.mjs';
 import { loadSiteBundle } from '../src/lib/m5-6-publication.mjs';
 
 const bundle = await loadSiteBundle();
@@ -83,6 +84,23 @@ test('client ordering privileges exact identities and then uses stable score/URL
   assert.deepEqual(filterSearchRows(rows, 'math.NT'), []);
 });
 
+test('query-independent content-kind prior repairs graded ranking and exposes complete metrics', () => {
+  const rows = [
+    { url: '/content/p5m56c0010/negative-times-negative-example/', score: 12.75, meta: { 'content-id': 'cnt:p5m56:000010', 'content-kind': 'example' } },
+    { url: '/content/p5m56c0009/sign-rules-for-products/', score: 15.07, meta: { 'content-id': 'cnt:p5m56:000009', 'content-kind': 'editorial_unit' } },
+    { url: '/content/p5m56c0001/integers/', score: 11, meta: { 'content-id': 'cnt:p5m56:000001', 'content-kind': 'learning_path' } }
+  ];
+  const ordered = sortSearchRows(rows, 'negative multiplication').map(({ meta }) => meta['content-id']);
+  assert.deepEqual(ordered, ['cnt:p5m56:000009', 'cnt:p5m56:000010', 'cnt:p5m56:000001']);
+  assert.deepEqual(computeRelevanceMetrics(ordered, { 'cnt:p5m56:000009': 3, 'cnt:p5m56:000010': 2 }), {
+    mrr: 1,
+    recallAt5: 1,
+    ndcgAt5: 1
+  });
+  assert.deepEqual(computeRelevanceMetrics([], {}), { mrr: null, recallAt5: null, ndcgAt5: null });
+  assert.deepEqual(FROZEN_RELEVANCE_JUDGMENTS.map(({ id }) => id), Array.from({ length: 20 }, (_, index) => `G${String(index + 1).padStart(2, '0')}`));
+});
+
 test('client filters always retain the learner-content boundary', () => {
   const selects = [
     { dataset: { fmcGlobalFilter: 'content-kind' }, value: 'exercise' },
@@ -105,6 +123,8 @@ test('global search source uses the static Pagefind API and safe deterministic r
   assert.match(component, /pagefind\.search\(query \|\| null, \{ filters \}\)/u);
   assert.match(component, /buildPagefindFilters/u);
   assert.match(component, /sortSearchRows/u);
+  assert.match(component, /MAX_PAGEFIND_CANDIDATES/u);
+  assert.match(component, /MAX_RENDERED_SEARCH_RESULTS/u);
   assert.match(component, /replaceChildren/u);
   assert.match(component, /textContent/u);
   assert.doesNotMatch(component, /innerHTML|localStorage|sessionStorage/u);

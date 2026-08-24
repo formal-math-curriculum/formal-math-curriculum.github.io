@@ -1,0 +1,107 @@
+---
+import GlobalSearch from '../../components/GlobalSearch.astro';
+import PreferenceProvider from '../../components/PreferenceProvider.astro';
+import { loadSiteBundle } from '../../lib/m5-6-publication.mjs';
+import { buildDiscoveryModel } from '../../lib/m5-7-discovery.mjs';
+import '../../styles/custom.css';
+
+const discovery = buildDiscoveryModel(await loadSiteBundle());
+---
+
+<!doctype html>
+<html lang="en" data-fmc-m5-7-scale-validation="P5-M5.7-SCALE-v1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>M5.7 isolated scale qualification</title>
+    <PreferenceProvider />
+  </head>
+  <body>
+    <main id="main-content" class="fmc-course-main">
+      <h1>M5.7 isolated scale qualification</h1>
+      <p>This noindex route exercises validation-only T2 data and establishes no public coverage.</p>
+      <section aria-labelledby="scale-search-heading">
+        <h2 id="scale-search-heading">2,000-document static search</h2>
+        <GlobalSearch
+          documentCount={2000}
+          filters={discovery.filters}
+          ranking={discovery.ranking}
+          fingerprint="P5-M5.7-SCALE-v1"
+          pagefindPath="/__fmc_scale_pagefind__/pagefind.js"
+        />
+      </section>
+      <section aria-labelledby="scale-relations-heading">
+        <h2 id="scale-relations-heading">2,200-placement relation workload</h2>
+        <fmc-scale-relations>
+          <label>Filter validation placements <input type="search" data-fmc-scale-relation-query /></label>
+          <label>
+            Projection
+            <select data-fmc-scale-relation-projection>
+              <option value="">All projections</option>
+              <option value="course">Course</option>
+              <option value="ontomathpro">OntoMathPRO</option>
+              <option value="msc2020">MSC 2020</option>
+              <option value="arxiv">arXiv</option>
+              <option value="lean-mathlib">Lean / mathlib</option>
+            </select>
+          </label>
+          <p role="status" data-fmc-scale-relation-status>Loading isolated relation data…</p>
+          <ul data-fmc-scale-relation-results></ul>
+          <noscript><p>The scale harness requires JavaScript; ordinary governed Course links remain on learner pages.</p></noscript>
+        </fmc-scale-relations>
+      </section>
+    </main>
+  </body>
+</html>
+
+<script>
+  class FMCScaleRelations extends HTMLElement {
+    controller?: AbortController;
+    data?: { documents: Array<{ id: string; label: string; route: string }>; placements: Array<{ id: string; documentId: string; projectionId: string }> };
+
+    async connectedCallback() {
+      this.controller = new AbortController();
+      const signal = this.controller.signal;
+      const query = this.querySelector<HTMLInputElement>('[data-fmc-scale-relation-query]');
+      const projection = this.querySelector<HTMLSelectElement>('[data-fmc-scale-relation-projection]');
+      const status = this.querySelector<HTMLElement>('[data-fmc-scale-relation-status]');
+      const results = this.querySelector<HTMLUListElement>('[data-fmc-scale-relation-results]');
+      if (!query || !projection || !status || !results) return;
+      const response = await fetch('/__fmc_scale_data__/relations.json', { cache: 'no-store', signal });
+      if (!response.ok) throw new Error(`scale relation data failed: ${response.status}`);
+      const data = await response.json() as NonNullable<FMCScaleRelations['data']>;
+      this.data = data;
+      const documentsById = new Map(data.documents.map((document) => [document.id, document]));
+      const render = () => {
+        const started = performance.now();
+        const term = query.value.trim().toLocaleLowerCase('en');
+        const matches = data.placements.filter((placement) => {
+          const relatedDocument = documentsById.get(placement.documentId);
+          return (!projection.value || placement.projectionId === projection.value)
+            && (!term || relatedDocument?.label.toLocaleLowerCase('en').includes(term) || placement.id.includes(term));
+        });
+        const visible = matches.slice(0, 250);
+        results.replaceChildren(...visible.map((placement) => {
+          const relatedDocument = documentsById.get(placement.documentId);
+          const item = document.createElement('li');
+          item.textContent = `${relatedDocument?.label ?? placement.documentId} — ${placement.projectionId} — ${placement.id}`;
+          return item;
+        }));
+        const elapsed = performance.now() - started;
+        this.dataset.fmcScaleElapsed = String(elapsed);
+        status.textContent = `Showing ${visible.length} of ${matches.length} validation placements.`;
+        this.dispatchEvent(new CustomEvent('fmc:scale-relations-rendered'));
+      };
+      query.addEventListener('input', render, { signal });
+      projection.addEventListener('change', render, { signal });
+      render();
+      this.dataset.fmcScaleReady = 'true';
+    }
+
+    disconnectedCallback() {
+      this.controller?.abort();
+    }
+  }
+  if (!customElements.get('fmc-scale-relations')) customElements.define('fmc-scale-relations', FMCScaleRelations);
+</script>

@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { normalizeSearchToken } from './m5-7-search-client.mjs';
+import { FROZEN_RELEVANCE_JUDGMENTS } from './m5-7-relevance.mjs';
 
 export const DISCOVERY_SCHEMA = 'p5-m5.7-search-discovery/v1';
 export const DISCOVERY_FREEZE_DOCUMENT = 'd879fd37-8602-4cf2-b3a8-aa19d0a6e588';
@@ -30,28 +31,11 @@ const filterDefinitions = [
   ['translation-state', 'Translation state']
 ];
 
-export const GLOBAL_JUDGMENTS = Object.freeze([
-  ['G01', 'Natural-number operation laws', ['cnt:p5m56:000004']],
-  ['G02', 'natural number laws', ['cnt:p5m56:000004']],
-  ['G03', 'cnt:p5m56:000004', ['cnt:p5m56:000004']],
-  ['G04', 'CAND-P1-000004', ['cnt:p5m56:000004', 'cnt:p5m56:000005', 'cnt:p5m56:000006']],
-  ['G05', 'Nat.instDistrib', ['cnt:p5m56:000004']],
-  ['G06', 'FART-P2-000010', ['cnt:p5m56:000006']],
-  ['G07', 'FLOC-P2-000002', ['cnt:p5m56:000014']],
-  ['G08', 'FormalMath.Algebra.factoredProduct_eq_zero_iff', ['cnt:p5m56:000014']],
-  ['G09', 'Mathlib.Algebra.Ring.Nat', ['cnt:p5m56:000004']],
-  ['G10', 'distribute cancel', ['cnt:p5m56:000006']],
-  ['G11', 'zero product', ['cnt:p5m56:000012', 'cnt:p5m56:000014']],
-  ['G12', 'negative multiplication', ['cnt:p5m56:000009', 'cnt:p5m56:000010']],
-  ['G13', '7 * (4 + 3)', ['cnt:p5m56:000005', 'cnt:p5m56:000006']],
-  ['G14', 'roots two five', ['cnt:p5m56:000015']],
-  ['G15', '11A05', ['validation:m57:000001']],
-  ['G16', 'math.NT', ['validation:m57:000002']],
-  ['G17', 'urn:fmc:validation:m5-7:onto:parent-a', ['validation:m57:000003']],
-  ['G18', 'Portuguese distributive law', []],
-  ['G19', 'zzzz-no-governed-match', []],
-  ['G20', '   ', []]
-].map(([id, query, required]) => Object.freeze({ id, query, required: Object.freeze(required) })));
+export const GLOBAL_JUDGMENTS = Object.freeze(FROZEN_RELEVANCE_JUDGMENTS.map(({ id, query, grades }) => Object.freeze({
+  id,
+  query,
+  required: Object.freeze(Object.entries(grades).filter(([, grade]) => grade >= 2).map(([contentId]) => contentId))
+})));
 
 function stable(value) {
   if (Array.isArray(value)) return value.map(stable);
