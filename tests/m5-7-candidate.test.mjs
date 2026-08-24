@@ -81,7 +81,7 @@ test('MAT-394 executes graded relevance, isolated scale and semantic reproducibi
     read('.github/workflows/deploy-pages.yml')
   ]);
   assert.equal(pkg.scripts['validate:m5-7-candidate'], 'node scripts/validate-m5-7-remediated-candidate.mjs');
-  assert.equal(pkg.scripts['build:astro'], 'node scripts/clean-build-output.mjs && astro build');
+  assert.equal(pkg.scripts['build:astro'], 'node scripts/clean-build-output.mjs && ASTRO_TELEMETRY_DISABLED=1 astro build');
   assert.match(pkg.scripts.build, /build:m5-7-scale[\s\S]*test:m5-7-remediation-baseline[\s\S]*build:search[\s\S]*test:m5-7-remediation-final[\s\S]*validate:m5-7-scale-artifact[\s\S]*validate:m5-7-candidate/u);
   for (let id = 1; id <= 20; id += 1) assert.match(relevance, new RegExp(`G${String(id).padStart(2, '0')}`));
   assert.match(browser, /Network\.emulateNetworkConditions/u);
@@ -91,6 +91,9 @@ test('MAT-394 executes graded relevance, isolated scale and semantic reproducibi
   assert.match(scale, /8 \* 1024 \* 1024/u);
   assert.match(gate, /totalAcceptanceRows/u);
   assert.match(gate, /clean-build governed search semantics changed/u);
+  assert.match(gate, /successorMode = inputLock\.lock_version === 'p5-m5\.8-site-input-lock\/v1'/u);
+  assert.match(gate, /M5\.8 successor changed the governed M5\.6 publication bytes/u);
+  assert.match(gate, /M5\.8 successor relation regeneration is nondeterministic/u);
   assert.match(documentation, /P5-M5\.7-PAGEFIND-REPRODUCIBILITY-v2/u);
   assert.match(documentation, /does not authorize public deployment/i);
   assert.match(deploy, /fetch-depth: 0/u);

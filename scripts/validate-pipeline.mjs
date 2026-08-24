@@ -34,7 +34,7 @@ export function validatePipeline({ ciSource, deploySource, lock }) {
   const deploy = parse(deploySource);
   const revision = lock.consumed?.content?.revision;
 
-  invariant(lock.lock_version === 'p5-m5.6-site-input-lock/v2', 'input lock version drift');
+  invariant(lock.lock_version === 'p5-m5.8-site-input-lock/v1', 'input lock version drift');
   invariant(/^[0-9a-f]{40}$/.test(revision ?? ''), 'content lock must be an immutable SHA');
 
   const ciEvents = Object.keys(ci.on ?? {}).sort();
@@ -42,12 +42,14 @@ export function validatePipeline({ ciSource, deploySource, lock }) {
   invariant(ci.on.push?.branches?.includes('main'), 'CI must validate main pushes');
   invariant(sameObject(ci.permissions, { contents: 'read' }), 'unsafe CI authority');
   invariant(ci.concurrency?.['cancel-in-progress'] === true, 'stale CI must be cancelled');
+  invariant(ci.env?.ASTRO_TELEMETRY_DISABLED === '1', 'CI must disable Astro telemetry');
 
   const deployEvents = Object.keys(deploy.on ?? {});
   invariant(JSON.stringify(deployEvents) === JSON.stringify(['workflow_dispatch']), 'production deployment must retain a sole manual gate');
   invariant(sameObject(deploy.permissions, { contents: 'read' }), 'deploy workflow global authority drift');
   invariant(deploy.concurrency?.group === 'pages-production', 'production concurrency group drift');
   invariant(deploy.concurrency?.['cancel-in-progress'] === false, 'production deploy must not cancel in-flight work');
+  invariant(deploy.env?.ASTRO_TELEMETRY_DISABLED === '1', 'deploy must disable Astro telemetry');
   invariant(deploy.jobs?.build && !deploy.jobs.build.permissions, 'build job must inherit read-only contents authority');
   invariant(sameObject(deploy.jobs?.deploy?.permissions, { pages: 'write', 'id-token': 'write' }), 'Pages least privilege missing');
   invariant(deploy.jobs?.deploy?.environment?.name === 'github-pages', 'Pages environment missing');
@@ -64,6 +66,12 @@ export function validatePipeline({ ciSource, deploySource, lock }) {
     invariant(checkout.with.ref === revision, 'workflow/content lock drift');
     invariant(checkout.with.path === '.inputs/content', 'content checkout path drift');
     invariant(checkout.with['persist-credentials'] === false, 'content checkout must not persist credentials');
+    const workflowSteps = steps(workflow);
+    const licenseGate = workflowSteps.findIndex(step => step.run === 'pnpm licenses:check');
+    const operationsGate = workflowSteps.findIndex(step => step.run === 'pnpm validate:m5-8-operations');
+    const buildIndex = workflowSteps.findIndex(step => step.run === 'pnpm build');
+    invariant(licenseGate >= 0 && operationsGate >= 0, 'M5.8 release qualification steps missing');
+    invariant(licenseGate < buildIndex && operationsGate < buildIndex, 'M5.8 release qualification must precede build');
   }
 
   const preview = actionSteps(ci).find(step => step.uses.startsWith('actions/upload-artifact@'));

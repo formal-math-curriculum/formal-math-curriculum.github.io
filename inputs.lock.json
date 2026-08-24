@@ -1,11 +1,11 @@
 {
-  "lock_version": "p5-m5.6-site-input-lock/v2",
-  "site_base_revision": "56d898b40823db17d92164cfdc93a0fb9d7a175b",
+  "lock_version": "p5-m5.8-site-input-lock/v1",
+  "site_base_revision": "1533b529fc2d7513fc51cdd28182f2a5eca65279",
   "consumed": {
     "content": {
       "repository": "formal-math-curriculum/content",
-      "revision": "2da8fdb43074d00fea5fc6201d239e5f26a43250",
-      "tree": "d51b0c7cfe44feec2b6eb176fd6ce1825a8ab458",
+      "revision": "3a1e87c7c55c7b17e9fa7b3eb4deafd8b991e828",
+      "tree": "59d0e0c49851b534bf528e46dd6ce74f46173c6c",
       "source_identity": "P5-M5.6-CONTENT-v1",
       "selector_sha256": "280ad055d9235077b398d26dd6abb40c9d13ae089ad6d5a8fd0b11baed805aaf",
       "formal_dependency_sha256": "f8c79c8d196952e4827c72d394039862935689b2e100f821697c41bad8cb1438",
@@ -57,7 +57,19 @@
         "generated/m5-6/provenance.json",
         "generated/m5-6/publication.json",
         "generated/m5-6/search-index.json"
-      ]
+      ],
+      "m5_8_external_snapshot_contract": {
+        "policy_path": "source/m5-8/external-snapshot-policy.json",
+        "policy_sha256": "bd864c4d98cde7f2e0ad16de29d230d5f4e6a87a3a6d7904547e8a7b12df5d01",
+        "schema_path": "schemas/m5-8-external-snapshot-manifest.schema.json",
+        "schema_sha256": "a1b66ea6843362fc58f256de9efaa49f41652192af1bb2729ba851c120fb34ae",
+        "validator_path": "scripts/validate-m5-8-snapshots.mjs",
+        "validator_sha256": "5550d69ba94fda2299fd2235f31ffa81d7ff177fbdbdbf2fa0ae414870867cb2",
+        "fixture_path": "fixtures/m5-8/snapshot-cases.json",
+        "fixture_sha256": "493f653bf41e91e502a8016b01fd4613e6ae1a38b725d7a7dfe6b01193182a92",
+        "public_projection_eligible": false,
+        "runtime_fetch_allowed": false
+      }
     }
   },
   "recorded_not_consumed": {

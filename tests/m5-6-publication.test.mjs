@@ -24,7 +24,7 @@ const model = buildCourseModel(bundle);
 test('exact merged governed bundle is accepted without synthetic or locale leakage', () => {
   const result = validateSiteBundle(bundle);
   assert.equal(result.ok, true, result.errors.join('\n'));
-  assert.equal(CONTENT_REVISION, '2da8fdb43074d00fea5fc6201d239e5f26a43250');
+  assert.equal(CONTENT_REVISION, '3a1e87c7c55c7b17e9fa7b3eb4deafd8b991e828');
   assert.equal(bundle.manifest.freeze_selector_sha256, SELECTOR_SHA256);
   assert.equal(bundle.publication.generated_dependency.canonical_sha256, FORMAL_DEPENDENCY_SHA256);
   assert.equal(bundle.publication.content.length, 15);
@@ -223,7 +223,8 @@ test('governed successor content can evolve cardinalities without changing a sit
 test('versioned MAT-361 candidate record retains the qualification and deployment boundary', async () => {
   const record = JSON.parse(await readFile('validation/m5-6-implementation-candidate.json', 'utf8'));
   assert.equal(record.schemaVersion, 'p5-m5.6-implementation-candidate/v1');
-  assert.equal(record.content.revision, CONTENT_REVISION);
+  assert.equal(record.content.revision, '2da8fdb43074d00fea5fc6201d239e5f26a43250');
+  assert.notEqual(record.content.revision, CONTENT_REVISION, 'historical MAT-361 authority must not be rewritten to the current pin');
   assert.equal(record.expectedArtifact.learnerContentPages, 15);
   assert.equal(record.expectedArtifact.derivedFormalRecords, 20);
   assert.equal(record.expectedArtifact.projectionLandingPages, 5);

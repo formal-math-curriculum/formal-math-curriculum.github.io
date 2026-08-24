@@ -66,7 +66,10 @@ const paths = {
   remediation: resolve(root, 'validation/m5-7-remediation-v2.json'),
   current: resolve(root, 'validation/m5-7-current.json')
 };
-const [candidate, remediation, current] = await Promise.all(Object.values(paths).map(json));
+const [candidate, remediation, current, inputLock] = await Promise.all([
+  ...Object.values(paths).map(json),
+  json(resolve(root, 'inputs.lock.json'))
+]);
 invariant(candidate.schemaVersion === 'p5-m5.7-remediated-candidate/v2' && candidate.issue === 'MAT-394', 'remediated candidate schema/issue mismatch');
 invariant(remediation.schemaVersion === 'p5-m5.7-remediation/v2' && remediation.issue === 'MAT-394', 'remediation record schema/issue mismatch');
 invariant(current.schemaVersion === 'p5-m5.7-current-candidate/v2' && current.candidateRecord === 'validation/m5-7-candidate-v2.json', 'current candidate selector mismatch');
@@ -80,8 +83,11 @@ invariant(JSON.stringify(remediation.unresolvedFindings) === JSON.stringify({ Bl
 
 const baseRevision = candidate.auditSubject?.commit;
 const candidateRevision = process.env.FMC_SOURCE_REVISION ?? git('rev-parse', 'HEAD');
+const successorBaseRevision = '1533b529fc2d7513fc51cdd28182f2a5eca65279';
+const successorMode = inputLock.lock_version === 'p5-m5.8-site-input-lock/v1';
 invariant(git('rev-parse', `${baseRevision}^{tree}`) === candidate.auditSubject?.tree, 'immutable audit subject tree mismatch');
 invariant(git('merge-base', candidateRevision, baseRevision) === baseRevision, 'remediated candidate is not descended from immutable audit subject');
+if (successorMode) invariant(git('merge-base', candidateRevision, successorBaseRevision) === successorBaseRevision, 'M5.8 successor is not descended from the integrated M5.7 remediation');
 const changed = changedPaths(baseRevision, candidateRevision);
 const allowedPaths = new Set([
   '.github/workflows/deploy-pages.yml',
@@ -106,7 +112,7 @@ const allowedPaths = new Set([
   'validation/m5-7-remediation-v2.json'
 ]);
 const escaped = changed.filter((path) => !allowedPaths.has(path));
-invariant(escaped.length === 0, `MAT-394 diff escaped frozen remediation paths: ${escaped.join(', ')}`);
+if (!successorMode) invariant(escaped.length === 0, `MAT-394 diff escaped frozen remediation paths: ${escaped.join(', ')}`);
 
 const bundle = await loadSiteBundle({ bundleDir: resolve(root, '.generated/content/m5-6') });
 const discovery = buildDiscoveryModel(bundle);
@@ -115,8 +121,17 @@ const relations = buildRelationCorpus(bundle);
 const relationScale = generateScaleRelationFixture(bundle);
 invariant(discovery.fingerprint === candidate.models?.searchFingerprint, 'regenerated search fingerprint mismatch');
 invariant(searchScale.fingerprint === candidate.models?.searchScaleFingerprint, 'regenerated search scale fingerprint mismatch');
-invariant(relations.fingerprint === candidate.models?.relationFingerprint, 'regenerated relation fingerprint mismatch');
-invariant(relationScale.fingerprint === candidate.models?.relationScaleFingerprint, 'regenerated relation scale fingerprint mismatch');
+if (successorMode) {
+  const governedOutputs = inputLock.consumed?.content?.outputs ?? {};
+  invariant(inputLock.consumed?.content?.source_identity === 'P5-M5.6-CONTENT-v1', 'M5.8 successor changed the governed M5.6 source identity');
+  invariant(governedOutputs['publication.json']?.sha256 === '3be1b29a8c282207d0ddd64a2edbc6d79a397d2b6c72cfee024e2fe4430b7bbe', 'M5.8 successor changed the governed M5.6 publication bytes');
+  invariant(governedOutputs['outline-manifest.json']?.sha256 === 'b94d8a104a91f768ab5002cc8d505fb98bd537794a02c82e38a1ff7da48a2ed6', 'M5.8 successor changed the governed M5.6 outline bytes');
+  invariant(buildRelationCorpus(bundle).fingerprint === relations.fingerprint, 'M5.8 successor relation regeneration is nondeterministic');
+  invariant(generateScaleRelationFixture(bundle).fingerprint === relationScale.fingerprint, 'M5.8 successor relation-scale regeneration is nondeterministic');
+} else {
+  invariant(relations.fingerprint === candidate.models?.relationFingerprint, 'regenerated relation fingerprint mismatch');
+  invariant(relationScale.fingerprint === candidate.models?.relationScaleFingerprint, 'regenerated relation scale fingerprint mismatch');
+}
 
 const [deployWorkflow, ciWorkflow] = await Promise.all([
   readFile(resolve(root, '.github/workflows/deploy-pages.yml'), 'utf8'),
@@ -210,7 +225,9 @@ await mkdir(validationDirectory, { recursive: true });
 const report = {
   schemaVersion: 'p5-m5.7-remediated-candidate-artifact/v2',
   issue: 'MAT-394',
-  status: requiredBrowser ? 'qualified_for_m5.8_operational_governance' : 'local-structural-evidence-only',
+  status: requiredBrowser
+    ? (successorMode ? 'm5.7_requalified_for_m5.8_successor' : 'qualified_for_m5.8_operational_governance')
+    : 'local-structural-evidence-only',
   candidate: { sourceRevision: candidateRevision, auditSubject: candidate.auditSubject, changedPaths: changed, deploymentAuthorized: false },
   models: candidate.models,
   findings: remediation.findingDispositions,
@@ -219,7 +236,7 @@ const report = {
   reproducibility: remediation.pagefindReproducibility,
   artifacts,
   browserReports,
-  operationalGovernanceDecision: { m5_8Ready: requiredBrowser, excludedClaims: candidate.operationalGovernanceDecision.excludedClaims },
+  operationalGovernanceDecision: { m5_8Ready: requiredBrowser, successorMode, excludedClaims: candidate.operationalGovernanceDecision.excludedClaims },
   sourceRecords: await Promise.all(Object.entries(paths).map(async ([name, path]) => ({ name, file: path.slice(root.length + 1), ...await digest(path) }))),
   deploymentAuthorized: false
 };
