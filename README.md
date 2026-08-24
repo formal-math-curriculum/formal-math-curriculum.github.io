@@ -11,6 +11,7 @@ and Pagefind indexes are disposable build outputs.
 - Astro 7.2.4
 - Starlight 0.41.7
 - Pagefind 1.5.2
+- Playwright Core 1.62.1 (validation only; runner-installed Chrome version is recorded)
 
 ## Commands
 
@@ -34,6 +35,10 @@ The MAT-416 baseline adds a validated, progressively enhanced five-projection ou
 navigator with native disclosure navigation, a shared wide/narrow semantic surface,
 ephemeral search/filter/expansion context and fail-closed projection states. See
 `docs/architecture/outline-navigator.md`.
+
+The MAT-375 candidate gate mounts those surfaces together on a synthetic noindex route
+and runs required Chromium interaction/accessibility/responsive evidence before the
+artifact is hashed. See `docs/architecture/m5-5-candidate-validation.md`.
 
 This repository still contains no production course corpus, external taxonomy
 snapshot, Portuguese translation, populated representation instance,

@@ -44,7 +44,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Validate source-owned content contract
         run: node .inputs/content/scripts/validate.mjs .inputs/content/fixtures/minimal/manifest.json
-      - run: pnpm build
+      - name: Build and run integrated M5.5 browser qualification
+        run: pnpm build
+        env:
+          FMC_REQUIRE_BROWSER: '1'
+          FMC_SOURCE_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Upload bounded preview artifact
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:

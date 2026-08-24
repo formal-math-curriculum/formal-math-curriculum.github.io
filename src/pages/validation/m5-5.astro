@@ -1,0 +1,195 @@
+---
+import MathematicalBlock from '../../components/MathematicalBlock.astro';
+import OutlineNavigator from '../../components/OutlineNavigator.astro';
+import PreferenceControls from '../../components/PreferenceControls.astro';
+import PreferenceProvider from '../../components/PreferenceProvider.astro';
+import outlineManifest from '../../../tests/fixtures/outline-manifest.json';
+import '../../styles/custom.css';
+
+export const prerender = true;
+
+const representationBlock = {
+  schemaVersion: 1,
+  identity: {
+    contentId: 'validation:definition:group',
+    blockId: 'validation:block:group-axioms',
+    revision: 'synthetic-m5.5-candidate-v1'
+  },
+  title: 'Synthetic group identity example',
+  representations: {
+    rendered: {
+      availability: 'current',
+      correspondence: 'exact',
+      renderer: 'mathml',
+      provenance: {
+        subject: 'synthetic:rendered:group-identity',
+        revision: 'synthetic-rendered-v1'
+      }
+    },
+    latex: {
+      availability: 'current',
+      correspondence: 'exact',
+      source: String.raw`\forall x \in G,\quad e \cdot x = x = x \cdot e\qquad\text{(synthetic integration fixture with deliberately long source for local-overflow qualification)}`,
+      provenance: {
+        subject: 'synthetic:latex:group-identity',
+        revision: 'synthetic-latex-v1'
+      }
+    },
+    lean: {
+      availability: 'current',
+      correspondence: 'scoped',
+      source: 'example (G : Type) [Group G] (x : G) : (1 : G) * x = x ∧ x * 1 = x := by\n  exact ⟨one_mul x, mul_one x⟩',
+      provenance: {
+        subject: 'synthetic:lean:group-identity',
+        revision: 'synthetic-lean-v1'
+      }
+    }
+  }
+};
+---
+
+<!doctype html>
+<html lang="en" data-fmc-validation-fixture="synthetic">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta
+      name="description"
+      content="Synthetic integrated M5.5 validation fixture. This route is not curriculum content."
+    />
+    <link rel="canonical" href="https://formal-math-curriculum.github.io/validation/m5-5/" />
+    <title>M5.5 integrated validation fixture</title>
+    <PreferenceProvider />
+  </head>
+  <body>
+    <main id="main-content" data-pagefind-ignore>
+      <header class="validation-header">
+        <div>
+          <p class="validation-kicker">MAT-375 · synthetic integration fixture</p>
+          <h1>M5.5 component candidate</h1>
+          <p>
+            This noindex page mounts the preference store, representation block and outline
+            navigator together. It is test evidence only and makes no production content,
+            mapping, translation, formal-verification or accessibility-conformance claim.
+          </p>
+        </div>
+        <PreferenceControls />
+      </header>
+
+      <div class="validation-grid">
+        <aside aria-label="Integrated outline fixture">
+          <OutlineNavigator manifest={outlineManifest} heading="Synthetic course outline" />
+        </aside>
+
+        <article>
+          <h2>Shared canonical reading context</h2>
+          <p>
+            Projection and representation actions must leave this document location, canonical
+            link and synthetic subject unchanged.
+          </p>
+          <MathematicalBlock block={representationBlock}>
+            <math
+              slot="rendered"
+              xmlns="http://www.w3.org/1998/Math/MathML"
+              display="block"
+              aria-label="For every x in G, the identity e multiplied by x equals x, and x multiplied by e equals x"
+            >
+              <mrow>
+                <mo>∀</mo><mi>x</mi><mo>∈</mo><mi>G</mi><mo>,</mo>
+                <mspace width="0.5em"></mspace>
+                <mi>e</mi><mo>·</mo><mi>x</mi><mo>=</mo><mi>x</mi><mo>=</mo><mi>x</mi><mo>·</mo><mi>e</mi>
+              </mrow>
+            </math>
+          </MathematicalBlock>
+
+          <section aria-labelledby="validation-boundary-title">
+            <h2 id="validation-boundary-title">Validation boundary</h2>
+            <ul>
+              <li>All outline projection fingerprints and representation subjects are synthetic.</li>
+              <li>No remote Lean execution, backend, taxonomy mutation or deployment occurs here.</li>
+              <li>Manual screen-reader and cross-engine qualification remain audit limitations.</li>
+            </ul>
+          </section>
+        </article>
+      </div>
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+  }
+
+  #main-content {
+    inline-size: min(100%, 92rem);
+    margin-inline: auto;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    padding: clamp(0.75rem, 2vw, 2rem);
+  }
+
+  .validation-header {
+    align-items: start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fmc-space-4);
+    justify-content: space-between;
+    margin-block-end: var(--fmc-space-4);
+  }
+
+  .validation-header > div {
+    max-inline-size: 52rem;
+  }
+
+  .validation-header h1,
+  .validation-header p,
+  article h2 {
+    margin-block: 0 var(--fmc-space-2);
+  }
+
+  .validation-kicker {
+    color: var(--fmc-text-muted);
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .validation-grid {
+    align-items: start;
+    display: grid;
+    gap: clamp(1rem, 3vw, 2rem);
+    grid-template-columns: minmax(18rem, 30rem) minmax(0, 1fr);
+    max-inline-size: 100%;
+    min-inline-size: 0;
+  }
+
+  .validation-grid > aside,
+  .validation-grid > article {
+    max-inline-size: 100%;
+    min-inline-size: 0;
+  }
+
+  article > section {
+    border-block-start: 0.125rem solid var(--fmc-border);
+    margin-block-start: var(--fmc-space-4);
+    padding-block-start: var(--fmc-space-3);
+  }
+
+  @media (max-width: 50rem) {
+    .validation-header,
+    .validation-grid {
+      display: block;
+    }
+
+    .validation-header fmc-preference-controls {
+      margin-block: var(--fmc-space-3);
+    }
+  }
+</style>
