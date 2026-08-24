@@ -124,7 +124,11 @@ async function row(id, severity, expected, execute) {
 function observePage(page, name) {
   page.on('pageerror', (error) => consoleFailures.push({ page: name, type: 'pageerror', text: error.message }));
   page.on('console', (message) => {
-    if (message.type() === 'error') consoleFailures.push({ page: name, type: 'console-error', text: message.text() });
+    const expectedRecovery404 = name === 'locale-recovery'
+      && message.text() === 'Failed to load resource: the server responded with a status of 404 (Not Found)';
+    if (message.type() === 'error' && !expectedRecovery404) {
+      consoleFailures.push({ page: name, type: 'console-error', text: message.text() });
+    }
   });
 }
 
@@ -209,7 +213,7 @@ try {
     await page.goto(`${origin}/validation/m5-6/`, { waitUntil: 'networkidle' });
     await waitForCourse(page);
     const actual = await page.evaluate(() => ({
-      fingerprint: document.documentElement.dataset.fmcM56Validation,
+      fingerprint: document.documentElement.getAttribute('data-fmc-m5-6-validation'),
       robots: document.querySelector('meta[name="robots"]')?.getAttribute('content'),
       canonical: document.querySelector('link[rel="canonical"]')?.getAttribute('href') ?? null,
       globalSearch: Boolean(document.querySelector('fmc-global-search')),
@@ -220,7 +224,7 @@ try {
   });
 
   await row('M02', 'Material', 'all five fixture projections are selectable without route or content-identity mutation', async () => {
-    const selector = page.locator('[data-fmc-projection]');
+    const selector = page.locator('select[data-fmc-projection]');
     const before = await page.evaluate(() => ({ pathname: location.pathname, content: document.querySelector('fmc-outline-navigator')?.dataset.fmcCurrentContentId }));
     const states = [];
     for (const projection of ['course', 'ontomathpro', 'msc2020', 'arxiv', 'lean-mathlib']) {
@@ -232,7 +236,7 @@ try {
   });
 
   await row('M03', 'Material', 'reserved external labels are searchable only inside the fixture outline', async () => {
-    const selector = page.locator('[data-fmc-projection]');
+    const selector = page.locator('select[data-fmc-projection]');
     const query = page.locator('[data-fmc-outline-query]');
     const probes = [
       ['ontomathpro', 'parent-a'],
@@ -260,27 +264,28 @@ try {
   });
 
   await row('M05', 'Material', 'Course menu search retains cancellation results and their ancestors', async () => {
+    await page.locator('select[data-fmc-projection]').selectOption('course');
     await page.locator('[data-fmc-outline-query]').fill('cancel');
     const text = await page.locator('[data-fmc-outline-tree]').innerText();
     return { pass: text.includes('Natural-number law examples') && text.includes('Distribute-and-cancel exercise') && text.includes('Arithmetic to algebra'), actual: text.slice(0, 800) };
   });
 
   await row('M06', 'Material', 'Lean selection persists across reload and reset restores Course without route mutation', async () => {
-    const selector = page.locator('[data-fmc-projection]');
+    const selector = page.locator('select[data-fmc-projection]');
     await selector.selectOption('lean-mathlib');
     const path = new URL(page.url()).pathname;
     await page.reload({ waitUntil: 'networkidle' });
     await waitForCourse(page);
-    const retained = await page.locator('[data-fmc-projection]').inputValue();
+    const retained = await page.locator('select[data-fmc-projection]').inputValue();
     await page.locator('fmc-preference-controls summary').click();
     await page.locator('[data-fmc-reset]').click();
-    const reset = await page.locator('[data-fmc-projection]').inputValue();
+    const reset = await page.locator('select[data-fmc-projection]').inputValue();
     const actual = { path, afterReload: new URL(page.url()).pathname, retained, reset, afterReset: new URL(page.url()).pathname };
     return { pass: retained === 'lean-mathlib' && reset === 'course' && actual.path === actual.afterReload && actual.path === actual.afterReset, actual };
   });
 
   await row('M07', 'Material', 'unavailable production projection fails safely to Course while retaining the requested preference', async () => {
-    const selector = page.locator('[data-fmc-projection]');
+    const selector = page.locator('select[data-fmc-projection]');
     await selector.selectOption('ontomathpro');
     const actual = await page.evaluate((key) => ({
       selected: document.querySelector('[data-fmc-projection]')?.value,
