@@ -96,45 +96,58 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="p5-web-v0.1.0"
+          release_ids="$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[][] | select(.tag_name == \"$tag\") | .id")"
+          release_count="$(sed '/^$/d' <<<"$release_ids" | wc -l)"
+          test "$release_count" -le 1
+
           if tag_revision="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --jq '.object.sha' 2>/dev/null)"; then
-            test "$tag_revision" = "$GITHUB_SHA"
+            if test "$tag_revision" != "$GITHUB_SHA"; then
+              test "$release_count" -eq 1
+              release_id="$release_ids"
+              test "$(gh api "repos/$GITHUB_REPOSITORY/releases/$release_id" --jq '.draft')" = "true"
+              gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/$tag" \
+                -f sha="$GITHUB_SHA" \
+                -F force=true >/dev/null
+            fi
           else
             gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
               -f ref="refs/tags/$tag" \
               -f sha="$GITHUB_SHA" >/dev/null
           fi
 
-          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$tag" --jq '.draft')" = "true"
-            gh release upload "$tag" \
-              release-assets/site-dist.tar.zst \
-              release-assets/release-tuple.json \
-              release-assets/software-dependencies.json \
-              release-assets/THIRD_PARTY_NOTICES.md \
-              release-assets/THIRD_PARTY_LICENSES.txt \
-              release-assets/SHA256SUMS \
-              --repo "$GITHUB_REPOSITORY" \
-              --clobber
+          if test "$release_count" -eq 1; then
+            release_id="$release_ids"
+            test "$(gh api "repos/$GITHUB_REPOSITORY/releases/$release_id" --jq '.draft')" = "true"
           else
-            gh release create p5-web-v0.1.0 \
-              release-assets/site-dist.tar.zst \
-              release-assets/release-tuple.json \
-              release-assets/software-dependencies.json \
-              release-assets/THIRD_PARTY_NOTICES.md \
-              release-assets/THIRD_PARTY_LICENSES.txt \
-              release-assets/SHA256SUMS \
-              --repo "$GITHUB_REPOSITORY" \
-              --verify-tag \
-              --title "Formal Mathematics Curriculum 0.1.0" \
-              --notes "First bounded, qualified public web-course release. A10 manual assistive-technology execution remains explicitly unavailable under P5-DEC-033; no accessibility-conformance claim is made." \
-              --draft
+            release_id="$(gh api --method POST "repos/$GITHUB_REPOSITORY/releases" \
+              -f tag_name="$tag" \
+              -f target_commitish="$GITHUB_SHA" \
+              -f name="Formal Mathematics Curriculum 0.1.0" \
+              -f body="First bounded, qualified public web-course release. A10 manual assistive-technology execution remains explicitly unavailable under P5-DEC-033; no accessibility-conformance claim is made." \
+              -F draft=true \
+              --jq '.id')"
           fi
 
-          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$tag" --jq '.draft')" = "true"
+          for asset in site-dist.tar.zst release-tuple.json software-dependencies.json THIRD_PARTY_NOTICES.md THIRD_PARTY_LICENSES.txt SHA256SUMS; do
+            asset_ids="$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases/$release_id/assets?per_page=100" --jq ".[][] | select(.name == \"$asset\") | .id")"
+            for asset_id in $asset_ids; do
+              gh api --method DELETE "repos/$GITHUB_REPOSITORY/releases/assets/$asset_id"
+            done
+            gh api --method POST \
+              --hostname uploads.github.com \
+              -H "Content-Type: application/octet-stream" \
+              --input "release-assets/$asset" \
+              "/repos/$GITHUB_REPOSITORY/releases/$release_id/assets?name=$asset" >/dev/null
+          done
+
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/$release_id" --jq '.draft')" = "true"
           test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --jq '.object.sha')" = "$GITHUB_SHA"
           mkdir existing-release-assets
-          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir existing-release-assets
           for asset in site-dist.tar.zst release-tuple.json software-dependencies.json THIRD_PARTY_NOTICES.md THIRD_PARTY_LICENSES.txt SHA256SUMS; do
+            asset_ids="$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases/$release_id/assets?per_page=100" --jq ".[][] | select(.name == \"$asset\") | .id")"
+            test "$(sed '/^$/d' <<<"$asset_ids" | wc -l)" -eq 1
+            gh api -H "Accept: application/octet-stream" \
+              "repos/$GITHUB_REPOSITORY/releases/assets/$asset_ids" >"existing-release-assets/$asset"
             cmp "release-assets/$asset" "existing-release-assets/$asset"
           done
 
@@ -186,9 +199,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          tag="p5-web-v0.1.0"
+          release_ids="$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[][] | select(.tag_name == \"$tag\") | .id")"
+          test "$(sed '/^$/d' <<<"$release_ids" | wc -l)" -eq 1
+          release_id="$release_ids"
           tag_revision="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/p5-web-v0.1.0" --jq '.object.sha')"
           test "$tag_revision" = "$GITHUB_SHA"
-          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/p5-web-v0.1.0" --jq '.draft')" = "true"
-          gh release edit p5-web-v0.1.0 --repo "$GITHUB_REPOSITORY" --draft=false --latest
-          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/p5-web-v0.1.0" --jq '.draft')" = "false"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/$release_id" --jq '.draft')" = "true"
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/releases/$release_id" \
+            -F draft=false \
+            -f make_latest=true >/dev/null
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/$release_id" --jq '.draft')" = "false"
           test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/p5-web-v0.1.0" --jq '.object.sha')" = "$GITHUB_SHA"
