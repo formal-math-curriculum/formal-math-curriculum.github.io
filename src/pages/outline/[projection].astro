@@ -1,6 +1,7 @@
 ---
 import CourseLayout from '../../layouts/CourseLayout.astro';
 import { getCourseRoot, loadSiteBundle } from '../../lib/m5-6-publication.mjs';
+import { buildDiscoveryModel } from '../../lib/m5-7-discovery.mjs';
 
 export const prerender = true;
 
@@ -27,6 +28,7 @@ export async function getStaticPaths() {
 const { projection } = Astro.props as Props;
 const bundle = await loadSiteBundle();
 const courseRoot = getCourseRoot(bundle);
+const searchModel = buildDiscoveryModel(bundle);
 const usable = ['current', 'stale-compatible'].includes(projection.state);
 const description = usable
   ? `${projection.label} is a usable navigation projection for the representative M5.6 corpus.`
@@ -38,7 +40,7 @@ const description = usable
   description={description}
   canonicalPath={`/outline/${projection.id}/`}
   courseRootRoute={courseRoot.route}
-  searchDocuments={bundle.search.documents}
+  searchModel={searchModel}
 >
   <article class="fmc-course-article">
     <nav class="fmc-breadcrumbs" aria-label="Breadcrumb">

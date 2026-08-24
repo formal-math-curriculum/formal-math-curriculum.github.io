@@ -15,10 +15,12 @@
     "build:astro": "astro build",
     "test:browser": "node scripts/validate-m5-5-browser.mjs",
     "test:m5-6-browser": "node scripts/validate-m5-6-browser.mjs",
+    "test:m5-7-browser": "node scripts/validate-m5-7-search-browser.mjs",
     "build:search": "node scripts/build-search.mjs",
+    "validate:m5-7-artifact": "node scripts/validate-m5-7-search-artifact.mjs",
     "validate:m5-6-artifact": "node scripts/validate-m5-6-artifact.mjs",
     "verify:artifact": "node scripts/verify-artifact.mjs",
-    "build": "pnpm run check && pnpm run test && pnpm run ingest && pnpm run build:astro && pnpm run test:browser && pnpm run test:m5-6-browser && pnpm run build:search && pnpm run validate:m5-6-artifact && pnpm run verify:artifact"
+    "build": "pnpm run check && pnpm run test && pnpm run ingest && pnpm run build:astro && pnpm run test:browser && pnpm run build:search && pnpm run test:m5-7-browser && pnpm run test:m5-6-browser && pnpm run validate:m5-7-artifact && pnpm run validate:m5-6-artifact && pnpm run verify:artifact"
   },
   "dependencies": {
     "@astrojs/sitemap": "3.7.3",

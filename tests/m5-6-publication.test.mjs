@@ -143,7 +143,8 @@ test('learner route sources expose required recovery, search, navigation and non
   assert.match(layout, /<GlobalSearch/);
   assert.match(layout, /<OutlineNavigator/);
   assert.match(layout, /data-pagefind-body/);
-  assert.doesNotMatch(layout, /data-pagefind-filter/);
+  assert.match(layout, /data-pagefind-filter/);
+  assert.match(layout, /fmc-result-kind/);
   assert.doesNotMatch(layout, /p5m56c0001|2da8fdb43074d00|15 course pages/);
   assert.match(page, /data-fmc-exercise-solution/);
   assert.match(page, /localePortuguese\.translation_state/);

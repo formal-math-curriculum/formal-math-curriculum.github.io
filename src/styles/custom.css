@@ -979,6 +979,7 @@ fmc-outline-navigator [hidden] {
 .fmc-site-actions {
   align-items: start;
   display: flex;
+  flex-wrap: wrap;
   gap: var(--fmc-space-2);
   justify-content: end;
   min-inline-size: 0;
@@ -1042,6 +1043,51 @@ fmc-global-search {
   padding: var(--fmc-space-3);
 }
 
+.fmc-global-search__filters {
+  border: 0;
+  display: grid;
+  gap: var(--fmc-space-2);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+}
+
+.fmc-global-search__filters legend {
+  font-weight: 800;
+  grid-column: 1 / -1;
+  margin-block-end: var(--fmc-space-1);
+}
+
+.fmc-global-search__filters label {
+  display: grid;
+  font-size: 0.875rem;
+  gap: var(--fmc-space-1);
+}
+
+.fmc-global-search__filters select,
+.fmc-global-search__actions button {
+  background: var(--fmc-surface);
+  border: 0.125rem solid var(--fmc-border);
+  border-radius: var(--fmc-radius-sm);
+  color: var(--fmc-text);
+  font: inherit;
+  min-block-size: var(--fmc-control-min-size);
+  padding: var(--fmc-space-2);
+}
+
+.fmc-global-search__actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fmc-space-2);
+  justify-content: space-between;
+}
+
+.fmc-global-search__actions button {
+  cursor: pointer;
+  font-weight: 750;
+}
+
 .fmc-global-search__hint,
 .fmc-global-search__status,
 .fmc-global-search__empty {
@@ -1076,6 +1122,21 @@ fmc-global-search {
 .fmc-global-search__results span,
 .fmc-global-search__results small {
   color: var(--fmc-text-muted);
+}
+
+.fmc-global-search__no-script {
+  border-inline-start: 0.25rem solid var(--fmc-warning);
+  margin: 0;
+  padding-inline-start: var(--fmc-space-3);
+}
+
+.fmc-search-index-copy {
+  block-size: 1px;
+  clip-path: inset(50%);
+  inline-size: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
 }
 
 .fmc-course-shell {
@@ -1420,6 +1481,10 @@ fmc-global-search {
     inset-block-start: 7rem;
   }
 
+  .fmc-global-search__filters {
+    grid-template-columns: 1fr;
+  }
+
   .fmc-course-shell,
   .fmc-course-shell--without-outline {
     display: block;
@@ -1447,6 +1512,8 @@ fmc-global-search {
   .fmc-global-search > summary,
   .fmc-global-search__panel,
   .fmc-global-search__panel input,
+  .fmc-global-search__filters select,
+  .fmc-global-search__actions button,
   .fmc-global-search__results a,
   .fmc-course-hero,
   .fmc-course-hero__badges span,

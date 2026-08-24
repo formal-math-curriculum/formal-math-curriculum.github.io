@@ -1,6 +1,7 @@
 ---
 import CourseLayout from '../../layouts/CourseLayout.astro';
 import { buildFormalRecords, getCourseRoot, loadSiteBundle } from '../../lib/m5-6-publication.mjs';
+import { buildDiscoveryModel } from '../../lib/m5-7-discovery.mjs';
 
 export const prerender = true;
 
@@ -15,6 +16,7 @@ export async function getStaticPaths() {
 const record = Astro.props.record as any;
 const bundle = await loadSiteBundle();
 const courseRoot = getCourseRoot(bundle);
+const searchModel = buildDiscoveryModel(bundle);
 const uniqueEntries = record.entries.filter((entry: any, index: number, entries: any[]) =>
   entries.findIndex((candidate: any) => candidate.entity.content_id === entry.entity.content_id && candidate.block.block_id === entry.block.block_id) === index
 );
@@ -28,7 +30,7 @@ const description = record.kind === 'artifact'
   description={description}
   canonicalPath={record.route}
   courseRootRoute={courseRoot.route}
-  searchDocuments={bundle.search.documents}
+  searchModel={searchModel}
 >
   <article class="fmc-course-article fmc-formal-record">
     <nav class="fmc-breadcrumbs" aria-label="Breadcrumb">
