@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "p5-m5.7-integrated-candidate/v1",
+  "issue": "MAT-377",
+  "status": "integrated_candidate_pending_independent_audit",
+  "matrixDocument": "b10cf6f4-2977-4873-ba58-a1046b83bb7a",
+  "freezeDocument": "d879fd37-8602-4cf2-b3a8-aa19d0a6e588",
+  "coreSubject": {
+    "repository": "formal-math-curriculum/formal-math-curriculum.github.io",
+    "commit": "6adab87f4feaba4c957df189936fbe0dd1e726b8",
+    "tree": "01e0277a7996d39cc193cc603cc20f8a94946b8d",
+    "staticSearchMerge": "0987304c8c1c26b8f84f8b207b5324fd3be802fe",
+    "relationNavigationMerge": "6adab87f4feaba4c957df189936fbe0dd1e726b8"
+  },
+  "authority": {
+    "contentRevision": "2da8fdb43074d00fea5fc6201d239e5f26a43250",
+    "contentTree": "d51b0c7cfe44feec2b6eb176fd6ce1825a8ab458",
+    "sourceIdentity": "P5-M5.6-CONTENT-v1",
+    "selectorSha256": "280ad055d9235077b398d26dd6abb40c9d13ae089ad6d5a8fd0b11baed805aaf",
+    "formalDependencySha256": "f8c79c8d196952e4827c72d394039862935689b2e100f821697c41bad8cb1438",
+    "leanProjectRevision": "3f1a315f438af37a327eaf8b9b9c1dbc6f409394",
+    "leanCoreRevision": "d8b18978322de05a8f3dba51ef03cf5461676c17",
+    "mathlibRevision": "db584cd6d46c92f209a44c0f1c829460d327499d"
+  },
+  "models": {
+    "searchFingerprint": "sha256:a686c3c5b0c90eb643397c8db88ce23b4e1c719ce45cd1f705bc43a66e2578a5",
+    "relationFingerprint": "sha256:5431b20b93dc0045933a74e92c9b1f9fbd74412be2bb556bd46c33f57cca67e8",
+    "searchScaleFingerprint": "sha256:ae5a0a167e407bd267f9b1c72d03c3f718748fcef846939102d16a7d8045d011",
+    "relationScaleFingerprint": "sha256:24a49b6c6cf902702c6ff5df1e9e14927ea9eefcfa9293cbdaf0e3b8b15fb5b6"
+  },
+  "governed": {
+    "learnerPages": 15,
+    "coursePlacements": 16,
+    "readinessAuthorities": 2,
+    "formalRecords": 20,
+    "relationSystems": 8,
+    "externalPayloads": 0,
+    "portugueseRoutes": 0
+  },
+  "scale": {
+    "searchDocuments": 2000,
+    "relationDocuments": 2000,
+    "relationPlacements": 2200,
+    "prerequisiteNodes": 120,
+    "prerequisiteEdges": 119,
+    "directFormalEdges": 150,
+    "twoHopFormalChains": 25,
+    "unresolvedFormalEdges": 10,
+    "generatedInProductionArtifact": false
+  },
+  "requiredEvidence": {
+    "nodePipeline": "pnpm test",
+    "browser": [
+      { "schema": "p5-m5.5-requalification-browser/v2", "rows": "B01-B30", "count": 30 },
+      { "schema": "p5-m5.7-static-search-browser/v1", "rows": "D01-D20", "count": 20 },
+      { "schema": "p5-m5.7-relations-browser/v1", "rows": "R01-R14,A01-A08", "count": 22 },
+      { "schema": "p5-m5.6-requalification-browser/v2", "rows": "M01-M15,P01-P05", "count": 20 }
+    ],
+    "totalBrowserRows": 92,
+    "artifactReports": [
+      "p5-m5.7-static-search-artifact/v1",
+      "p5-m5.7-relations-artifact/v1",
+      "p5-m5.6-requalification-artifact/v2"
+    ],
+    "browserRequiredInCI": true,
+    "browserLocalSkipMustBeExplicit": true
+  },
+  "severityPolicy": {
+    "candidateRequires": "zero_unresolved_blocker_and_material_validation_failures",
+    "auditMutation": "forbidden",
+    "remediationOwner": "MAT-394"
+  },
+  "validationOnlyDiff": {
+    "coreProductMutationAllowed": false,
+    "allowedPrefixes": [".github/workflows/ci.yml", "docs/architecture/m5-7-candidate-validation.md", "package.json", "scripts/validate-m5-7-integrated-candidate.mjs", "tests/m5-7-candidate.test.mjs", "tests/integrated-validation.test.mjs", "validation/m5-7-candidate-v1.json", "validation/m5-7-current.json"]
+  },
+  "limitations": [
+    "representative_slice_not_full_course",
+    "portuguese_unavailable",
+    "ontomathpro_and_arxiv_unavailable",
+    "msc2020_license_needs_review",
+    "bounded_generated_relation_not_complete_import_graph",
+    "manual_screen_reader_and_cross_engine_qualification_not_established",
+    "public_deployment_not_authorized"
+  ],
+  "revalidationTriggers": [
+    "core_commit_or_tree_change",
+    "content_selector_or_formal_revision_change",
+    "search_or_relation_fingerprint_change",
+    "runtime_or_browser_major_change",
+    "Pagefind_envelope_or_semantic_result_change",
+    "locale_or_external_snapshot_adoption",
+    "candidate_validation_failure"
+  ],
+  "deploymentAuthorized": false,
+  "nextIssue": "MAT-388"
+}
