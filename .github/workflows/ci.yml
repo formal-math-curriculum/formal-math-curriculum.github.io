@@ -18,7 +18,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -60,10 +60,22 @@ jobs:
           FMC_REQUIRE_BROWSER: '1'
           FMC_SOURCE_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
           FMC_RUNNER_IMAGE_LABEL: ubuntu-24.04
+      - name: Execute M5.9 security, privacy, SEO and content-integrity qualification
+        id: m59-security-integrity
+        continue-on-error: true
+        run: node scripts/validate-m5-9-security-integrity.mjs
+        env:
+          FMC_REQUIRE_M59: '1'
+          FMC_SOURCE_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+          FMC_RUNNER_IMAGE_LABEL: ubuntu-24.04
       - name: Upload bounded preview artifact
+        if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: site-preview-${{ github.sha }}
           path: dist
           if-no-files-found: error
           retention-days: 7
+      - name: Enforce M5.9 qualification outcome
+        if: steps.m59-security-integrity.outcome == 'failure'
+        run: exit 1
