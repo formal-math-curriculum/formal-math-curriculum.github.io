@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "p5-m5.5-adversarial-audit/v1",
+  "issue": "MAT-386",
+  "auditDate": "2026-08-24",
+  "disposition": "auditable-immutable-subject-remediation-required",
+  "releaseReady": false,
+  "m56ReadinessEstablished": false,
+  "independence": {
+    "type": "procedural-not-personnel-independent",
+    "controls": [
+      "separate issue",
+      "immutable downloaded artifact",
+      "independently recomputed hashes",
+      "fresh source checkout",
+      "adversarial cases",
+      "audit-only repository diff"
+    ],
+    "limitation": "Executor continuity does not establish independent human or organizational review."
+  },
+  "subject": {
+    "repository": "formal-math-curriculum/formal-math-curriculum.github.io",
+    "pullRequest": 9,
+    "reviewedHead": "0605255cb9dfaad28c1c425feff558288bb81cc7",
+    "mergeCommit": "88c2ac887b1dc0dad73a2cd684eec67096df787f",
+    "reviewedAndMergedTree": "879f696862fbce59d4395a31b087f8bd84b45822",
+    "workflowRun": 32686851006,
+    "workflowJob": 97313424633,
+    "artifactId": 9505961644,
+    "artifactName": "site-preview-bfee3064205e2e7d8d9681507831b9e29d5f19d2",
+    "contentRevision": "fb3df63b27ae54d4dc237a421dd241d4c59330e4",
+    "deploymentObserved": false
+  },
+  "digests": {
+    "artifactZipSha256": "e06611c78123c9854a1729518c18ee61ebef2149e82ef3c32d16f859be8c2df8",
+    "browserReportSha256": "d88f90994a2ee460ca3f9bfef2f3e7f2aecada9ace41979ba59b0712fff713fb",
+    "ariaSnapshotSha256": "7d446a473065a812a294310be6bd7cc64edbab6e039ed4be0f6dde7ad8c5fc05",
+    "sitemapSha256": "e6d404d315770928f4d222749a649229a8beb15873f20aef4fca17dc2964d825"
+  },
+  "execution": {
+    "pureAndSourceTests": { "total": 88, "passed": 88, "failed": 0 },
+    "astroCheck": { "errors": 0, "warnings": 0, "hints": 0 },
+    "frozenBrowserRows": { "total": 23, "passed": 22, "failed": 1, "blockerFailed": 0 },
+    "artifactPayload": { "files": 47, "bytes": 2654102, "manifestAdditional": true },
+    "runtime": {
+      "node": "v24.19.0",
+      "pnpm": "11.23.0",
+      "playwrightCore": "1.62.1",
+      "browser": "Chrome 151.0.7922.137",
+      "platform": "linux-x64"
+    }
+  },
+  "findingCounts": { "Blocker": 0, "Material": 4, "Minor": 1, "Observation": 2 },
+  "findings": [
+    {
+      "id": "F01",
+      "severity": "Material",
+      "title": "Narrow modal loses sequential focus containment",
+      "affectedClaims": ["N17", "B18", "keyboard/focus release gate"],
+      "evidence": "Frozen B18: modal=true, contained=false, restored=true; forward Tab reaches BODY after the last summary before DIALOG.",
+      "owner": "MAT-399 / OutlineNavigator",
+      "requalification": "Forward and reverse sequential focus remain inside the modal; Escape, explicit close, backdrop, resize transitions and trigger restoration pass under named engines."
+    },
+    {
+      "id": "F02",
+      "severity": "Material",
+      "title": "Deployment denial is not enforced and the fixture is in the sitemap",
+      "affectedClaims": ["deploymentAuthorized=false", "publication boundary", "bounded static release"],
+      "evidence": "deploy-pages.yml can dispatch without reading the candidate gate; the artifact contains validation/m5-5/index.html and sitemap-0.xml lists /validation/m5-5/.",
+      "owner": "MAT-399 / release workflow",
+      "requalification": "Negative deploy gate blocks unauthorized/unqualified subjects; release output excludes the synthetic route and sitemap entry."
+    },
+    {
+      "id": "F03",
+      "severity": "Material",
+      "title": "32-bit mathematical-block DOM IDs collide",
+      "affectedClaims": ["stable identity", "R10", "R16", "multi-block ARIA relationships"],
+      "evidence": {
+        "identityA": { "contentId": "audit-nvq07x-kpaqu0", "blockId": "block", "revision": "v1" },
+        "identityB": { "contentId": "audit-1f118lz-4560qy", "blockId": "block", "revision": "v1" },
+        "sharedDomId": "fmc-math-6bgz1q"
+      },
+      "owner": "MAT-399 / MathematicalBlock",
+      "requalification": "Render the collision pair together and prove all document IDs and per-block IDREF relationships are unique and deterministic."
+    },
+    {
+      "id": "F04",
+      "severity": "Material",
+      "title": "Required frozen-row execution is incomplete",
+      "affectedClaims": ["requiredFrozenRows", "D01-D16", "X01-X16", "X16"],
+      "evidence": "No explicit integrated browser rows for X06/X08/X12/X13; X16 does not repeat X01-X15 under all four themes; D02 reload-each-theme and D05 metric/wrapping coverage are not explicit or marked unsupported.",
+      "owner": "MAT-399 / validation evidence",
+      "requalification": "Publish a one-to-one D/R/N/X matrix and execute missing cases or obtain authoritative unsupported-scope decisions."
+    },
+    {
+      "id": "F05",
+      "severity": "Minor",
+      "title": "Rerun environment is observed, not fully pinned",
+      "affectedClaims": ["deterministic provenance", "requalification reproducibility"],
+      "evidence": "Workflows use ubuntu-latest and installed /usr/bin/google-chrome; report records versions but no immutable runner/container image digest.",
+      "owner": "MAT-399 or platform workflow owner",
+      "requalification": "Pin or fully identify the runner/browser environment and trigger revalidation on image or browser changes."
+    },
+    {
+      "id": "O01",
+      "severity": "Observation",
+      "title": "Organizational independence is not established",
+      "evidence": "Procedural separation exists, but the executor is continuous across implementation/validation/audit."
+    },
+    {
+      "id": "O02",
+      "severity": "Observation",
+      "title": "Declared unsupported qualification surfaces remain unsupported",
+      "evidence": "No cross-engine, manual screen-reader, production corpus/taxonomy, translation, remote Lean or future-locale runtime qualification."
+    }
+  ],
+  "remediationIssue": "MAT-399",
+  "requiredExit": "Zero unresolved Blocker and zero unresolved Material findings on a newly versioned, exactly frozen requalification subject."
+}
