@@ -23,18 +23,26 @@ interface OutlinePlacement {
   children: OutlinePlacement[];
 }
 
+interface FilterGroup {
+  id: string;
+  label: string;
+  options: Array<{ id: string; label: string }>;
+}
+
 interface ProjectionDescriptor {
   id: string;
   label: string;
   state: string;
   landingRoute: string;
   activeReferenceId: string | null;
+  structuralFilterSchema: FilterGroup[];
   placements: unknown[];
 }
 
 interface OutlineManifest {
   locale: string;
   currentContent: { contentId: string; canonicalRoute: string };
+  universalFilterSchema: FilterGroup[];
   projections: ProjectionDescriptor[];
 }
 
@@ -65,7 +73,13 @@ const componentId = `fmc-outline-${value.currentContent.contentId.replace(/[^a-z
     aria-controls={`${componentId}-dialog`}
   >Open outline</button>
 
-  <dialog id={`${componentId}-dialog`} class="fmc-outline-panel" data-fmc-outline-dialog open>
+  <dialog
+    id={`${componentId}-dialog`}
+    class="fmc-outline-panel"
+    data-fmc-outline-dialog
+    aria-labelledby={`${componentId}-title`}
+    open
+  >
     <span
       class="fmc-outline-focus-sentinel"
       tabindex="-1"
@@ -109,18 +123,33 @@ const componentId = `fmc-outline-${value.currentContent.contentId.replace(/[^a-z
       </p>
       <p class="fmc-outline-live" role="status" aria-live="polite" data-fmc-outline-status></p>
 
-      <div class="fmc-outline-enhancement" data-fmc-outline-enhancement hidden>
+      <div class="fmc-outline-enhancement" data-fmc-outline-enhancement>
         <label class="fmc-outline-field">
           <span>Search this projection</span>
-          <input type="search" data-fmc-control data-fmc-outline-query autocomplete="off" />
+          <input type="search" data-fmc-control data-fmc-outline-query autocomplete="off" disabled />
         </label>
 
-        <div class="fmc-outline-filters" data-fmc-outline-filters></div>
+        <div class="fmc-outline-filters" data-fmc-outline-filters>
+          {[
+            ...value.universalFilterSchema.map((group) => ({ ...group, family: 'universal' })),
+            ...course.structuralFilterSchema.map((group) => ({ ...group, family: 'structural' }))
+          ].map((group) => (
+            <fieldset data-fmc-filter-family={group.family}>
+              <legend>{group.family === 'universal' ? group.label : `Course — ${group.label}`}</legend>
+              {group.options.map((option) => (
+                <label>
+                  <input type="checkbox" value={option.id} data-fmc-control disabled />
+                  {option.label}
+                </label>
+              ))}
+            </fieldset>
+          ))}
+        </div>
 
         <div class="fmc-outline-actions" aria-label="Outline actions">
-          <button type="button" data-fmc-control data-fmc-expand-all>Expand visible groups</button>
-          <button type="button" data-fmc-control data-fmc-collapse-all>Collapse visible groups</button>
-          <button type="button" data-fmc-control data-fmc-local-reset>Reset outline</button>
+          <button type="button" data-fmc-control data-fmc-expand-all disabled>Expand visible groups</button>
+          <button type="button" data-fmc-control data-fmc-collapse-all disabled>Collapse visible groups</button>
+          <button type="button" data-fmc-control data-fmc-local-reset disabled>Reset outline</button>
         </div>
       </div>
 
@@ -154,6 +183,11 @@ const componentId = `fmc-outline-${value.currentContent.contentId.replace(/[^a-z
       </details>
 
       <noscript>
+        <style>
+          [data-fmc-static-outline] [hidden] { display: block !important; }
+          [data-fmc-static-outline] .fmc-outline-disclosure { display: none; }
+          [data-fmc-outline-enhancement] { display: none; }
+        </style>
         <p>Course navigation and all ordinary links remain available. Projection switching, search and filters require JavaScript.</p>
       </noscript>
     </nav>
@@ -201,7 +235,8 @@ const componentId = `fmc-outline-${value.currentContent.contentId.replace(/[^a-z
       }
       this.manifest = parsed.value;
       this.dataset.fmcEnhanced = 'true';
-      this.querySelector('[data-fmc-outline-enhancement]')?.removeAttribute('hidden');
+      this.querySelectorAll('[data-fmc-outline-enhancement] [disabled]')
+        .forEach((control) => control.removeAttribute('disabled'));
 
       for (const descriptor of this.manifest.projections) {
         this.contexts.set(descriptor.id, createEmptyOutlineContext());

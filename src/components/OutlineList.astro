@@ -34,10 +34,11 @@ const stateLabel = (state: string) => state.replaceAll('-', ' ');
               type="button"
               class="fmc-outline-disclosure"
               data-fmc-control
-              aria-expanded="true"
+              aria-expanded="false"
               aria-controls={childrenId}
-              aria-label={`Collapse ${node.label}`}
-            >−</button>
+              aria-label={`Expand ${node.label}`}
+              disabled
+            >+</button>
           ) : <span class="fmc-outline-leaf-marker" aria-hidden="true">•</span>}
           {node.canonicalRoute ? (
             <a href={node.canonicalRoute} aria-current={activeTraversal ? 'page' : undefined}>{node.label}</a>
@@ -48,7 +49,7 @@ const stateLabel = (state: string) => state.replaceAll('-', ' ');
           ) : null}
         </div>
         {node.children.length > 0 ? (
-          <div id={childrenId}>
+          <div id={childrenId} hidden>
             <Astro.self
               nodes={node.children}
               activeReferenceId={activeReferenceId}

@@ -208,7 +208,7 @@ async function executeCase(entry, sources, options) {
       if (sources.snapshotPolicy.authority.runtime_fetch_allowed !== false) errors.push('runtime taxonomy fetch became allowed');
       if (sources.releasePolicy.privacy.application_analytics !== 'none' || sources.releasePolicy.privacy.optional_tracking !== 'none' || sources.releasePolicy.privacy.application_cookies !== 'none' || sources.releasePolicy.privacy.accounts !== 'none') errors.push('privacy/analytics boundary drift');
       if (ci.env?.ASTRO_TELEMETRY_DISABLED !== '1' || deploy.env?.ASTRO_TELEMETRY_DISABLED !== '1') errors.push('Astro telemetry environment drift');
-      if (sources.inventory.metadata_only_count !== 9 || sources.inventory.release_gate !== 'blocked_missing_bundled_license_text') errors.push('license blockers were hidden');
+      if (sources.inventory.metadata_only_count !== 0 || sources.inventory.release_gate !== 'eligible_for_human_review') errors.push('license evidence is incomplete or its release state is misstated');
     } else {
       errors.push(`unknown static contract: ${entry.contract}`);
     }
@@ -218,10 +218,12 @@ async function executeCase(entry, sources, options) {
   if (entry.executor === 'browser_regression') {
     const errors = [];
     let report = null;
-    try {
-      report = await json('dist/_validation/m5-7-remediated-candidate-v2.json');
-    } catch (error) {
-      if (options.requireBrowser) errors.push(`required hosted-browser report is missing: ${error.message}`);
+    if (options.requireBrowser) {
+      try {
+        report = await json('dist/_validation/m5-7-remediated-candidate-v2.json');
+      } catch (error) {
+        errors.push(`required hosted-browser report is missing: ${error.message}`);
+      }
     }
     if (report) errors.push(...validateBrowserEvidence(report, options.sourceRevision));
     return resultFor(entry, errors, {
@@ -244,8 +246,8 @@ async function executeCase(entry, sources, options) {
 
 async function loadSources() {
   const paths = {
-    matrix: 'validation/m5-8-dogfood-matrix-v2.json',
-    candidate: 'validation/m5-8-dogfood-candidate-v2.json',
+    matrix: 'validation/m5-9-remediation-matrix-v1.json',
+    candidate: 'validation/m5-9-remediation-candidate-v1.json',
     current: 'validation/m5-8-current.json',
     editorialPolicy: '.inputs/content/source/m5-8/editorial-workflow-policy.json',
     workflowCases: '.inputs/content/fixtures/m5-8/workflow-cases.json',
@@ -275,13 +277,13 @@ async function loadSources() {
 
 function validateCandidate(sources) {
   const { candidate, current, matrix } = sources;
-  invariant(matrix.schema_version === 'p5-m5.8-dogfood-matrix/v2' && matrix.issue === 'MAT-396', 'dogfood matrix schema/issue mismatch');
+  invariant(matrix.schema_version === 'p5-m5.9-remediation-matrix/v1' && matrix.issue === 'MAT-397', 'dogfood matrix schema/issue mismatch');
   invariant(matrix.cases.length === 20 && new Set(matrix.cases.map(entry => entry.id)).size === 20, 'dogfood matrix must contain 20 unique cases');
   invariant(matrix.cases.filter(entry => entry.negative_control).length === 12, 'dogfood negative-control count drift');
-  invariant(candidate.schemaVersion === 'p5-m5.8-dogfood-candidate/v2' && candidate.issue === 'MAT-396', 'dogfood candidate schema/issue mismatch');
-  invariant(candidate.candidateId === matrix.candidate_id && candidate.status === 'candidate_requires_required_ci_and_remediation_disposition', 'dogfood candidate identity/status drift');
+  invariant(candidate.schemaVersion === 'p5-m5.9-remediation-candidate/v1' && candidate.issue === 'MAT-397', 'dogfood candidate schema/issue mismatch');
+  invariant(candidate.candidateId === matrix.candidate_id && candidate.status === 'candidate_requires_m5_9_requalification', 'dogfood candidate identity/status drift');
   invariant(candidate.deploymentAuthorized === false && current.deploymentAuthorized === false, 'dogfood candidate cannot authorize deployment');
-  invariant(current.schemaVersion === 'p5-m5.8-current-candidate/v2' && current.candidateRecord === 'validation/m5-8-dogfood-candidate-v2.json' && current.auditIssue === 'MAT-385' && current.remediationIssue === 'MAT-396', 'current M5.8 selector drift');
+  invariant(current.schemaVersion === 'p5-m5.9-current-candidate/v1' && current.candidateRecord === 'validation/m5-9-remediation-candidate-v1.json' && current.auditIssue === 'MAT-390' && current.remediationIssue === 'MAT-397', 'current M5.9 selector drift');
   invariant(candidate.matrix.sha256 === sha256(sources.matrixSource), 'dogfood matrix hash drift');
   for (const [record, source] of [
     [candidate.coreContracts.editorialPolicy, sources.editorialPolicySource],
@@ -289,11 +291,11 @@ function validateCandidate(sources) {
     [candidate.coreContracts.releasePolicy, sources.releasePolicySource],
     [candidate.coreContracts.softwareInventory, sources.inventorySource]
   ]) invariant(record.sha256 === sha256(source), `dogfood core contract hash drift: ${record.path}`);
-  invariant(candidate.coreContracts.softwareInventory.metadataOnlyReleaseBlockers === 9, 'dogfood candidate hid license-text blockers');
+  invariant(candidate.coreContracts.softwareInventory.metadataOnlyReleaseBlockers === 0 && candidate.coreContracts.softwareInventory.governedFallbacks === 9, 'dogfood candidate license-evidence disposition drift');
   invariant(candidate.requiredEvidence.dogfoodCases === 20 && candidate.requiredEvidence.negativeControls === 12 && candidate.requiredEvidence.hostedBrowserAcceptanceRows === 121, 'dogfood evidence count drift');
   invariant(candidate.requiredEvidence.cleanProcessContributor === true && candidate.requiredEvidence.organizationalIndependenceClaimed === false, 'fresh-process evidence boundary drift');
-  invariant(candidate.auditDisposition.immutableAudit === 'P5-M5.8-AUDIT-v1' && candidate.auditDisposition.materialFindings.join(',') === 'MAT385-F01,MAT385-F02', 'immutable audit disposition drift');
-  invariant(candidate.handoff.nextIssue === 'MAT-338' && candidate.handoff.mutationPolicy === 'this_candidate_requires_new_version_after_qualification', 'remediation handoff drift');
+  invariant(candidate.auditDisposition.immutableAudits.join(',') === 'P5-M5.8-AUDIT-v1,P5-M5.9-ADVERSARIAL-AUDIT-v1' && candidate.auditDisposition.m5_9MandatoryFindings.length === 5 && candidate.auditDisposition.accessibilityRiskDecision === 'P5-DEC-033', 'immutable audit disposition drift');
+  invariant(candidate.handoff.nextIssue === 'MAT-339' && candidate.handoff.mutationPolicy === 'this_candidate_requires_new_version_after_qualification', 'remediation handoff drift');
   invariant(candidate.exactBases.content === sources.lock.consumed.content.revision && candidate.exactBases.contentTree === sources.lock.consumed.content.tree, 'dogfood content authority drift');
   invariant(candidate.exactBases.lean === sources.lock.recorded_not_consumed.lean.revision && candidate.exactBases.mathlib === sources.lock.recorded_not_consumed.mathlib.revision, 'dogfood formal authority drift');
   invariant(git('merge-base', 'HEAD', candidate.exactBases.site) === candidate.exactBases.site, 'dogfood branch is not descended from its site base');
@@ -317,8 +319,8 @@ export async function runM58Dogfood({ write = false, requireBrowser = process.en
   invariant(failures.length === 0, `M5.8 dogfood failed:\n${failures.map(result => `${result.id}: ${result.errors.join('; ') || `${result.expected} expected, ${result.observed} observed`}`).join('\n')}`);
 
   const report = {
-    schemaVersion: 'p5-m5.8-dogfood-report/v2',
-    issue: 'MAT-396',
+    schemaVersion: 'p5-m5.9-regression-report/v1',
+    issue: 'MAT-397',
     candidateId: sources.candidate.candidateId,
     status: requireBrowser ? 'qualified_remediated_candidate_for_parent_integration' : 'local_structural_evidence_only',
     exactSubject: {
@@ -346,8 +348,8 @@ export async function runM58Dogfood({ write = false, requireBrowser = process.en
     auditDisposition: sources.candidate.auditDisposition,
     handoff: sources.candidate.handoff,
     sourceRecords: {
-      candidate: { path: 'validation/m5-8-dogfood-candidate-v2.json', sha256: sha256(await text('validation/m5-8-dogfood-candidate-v2.json')) },
-      matrix: { path: 'validation/m5-8-dogfood-matrix-v2.json', sha256: sha256(sources.matrixSource) },
+      candidate: { path: 'validation/m5-9-remediation-candidate-v1.json', sha256: sha256(await text('validation/m5-9-remediation-candidate-v1.json')) },
+      matrix: { path: 'validation/m5-9-remediation-matrix-v1.json', sha256: sha256(sources.matrixSource) },
       freshSession: { path: 'dist/_validation/m5-8-fresh-session-v1.json', sha256: results.find(result => result.id === 'D01')?.subject?.reportSha256 },
       editorialPolicy: sources.candidate.coreContracts.editorialPolicy,
       snapshotPolicy: sources.candidate.coreContracts.snapshotPolicy,
@@ -365,7 +367,7 @@ export async function runM58Dogfood({ write = false, requireBrowser = process.en
   };
   if (write) {
     invariant(requireBrowser, 'writing the immutable dogfood report requires hosted browser qualification');
-    const output = resolve(root, 'dist/_validation/m5-8-dogfood-report-v2.json');
+    const output = resolve(root, 'dist/_validation/m5-9-regression-report-v1.json');
     await mkdir(dirname(output), { recursive: true });
     invariant(sources.freshSessionReport, 'writing dogfood evidence requires the clean-process contributor report');
     await writeFile(resolve(root, 'dist/_validation/m5-8-fresh-session-v1.json'), `${JSON.stringify(sources.freshSessionReport, null, 2)}\n`);

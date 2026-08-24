@@ -55,6 +55,7 @@ test('one noindex fixture mounts preferences, representation and outline togethe
   assert.equal((page.match(/<OutlineNavigator /g) ?? []).length, 1);
   assert.match(page, /<PreferenceProvider \/>/);
   assert.match(page, /noindex, nofollow/);
+  assert.doesNotMatch(page, /rel="canonical"/);
   assert.match(page, /data-fmc-validation-fixture="synthetic"/);
   assert.match(page, /makes no production content/);
   assert.match(page, /renderer: 'mathml'/);

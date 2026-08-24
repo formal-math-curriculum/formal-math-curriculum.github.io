@@ -1,8 +1,8 @@
 {
-  "schemaVersion": "p5-m5.8-current-candidate/v2",
-  "candidateRecord": "validation/m5-8-dogfood-candidate-v2.json",
-  "candidateId": "P5-M5.8-CANDIDATE-v2",
-  "auditIssue": "MAT-385",
-  "remediationIssue": "MAT-396",
+  "schemaVersion": "p5-m5.9-current-candidate/v1",
+  "candidateRecord": "validation/m5-9-remediation-candidate-v1.json",
+  "candidateId": "P5-M5.9-REMEDIATION-v1",
+  "auditIssue": "MAT-390",
+  "remediationIssue": "MAT-397",
   "deploymentAuthorized": false
 }
