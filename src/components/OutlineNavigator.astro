@@ -1,0 +1,485 @@
+---
+import OutlineList from './OutlineList.astro';
+import {
+  buildProjectionTree,
+  encodeOutlinePayload,
+  OUTLINE_PROJECTIONS,
+  USABLE_PROJECTION_STATES,
+  validateOutlineManifest
+} from '../lib/outline-navigator.mjs';
+
+interface Props {
+  manifest: unknown;
+  heading?: string;
+}
+
+interface OutlinePlacement {
+  referenceId: string;
+  kind: string;
+  label: string;
+  state: string;
+  contentId: string | null;
+  canonicalRoute: string | null;
+  children: OutlinePlacement[];
+}
+
+interface ProjectionDescriptor {
+  id: string;
+  label: string;
+  state: string;
+  landingRoute: string;
+  activeReferenceId: string | null;
+  placements: unknown[];
+}
+
+interface OutlineManifest {
+  locale: string;
+  currentContent: { contentId: string; canonicalRoute: string };
+  projections: ProjectionDescriptor[];
+}
+
+const { manifest, heading = 'Course outline' } = Astro.props;
+const parsed = validateOutlineManifest(manifest);
+if (!parsed.ok || !parsed.value) {
+  throw new Error(`MAT-416 outline manifest rejected: ${parsed.errors.join('; ')}`);
+}
+const value = parsed.value as OutlineManifest;
+const course = value.projections[0];
+const courseTree = buildProjectionTree(course) as OutlinePlacement[];
+const payload = encodeOutlinePayload(value);
+const componentId = `fmc-outline-${value.currentContent.contentId.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+---
+
+<fmc-outline-navigator
+  data-fmc-outline-manifest={payload}
+  data-fmc-current-content-id={value.currentContent.contentId}
+  data-fmc-canonical-route={value.currentContent.canonicalRoute}
+  lang={value.locale}
+>
+  <button
+    type="button"
+    class="fmc-outline-open"
+    data-fmc-control
+    data-fmc-outline-open
+    aria-haspopup="dialog"
+    aria-controls={`${componentId}-dialog`}
+  >Open outline</button>
+
+  <dialog id={`${componentId}-dialog`} class="fmc-outline-panel" data-fmc-outline-dialog open>
+    <nav aria-labelledby={`${componentId}-title`}>
+      <header class="fmc-outline-header">
+        <div>
+          <p class="fmc-outline-eyebrow">Five-projection navigator</p>
+          <h2 id={`${componentId}-title`}>{heading}</h2>
+        </div>
+        <button type="button" class="fmc-outline-close" data-fmc-control data-fmc-outline-close>
+          Close outline
+        </button>
+      </header>
+
+      <label class="fmc-outline-field">
+        <span>Projection</span>
+        <select data-fmc-control data-fmc-projection>
+          {OUTLINE_PROJECTIONS.map((projection, index) => (
+            <option
+              value={projection.id}
+              disabled={!USABLE_PROJECTION_STATES.includes(value.projections[index].state)}
+              selected={projection.id === 'course'}
+            >{projection.label}</option>
+          ))}
+        </select>
+      </label>
+
+      <ul class="fmc-outline-projection-links" aria-label="Projection landing pages">
+        {value.projections.map((projection) => (
+          <li>
+            <a href={projection.landingRoute}>{projection.label}</a>
+            <span class="fmc-outline-state">{projection.state.replaceAll('-', ' ')}</span>
+          </li>
+        ))}
+      </ul>
+
+      <p class="fmc-outline-context" data-fmc-outline-context>
+        Course projection. Current content: {value.currentContent.contentId}.
+      </p>
+      <p class="fmc-outline-live" role="status" aria-live="polite" data-fmc-outline-status></p>
+
+      <div class="fmc-outline-enhancement" data-fmc-outline-enhancement hidden>
+        <label class="fmc-outline-field">
+          <span>Search this projection</span>
+          <input type="search" data-fmc-control data-fmc-outline-query autocomplete="off" />
+        </label>
+
+        <div class="fmc-outline-filters" data-fmc-outline-filters></div>
+
+        <div class="fmc-outline-actions" aria-label="Outline actions">
+          <button type="button" data-fmc-control data-fmc-expand-all>Expand visible groups</button>
+          <button type="button" data-fmc-control data-fmc-collapse-all>Collapse visible groups</button>
+          <button type="button" data-fmc-control data-fmc-local-reset>Reset outline</button>
+        </div>
+      </div>
+
+      <h3 class="fmc-outline-results" tabindex="-1" data-fmc-outline-results>Course outline</h3>
+      <div data-fmc-outline-tree>
+        <OutlineList
+          nodes={courseTree}
+          activeReferenceId={course.activeReferenceId}
+          currentContentId={value.currentContent.contentId}
+        />
+      </div>
+
+      <div class="fmc-outline-no-results" data-fmc-no-results hidden>
+        <p>No results in this projection.</p>
+        <button type="button" data-fmc-control data-fmc-clear-results>Clear search and filters</button>
+      </div>
+
+      <details class="fmc-outline-complete">
+        <summary data-fmc-control>Complete projection reference list</summary>
+        <p>Every placement is listed with its parent and mapping state.</p>
+        <ul data-fmc-complete-list>
+          {course.placements.map((placement: any) => (
+            <li>
+              {placement.canonicalRoute
+                ? <a href={placement.canonicalRoute}>{placement.label}</a>
+                : <span>{placement.label}</span>}
+              {' — '}{placement.state.replaceAll('-', ' ')}; parent: {placement.parentReferenceId ?? 'root'}
+            </li>
+          ))}
+        </ul>
+      </details>
+
+      <noscript>
+        <p>Course navigation and all ordinary links remain available. Projection switching, search and filters require JavaScript.</p>
+      </noscript>
+    </nav>
+  </dialog>
+</fmc-outline-navigator>
+
+<script>
+  // @ts-nocheck -- runtime values pass the strict pure manifest validator before use.
+  import {
+    createEmptyOutlineContext,
+    decodeOutlinePayload,
+    filterProjection,
+    getEligibleExpansionIds,
+    getProjectionDescriptor,
+    OUTLINE_HISTORY_KEY,
+    resolveEffectiveProjection,
+    restoreOutlineHistory,
+    serializeOutlineHistory,
+    USABLE_PROJECTION_STATES,
+    validateOutlineManifest
+  } from '../lib/outline-navigator.mjs';
+
+  class FMCOutlineNavigator extends HTMLElement {
+    contexts = new Map();
+    effectiveProjection = 'course';
+    requestedProjection = 'course';
+    unsubscribe = undefined;
+    lastTrigger = null;
+    narrowQuery = undefined;
+    manifest = undefined;
+    store = undefined;
+
+    connectedCallback() {
+      const decoded = decodeOutlinePayload(this.dataset.fmcOutlineManifest ?? '');
+      const parsed = validateOutlineManifest(decoded);
+      if (!parsed.ok) {
+        const status = this.querySelector('[data-fmc-outline-status]');
+        if (status) status.textContent = 'The outline manifest is invalid. Static Course links remain available.';
+        return;
+      }
+      this.manifest = parsed.value;
+      this.dataset.fmcEnhanced = 'true';
+      this.querySelector('[data-fmc-outline-enhancement]')?.removeAttribute('hidden');
+
+      for (const descriptor of this.manifest.projections) {
+        this.contexts.set(descriptor.id, createEmptyOutlineContext());
+      }
+      const restored = restoreOutlineHistory(this.manifest, history.state);
+      if (restored.projectionId && this.contexts.has(restored.projectionId)) {
+        this.contexts.set(restored.projectionId, restored.context);
+      }
+
+      this.setupDrawer();
+      this.setupControls();
+      this.bindPreferenceStore();
+      if (!this.store) {
+        window.addEventListener('fmc:preference-store-ready', () => this.bindPreferenceStore(), { once: true });
+        this.applyProjection(restored.projectionId || 'course', restored.status);
+      }
+    }
+
+    disconnectedCallback() {
+      this.unsubscribe?.();
+      this.narrowQuery?.removeEventListener?.('change', this.syncDrawerMode);
+    }
+
+    setupDrawer() {
+      const dialog = this.querySelector('[data-fmc-outline-dialog]');
+      const trigger = this.querySelector('[data-fmc-outline-open]');
+      const close = this.querySelector('[data-fmc-outline-close]');
+      this.narrowQuery = matchMedia('(max-width: 50rem)');
+
+      this.syncDrawerMode = () => {
+        if (this.narrowQuery.matches) {
+          if (dialog.open && dialog.dataset.fmcModal !== 'true') dialog.close();
+        } else {
+          if (dialog.open && dialog.dataset.fmcModal === 'true') dialog.close();
+          dialog.dataset.fmcModal = 'false';
+          if (!dialog.open) dialog.show();
+        }
+      };
+      this.syncDrawerMode();
+      this.narrowQuery.addEventListener('change', this.syncDrawerMode);
+
+      trigger.addEventListener('click', () => {
+        this.lastTrigger = trigger;
+        dialog.dataset.fmcModal = 'true';
+        if (!dialog.open) dialog.showModal();
+        close.focus();
+      });
+      const closeDrawer = () => {
+        if (this.narrowQuery.matches && dialog.open) dialog.close();
+        this.lastTrigger?.focus();
+      };
+      close.addEventListener('click', closeDrawer);
+      dialog.addEventListener('cancel', () => queueMicrotask(() => this.lastTrigger?.focus()));
+      dialog.addEventListener('click', (event) => {
+        if (event.target === dialog && dialog.dataset.fmcModal === 'true') closeDrawer();
+      });
+    }
+
+    setupControls() {
+      const selector = this.querySelector('[data-fmc-projection]');
+      const query = this.querySelector('[data-fmc-outline-query]');
+      selector.addEventListener('change', () => {
+        this.store?.set({ outlineProjection: selector.value }, 'outline-projection');
+        if (!this.store) this.applyProjection(selector.value);
+      });
+      query.addEventListener('input', () => {
+        this.currentContext().query = query.value;
+        this.render('Search updated.');
+      });
+      this.querySelector('[data-fmc-expand-all]').addEventListener('click', () => {
+        const result = filterProjection(this.manifest, this.effectiveProjection, this.currentContext());
+        this.currentContext().expandedReferenceIds = getEligibleExpansionIds(result.nodes);
+        this.render('All eligible visible groups expanded.');
+      });
+      this.querySelector('[data-fmc-collapse-all]').addEventListener('click', () => {
+        this.currentContext().expandedReferenceIds = [];
+        this.render('All eligible visible groups collapsed.');
+      });
+      this.querySelector('[data-fmc-local-reset]').addEventListener('click', () => this.resetLocal());
+      this.querySelector('[data-fmc-clear-results]').addEventListener('click', () => this.resetLocal());
+      window.addEventListener('popstate', (event) => {
+        const restored = restoreOutlineHistory(this.manifest, event.state);
+        this.contexts.set(restored.projectionId, restored.context);
+        this.applyProjection(restored.projectionId, restored.status);
+      });
+    }
+
+    bindPreferenceStore() {
+      if (this.store || !window.FMCPreferenceStore) return;
+      this.store = window.FMCPreferenceStore;
+      this.unsubscribe = this.store.subscribe((detail) => {
+        if (detail.source === 'reset') {
+          for (const descriptor of this.manifest.projections) {
+            this.contexts.set(descriptor.id, createEmptyOutlineContext());
+          }
+        }
+        this.applyProjection(detail.preferences.outlineProjection, detail.source === 'reset' ? 'Preferences reset. Course outline restored.' : '');
+      });
+    }
+
+    currentContext() {
+      if (!this.contexts.has(this.effectiveProjection)) {
+        this.contexts.set(this.effectiveProjection, createEmptyOutlineContext());
+      }
+      return this.contexts.get(this.effectiveProjection);
+    }
+
+    applyProjection(requested, extraStatus = '') {
+      const previous = this.effectiveProjection;
+      const previousUniversal = this.contexts.get(previous)?.universalFilters ?? {};
+      const resolution = resolveEffectiveProjection(this.manifest, requested);
+      this.requestedProjection = requested;
+      this.effectiveProjection = resolution.effectiveProjection;
+      const next = this.currentContext();
+      if (previous !== this.effectiveProjection) {
+        next.universalFilters = structuredClone(previousUniversal);
+      }
+      const selector = this.querySelector('[data-fmc-projection]');
+      selector.value = this.effectiveProjection;
+      this.render([resolution.status, extraStatus].filter(Boolean).join(' '));
+    }
+
+    resetLocal() {
+      this.contexts.set(this.effectiveProjection, createEmptyOutlineContext());
+      this.render(`Local ${getProjectionDescriptor(this.manifest, this.effectiveProjection).label} outline state reset. Projection unchanged.`);
+      this.querySelector('[data-fmc-outline-query]').focus();
+    }
+
+    render(message = '') {
+      const descriptor = getProjectionDescriptor(this.manifest, this.effectiveProjection);
+      const treeHost = this.querySelector('[data-fmc-outline-tree]');
+      const focusedInsideTree = treeHost.contains(document.activeElement);
+      if (focusedInsideTree) this.querySelector('[data-fmc-outline-results]').focus();
+
+      const result = filterProjection(this.manifest, this.effectiveProjection, this.currentContext());
+      this.contexts.set(this.effectiveProjection, result.context);
+      const query = this.querySelector('[data-fmc-outline-query]');
+      query.value = result.context.query;
+      this.renderFilters(descriptor, result.context);
+      treeHost.replaceChildren(this.buildList(result.nodes, descriptor));
+      this.renderCompleteList(descriptor);
+
+      const results = this.querySelector('[data-fmc-outline-results]');
+      results.textContent = `${descriptor.label}: ${result.resultCount} matching navigation ${result.resultCount === 1 ? 'result' : 'results'}`;
+      const noResults = this.querySelector('[data-fmc-no-results]');
+      noResults.hidden = result.resultCount !== 0;
+      const context = this.querySelector('[data-fmc-outline-context]');
+      context.textContent = `${descriptor.label} projection. Current entity: ${this.manifest.currentContent.contentId}. Canonical route remains ${this.manifest.currentContent.canonicalRoute}.`;
+      const dropped = result.dropped.length > 0 ? ` Invalid outline tokens cleared: ${result.dropped.join(', ')}.` : '';
+      const status = this.querySelector('[data-fmc-outline-status]');
+      status.textContent = `${message || `${descriptor.label} projection active.`} ${result.resultCount} results.${dropped}`.trim();
+      this.saveHistory(descriptor.activeReferenceId);
+    }
+
+    renderFilters(descriptor, context) {
+      const host = this.querySelector('[data-fmc-outline-filters]');
+      host.replaceChildren();
+      const renderGroup = (group, family) => {
+        const fieldset = document.createElement('fieldset');
+        fieldset.dataset.fmcFilterFamily = family;
+        const legend = document.createElement('legend');
+        legend.textContent = `${family === 'universal' ? 'Universal' : descriptor.label} — ${group.label}`;
+        fieldset.append(legend);
+        for (const option of group.options) {
+          const label = document.createElement('label');
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.value = option.id;
+          input.dataset.fmcControl = '';
+          input.checked = (context[`${family}Filters`][group.id] ?? []).includes(option.id);
+          input.addEventListener('change', () => {
+            const selection = new Set(context[`${family}Filters`][group.id] ?? []);
+            input.checked ? selection.add(option.id) : selection.delete(option.id);
+            if (selection.size > 0) context[`${family}Filters`][group.id] = [...selection];
+            else delete context[`${family}Filters`][group.id];
+            this.render(`${group.label} filter updated.`);
+          });
+          label.append(input, document.createTextNode(option.label));
+          fieldset.append(label);
+        }
+        host.append(fieldset);
+      };
+      this.manifest.universalFilterSchema.forEach((group) => renderGroup(group, 'universal'));
+      descriptor.structuralFilterSchema.forEach((group) => renderGroup(group, 'structural'));
+    }
+
+    buildList(nodes, descriptor, level = 0) {
+      const list = document.createElement('ul');
+      list.className = 'fmc-outline-list';
+      list.dataset.level = String(level);
+      for (const node of nodes) {
+        const item = document.createElement('li');
+        item.dataset.fmcReferenceId = node.referenceId;
+        item.dataset.fmcKind = node.kind;
+        item.dataset.fmcState = node.state;
+        const row = document.createElement('div');
+        row.className = 'fmc-outline-row';
+        const childId = `fmc-outline-live-${node.referenceId.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+        if (node.children.length > 0) {
+          const disclosure = document.createElement('button');
+          const expanded = this.currentContext().expandedReferenceIds.includes(node.referenceId);
+          disclosure.type = 'button';
+          disclosure.className = 'fmc-outline-disclosure';
+          disclosure.dataset.fmcControl = '';
+          disclosure.setAttribute('aria-expanded', String(expanded));
+          disclosure.setAttribute('aria-controls', childId);
+          disclosure.setAttribute('aria-label', `${expanded ? 'Collapse' : 'Expand'} ${node.label}`);
+          disclosure.textContent = expanded ? '−' : '+';
+          disclosure.addEventListener('click', () => {
+            const expansion = new Set(this.currentContext().expandedReferenceIds);
+            expansion.has(node.referenceId) ? expansion.delete(node.referenceId) : expansion.add(node.referenceId);
+            this.currentContext().expandedReferenceIds = [...expansion];
+            this.render(`${node.label} ${expansion.has(node.referenceId) ? 'expanded' : 'collapsed'}.`);
+            queueMicrotask(() => this.querySelector(`[data-fmc-reference-id="${CSS.escape(node.referenceId)}"] button`)?.focus());
+          });
+          row.append(disclosure);
+        } else {
+          const marker = document.createElement('span');
+          marker.className = 'fmc-outline-leaf-marker';
+          marker.ariaHidden = 'true';
+          marker.textContent = '•';
+          row.append(marker);
+        }
+        if (node.canonicalRoute) {
+          const link = document.createElement('a');
+          link.href = node.canonicalRoute;
+          link.textContent = node.label;
+          if (node.referenceId === descriptor.activeReferenceId) link.setAttribute('aria-current', 'page');
+          link.addEventListener('click', () => this.saveHistory(node.referenceId));
+          row.append(link);
+        } else {
+          const label = document.createElement('span');
+          label.textContent = node.label;
+          row.append(label);
+        }
+        const state = document.createElement('span');
+        state.className = 'fmc-outline-state';
+        state.textContent = node.state.replaceAll('-', ' ');
+        row.append(state);
+        if (node.contentId === this.manifest.currentContent.contentId && node.referenceId !== descriptor.activeReferenceId) {
+          const cue = document.createElement('span');
+          cue.className = 'fmc-outline-current-entity';
+          cue.textContent = 'current entity, alternate placement';
+          row.append(cue);
+        }
+        item.append(row);
+        if (node.children.length > 0) {
+          const childHost = document.createElement('div');
+          childHost.id = childId;
+          childHost.hidden = !this.currentContext().expandedReferenceIds.includes(node.referenceId);
+          childHost.append(this.buildList(node.children, descriptor, level + 1));
+          item.append(childHost);
+        }
+        list.append(item);
+      }
+      return list;
+    }
+
+    renderCompleteList(descriptor) {
+      const list = this.querySelector('[data-fmc-complete-list]');
+      list.replaceChildren();
+      for (const placement of descriptor.placements) {
+        const item = document.createElement('li');
+        if (placement.canonicalRoute) {
+          const link = document.createElement('a');
+          link.href = placement.canonicalRoute;
+          link.textContent = placement.label;
+          item.append(link);
+        } else {
+          item.append(document.createTextNode(placement.label));
+        }
+        item.append(document.createTextNode(` — ${placement.state.replaceAll('-', ' ')}; parent: ${placement.parentReferenceId ?? 'root'}`));
+        list.append(item);
+      }
+    }
+
+    saveHistory(activeReferenceId) {
+      const payload = serializeOutlineHistory(this.manifest, this.effectiveProjection, this.currentContext(), activeReferenceId);
+      if (!payload) return;
+      try {
+        history.replaceState({ ...(history.state ?? {}), [OUTLINE_HISTORY_KEY]: payload }, '', location.href);
+      } catch {
+        // History state is an optional bounded enhancement; memory state remains authoritative.
+      }
+    }
+  }
+
+  if (!customElements.get('fmc-outline-navigator')) {
+    customElements.define('fmc-outline-navigator', FMCOutlineNavigator);
+  }
+</script>

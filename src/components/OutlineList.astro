@@ -1,0 +1,63 @@
+---
+interface OutlineNode {
+  referenceId: string;
+  kind: string;
+  label: string;
+  state: string;
+  contentId: string | null;
+  canonicalRoute: string | null;
+  children: OutlineNode[];
+}
+
+interface Props {
+  nodes: OutlineNode[];
+  activeReferenceId: string | null;
+  currentContentId: string;
+  level?: number;
+}
+
+const { nodes, activeReferenceId, currentContentId, level = 0 } = Astro.props;
+const domId = (referenceId: string) => `fmc-outline-${referenceId.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+const stateLabel = (state: string) => state.replaceAll('-', ' ');
+---
+
+<ul class="fmc-outline-list" data-fmc-static-outline data-level={level}>
+  {nodes.map((node) => {
+    const activeTraversal = node.referenceId === activeReferenceId;
+    const currentEntity = node.contentId === currentContentId;
+    const childrenId = `${domId(node.referenceId)}-children`;
+    return (
+      <li data-fmc-reference-id={node.referenceId} data-fmc-kind={node.kind} data-fmc-state={node.state}>
+        <div class="fmc-outline-row">
+          {node.children.length > 0 ? (
+            <button
+              type="button"
+              class="fmc-outline-disclosure"
+              data-fmc-control
+              aria-expanded="true"
+              aria-controls={childrenId}
+              aria-label={`Collapse ${node.label}`}
+            >−</button>
+          ) : <span class="fmc-outline-leaf-marker" aria-hidden="true">•</span>}
+          {node.canonicalRoute ? (
+            <a href={node.canonicalRoute} aria-current={activeTraversal ? 'page' : undefined}>{node.label}</a>
+          ) : <span>{node.label}</span>}
+          <span class="fmc-outline-state">{stateLabel(node.state)}</span>
+          {currentEntity && !activeTraversal ? (
+            <span class="fmc-outline-current-entity">current entity, alternate placement</span>
+          ) : null}
+        </div>
+        {node.children.length > 0 ? (
+          <div id={childrenId}>
+            <Astro.self
+              nodes={node.children}
+              activeReferenceId={activeReferenceId}
+              currentContentId={currentContentId}
+              level={level + 1}
+            />
+          </div>
+        ) : null}
+      </li>
+    );
+  })}
+</ul>
