@@ -309,6 +309,8 @@ async function projectionAndFilterAudit(page) {
   await exercise.check();
   const exerciseState = await page.evaluate(() => ({
     result: document.querySelector('[data-fmc-outline-results]')?.textContent?.trim(),
+    exerciseChecked: [...document.querySelectorAll('[data-fmc-filter-family="universal"] label')]
+      .find((label) => label.textContent?.trim() === 'Exercise')?.querySelector('input')?.checked ?? false,
     kinds: [...document.querySelectorAll('[data-fmc-outline-tree] [data-fmc-kind]')].map((node) => node.getAttribute('data-fmc-kind')),
     status: document.querySelector('[data-fmc-outline-status]')?.textContent?.trim()
   }));
@@ -417,7 +419,12 @@ async function drawerAndReflowAudit(browser, engineName) {
     modal: document.querySelector('[data-fmc-outline-dialog]')?.matches(':modal'),
     active: document.activeElement?.getAttribute('data-fmc-outline-close') !== null,
     dialogRole: document.querySelector('[data-fmc-outline-dialog]')?.tagName,
-    hasAccessibleName: Boolean(document.querySelector('[data-fmc-outline-dialog] nav')?.getAttribute('aria-labelledby'))
+    hasAccessibleName: (() => {
+      const dialog = document.querySelector('[data-fmc-outline-dialog]');
+      const label = dialog?.getAttribute('aria-label')?.trim();
+      const labelledBy = dialog?.getAttribute('aria-labelledby')?.trim();
+      return Boolean(label || (labelledBy && document.getElementById(labelledBy)?.textContent?.trim()));
+    })()
   }));
   const focusTrail = [];
   for (let index = 0; index < 30; index += 1) {
@@ -537,7 +544,8 @@ function enginePasses(evidence) {
     && evidence.semantic.invalidTabs === 0
     && evidence.semantic.mathWithoutTextAlternative === 0
     && evidence.semantic.currentPageCount > 0;
-  const filtersPass = evidence.projection.exerciseState.kinds.includes('exercise')
+  const filtersPass = evidence.projection.exerciseState.exerciseChecked
+    && evidence.projection.exerciseState.result?.includes('2 matching navigation results')
     && evidence.projection.exerciseState.status?.includes('filter updated')
     && evidence.projection.selectedStructural.length === 2
     && evidence.projection.combinedState.status?.includes('filter updated');
@@ -596,7 +604,7 @@ function applicationStats() {
       largestStyle: gzipSync(readFileSync(join(dist, largestStyle.path))).byteLength
     },
     fonts: files.filter((path) => /\.(woff2?|ttf|otf)$/u.test(path)).map((path) => relative(dist, path).replaceAll('\\', '/')),
-    unhashedAstroAssets: files.filter((path) => relative(dist, path).startsWith('_astro/') && !/\.[A-Za-z0-9_-]{8,}\./u.test(path)).map((path) => relative(dist, path).replaceAll('\\', '/'))
+    unhashedAstroAssets: files.filter((path) => relative(dist, path).startsWith('_astro/') && !/\.[A-Za-z0-9_-]{5,}\./u.test(path)).map((path) => relative(dist, path).replaceAll('\\', '/'))
   };
 }
 
@@ -627,6 +635,8 @@ async function performanceAudit() {
   await session.send('Emulation.setCPUThrottlingRate', { rate: 4 });
   const response = await page.goto(`${origin}${primaryRoute}`, { waitUntil: 'load' });
   await waitForCourse(page);
+  await page.waitForTimeout(500);
+  const loadVitals = await page.evaluate(() => ({ lcpMs: window.__fmcLcp, cls: window.__fmcCls }));
   await page.locator('fmc-global-search summary').click();
   await page.locator('[data-fmc-global-query]').fill('distributive');
   await page.waitForFunction(() => /matching governed learner/u.test(document.querySelector('[data-fmc-global-status]')?.textContent ?? ''));
@@ -641,15 +651,15 @@ async function performanceAudit() {
       resourceBytes: resources.reduce((sum, entry) => sum + bytes(entry), 0),
       domContentLoadedMs: navigation.domContentLoadedEventEnd,
       loadMs: navigation.loadEventEnd,
-      lcpMs: window.__fmcLcp,
-      cls: window.__fmcCls,
+      interactionLcpMs: window.__fmcLcp,
+      interactionCls: window.__fmcCls,
       inpMs: Math.max(0, ...window.__fmcInteractions)
     };
   });
   await context.close();
   await browser.close();
   const documentBytes = Number(response?.headers()['content-length'] ?? 0);
-  return { ...timing, documentBytes, totalBytes: documentBytes + timing.resourceBytes };
+  return { ...timing, ...loadVitals, documentBytes, totalBytes: documentBytes + timing.resourceBytes };
 }
 
 try {
