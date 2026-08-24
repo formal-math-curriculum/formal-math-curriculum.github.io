@@ -30,9 +30,14 @@ The MAT-360 baseline adds a validated, progressively enhanced mathematical block
 rendered/LaTeX/Lean representations, local overrides, exact copy behavior and explicit
 state/provenance. See `docs/architecture/representation-block.md`.
 
+The MAT-416 baseline adds a validated, progressively enhanced five-projection outline
+navigator with native disclosure navigation, a shared wide/narrow semantic surface,
+ephemeral search/filter/expansion context and fail-closed projection states. See
+`docs/architecture/outline-navigator.md`.
+
 This repository still contains no production course corpus, external taxonomy
 snapshot, Portuguese translation, populated representation instance,
-five-projection navigator, or release qualification.
+populated projection manifest, or release qualification.
 
 `inputs.lock.json` freezes every cross-repository subject. The build refuses a
 different checkout, source hash, schema version, or unqualified content manifest.

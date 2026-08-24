@@ -1,0 +1,422 @@
+{
+  "schemaVersion": "p5-outline-manifest/v1",
+  "locale": "en",
+  "currentContent": {
+    "contentId": "cnt:definition:group",
+    "canonicalRoute": "/content/grp0000001/group/"
+  },
+  "universalFilterSchema": [
+    {
+      "id": "coverage",
+      "label": "Mapping state",
+      "mode": "multi",
+      "options": [
+        { "id": "mapped", "label": "Mapped" },
+        { "id": "partial", "label": "Partially mapped" },
+        { "id": "review", "label": "Needs review" },
+        { "id": "unmapped", "label": "Unmapped" }
+      ]
+    },
+    {
+      "id": "content-kind",
+      "label": "Content kind",
+      "mode": "multi",
+      "options": [
+        { "id": "definition", "label": "Definition" },
+        { "id": "theorem", "label": "Theorem" },
+        { "id": "context", "label": "Context" }
+      ]
+    }
+  ],
+  "projections": [
+    {
+      "id": "course",
+      "label": "Course",
+      "kind": "course-pedagogy",
+      "state": "current",
+      "fingerprint": "synthetic-course-v1",
+      "landingRoute": "/outline/course/",
+      "rootMode": "pedagogical",
+      "activeReferenceId": "course:groups:def",
+      "structuralFilterSchema": [
+        {
+          "id": "stage",
+          "label": "Course stage",
+          "mode": "multi",
+          "options": [
+            { "id": "foundations", "label": "Foundations" },
+            { "id": "later", "label": "Later study" }
+          ]
+        }
+      ],
+      "placements": [
+        {
+          "referenceId": "course:foundations",
+          "parentReferenceId": null,
+          "kind": "group",
+          "label": "Foundations",
+          "order": 0,
+          "state": "mapped",
+          "contentId": "cnt:course:foundations",
+          "canonicalRoute": "/course/foundations/",
+          "aliases": ["stage one"],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["context"] },
+          "structuralTokens": { "stage": ["foundations"] }
+        },
+        {
+          "referenceId": "course:groups",
+          "parentReferenceId": "course:foundations",
+          "kind": "presentation-heading",
+          "label": "Groups",
+          "order": 0,
+          "state": "mapped",
+          "contentId": "cnt:course:groups",
+          "canonicalRoute": "/course/foundations/groups/",
+          "aliases": ["algebraic structures"],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["context"] },
+          "structuralTokens": { "stage": ["foundations"] }
+        },
+        {
+          "referenceId": "course:groups:def",
+          "parentReferenceId": "course:groups",
+          "kind": "reference",
+          "label": "Definition of a group",
+          "order": 0,
+          "state": "mapped",
+          "contentId": "cnt:definition:group",
+          "canonicalRoute": "/content/grp0000001/group/",
+          "aliases": ["group axioms"],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["definition"] },
+          "structuralTokens": { "stage": ["foundations"] }
+        },
+        {
+          "referenceId": "course:groups:prerequisite",
+          "parentReferenceId": "course:groups",
+          "kind": "prerequisite",
+          "label": "Prerequisite: binary operations",
+          "order": 1,
+          "state": "mapped",
+          "contentId": "cnt:definition:binary-operation",
+          "canonicalRoute": "/content/bin0000001/binary-operation/",
+          "aliases": ["operation"],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["definition"] },
+          "structuralTokens": { "stage": ["foundations"] }
+        },
+        {
+          "referenceId": "course:later:missing",
+          "parentReferenceId": null,
+          "kind": "missing-state",
+          "label": "Later study is not yet mapped",
+          "order": 1,
+          "state": "unmapped",
+          "contentId": null,
+          "canonicalRoute": null,
+          "aliases": [],
+          "universalTokens": { "coverage": ["unmapped"], "content-kind": ["context"] },
+          "structuralTokens": { "stage": ["later"] }
+        }
+      ]
+    },
+    {
+      "id": "ontomathpro",
+      "label": "OntoMathPRO",
+      "kind": "ontomathpro-polyhierarchy",
+      "state": "current",
+      "fingerprint": "synthetic-ontomathpro-v1",
+      "landingRoute": "/outline/ontomathpro/",
+      "rootMode": "multiple-parents",
+      "activeReferenceId": "onto:algebra:group",
+      "structuralFilterSchema": [
+        {
+          "id": "onto-branch",
+          "label": "OntoMathPRO branch",
+          "mode": "multi",
+          "options": [
+            { "id": "algebra", "label": "Algebra" },
+            { "id": "structures", "label": "Mathematical structures" }
+          ]
+        }
+      ],
+      "placements": [
+        {
+          "referenceId": "onto:algebra",
+          "parentReferenceId": null,
+          "kind": "group",
+          "label": "Algebra",
+          "order": 0,
+          "state": "mapped",
+          "contentId": "cnt:onto:algebra",
+          "canonicalRoute": "/outline/ontomathpro/algebra/",
+          "aliases": [],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["context"] },
+          "structuralTokens": { "onto-branch": ["algebra"] }
+        },
+        {
+          "referenceId": "onto:algebra:group",
+          "parentReferenceId": "onto:algebra",
+          "kind": "reference",
+          "label": "Group",
+          "order": 0,
+          "state": "mapped",
+          "contentId": "cnt:definition:group",
+          "canonicalRoute": "/content/grp0000001/group/",
+          "aliases": ["group theory"],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["definition"] },
+          "structuralTokens": { "onto-branch": ["algebra"] }
+        },
+        {
+          "referenceId": "onto:structures",
+          "parentReferenceId": null,
+          "kind": "group",
+          "label": "Mathematical structures",
+          "order": 1,
+          "state": "mapped",
+          "contentId": "cnt:onto:structures",
+          "canonicalRoute": "/outline/ontomathpro/structures/",
+          "aliases": [],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["context"] },
+          "structuralTokens": { "onto-branch": ["structures"] }
+        },
+        {
+          "referenceId": "onto:structures:group",
+          "parentReferenceId": "onto:structures",
+          "kind": "reference",
+          "label": "Group",
+          "order": 0,
+          "state": "mapped",
+          "contentId": "cnt:definition:group",
+          "canonicalRoute": "/content/grp0000001/group/",
+          "aliases": ["algebraic structure"],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["definition"] },
+          "structuralTokens": { "onto-branch": ["structures"] }
+        }
+      ]
+    },
+    {
+      "id": "msc2020",
+      "label": "MSC 2020",
+      "kind": "msc2020-classification",
+      "state": "current",
+      "fingerprint": "synthetic-msc2020-v1",
+      "landingRoute": "/outline/msc2020/",
+      "rootMode": "classification-codes",
+      "activeReferenceId": "msc:20:group",
+      "structuralFilterSchema": [
+        {
+          "id": "msc-section",
+          "label": "MSC 2020 section",
+          "mode": "multi",
+          "options": [
+            { "id": "18", "label": "18 — Category theory; homological algebra" },
+            { "id": "20", "label": "20 — Group theory and generalizations" }
+          ]
+        }
+      ],
+      "placements": [
+        {
+          "referenceId": "msc:18",
+          "parentReferenceId": null,
+          "kind": "group",
+          "label": "18 — Category theory; homological algebra",
+          "order": 0,
+          "state": "partially-mapped",
+          "contentId": "cnt:msc:18",
+          "canonicalRoute": "/outline/msc2020/18/",
+          "aliases": ["category theory"],
+          "universalTokens": { "coverage": ["partial"], "content-kind": ["context"] },
+          "structuralTokens": { "msc-section": ["18"] }
+        },
+        {
+          "referenceId": "msc:18:group",
+          "parentReferenceId": "msc:18",
+          "kind": "reference",
+          "label": "Group (secondary alignment)",
+          "order": 0,
+          "state": "needs-review",
+          "contentId": "cnt:definition:group",
+          "canonicalRoute": "/content/grp0000001/group/",
+          "aliases": ["group object"],
+          "universalTokens": { "coverage": ["review"], "content-kind": ["definition"] },
+          "structuralTokens": { "msc-section": ["18"] }
+        },
+        {
+          "referenceId": "msc:20",
+          "parentReferenceId": null,
+          "kind": "group",
+          "label": "20 — Group theory and generalizations",
+          "order": 1,
+          "state": "mapped",
+          "contentId": "cnt:msc:20",
+          "canonicalRoute": "/outline/msc2020/20/",
+          "aliases": ["group theory"],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["context"] },
+          "structuralTokens": { "msc-section": ["20"] }
+        },
+        {
+          "referenceId": "msc:20:group",
+          "parentReferenceId": "msc:20",
+          "kind": "reference",
+          "label": "Group",
+          "order": 0,
+          "state": "mapped",
+          "contentId": "cnt:definition:group",
+          "canonicalRoute": "/content/grp0000001/group/",
+          "aliases": ["20A05"],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["definition"] },
+          "structuralTokens": { "msc-section": ["20"] }
+        }
+      ]
+    },
+    {
+      "id": "arxiv",
+      "label": "arXiv",
+      "kind": "arxiv-shallow-category",
+      "state": "current",
+      "fingerprint": "synthetic-arxiv-v1",
+      "landingRoute": "/outline/arxiv/",
+      "rootMode": "shallow-categories",
+      "activeReferenceId": "arxiv:gr:group",
+      "structuralFilterSchema": [
+        {
+          "id": "arxiv-category",
+          "label": "arXiv category",
+          "mode": "multi",
+          "options": [
+            { "id": "math.GR", "label": "math.GR — Group Theory" },
+            { "id": "math.CT", "label": "math.CT — Category Theory" }
+          ]
+        }
+      ],
+      "placements": [
+        {
+          "referenceId": "arxiv:math",
+          "parentReferenceId": null,
+          "kind": "group",
+          "label": "Mathematics",
+          "order": 0,
+          "state": "mapped",
+          "contentId": "cnt:arxiv:math",
+          "canonicalRoute": "/outline/arxiv/math/",
+          "aliases": [],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["context"] },
+          "structuralTokens": {}
+        },
+        {
+          "referenceId": "arxiv:gr",
+          "parentReferenceId": "arxiv:math",
+          "kind": "group",
+          "label": "math.GR — Group Theory",
+          "order": 0,
+          "state": "mapped",
+          "contentId": "cnt:arxiv:math-gr",
+          "canonicalRoute": "/outline/arxiv/math-gr/",
+          "aliases": ["group theory"],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["context"] },
+          "structuralTokens": { "arxiv-category": ["math.GR"] }
+        },
+        {
+          "referenceId": "arxiv:gr:group",
+          "parentReferenceId": "arxiv:gr",
+          "kind": "reference",
+          "label": "Definition of a group",
+          "order": 0,
+          "state": "mapped",
+          "contentId": "cnt:definition:group",
+          "canonicalRoute": "/content/grp0000001/group/",
+          "aliases": ["group axioms"],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["definition"] },
+          "structuralTokens": { "arxiv-category": ["math.GR"] }
+        },
+        {
+          "referenceId": "arxiv:ct:missing",
+          "parentReferenceId": "arxiv:math",
+          "kind": "missing-state",
+          "label": "math.CT alignment needs review",
+          "order": 1,
+          "state": "needs-review",
+          "contentId": null,
+          "canonicalRoute": null,
+          "aliases": ["category theory"],
+          "universalTokens": { "coverage": ["review"], "content-kind": ["context"] },
+          "structuralTokens": { "arxiv-category": ["math.CT"] }
+        }
+      ]
+    },
+    {
+      "id": "lean-mathlib",
+      "label": "Lean / mathlib",
+      "kind": "lean-content-drilldown",
+      "state": "current",
+      "fingerprint": "synthetic-lean-v1",
+      "landingRoute": "/outline/lean-mathlib/",
+      "rootMode": "content-centered",
+      "activeReferenceId": "lean:declaration:group",
+      "structuralFilterSchema": [
+        {
+          "id": "lean-level",
+          "label": "Lean drilldown level",
+          "mode": "multi",
+          "options": [
+            { "id": "artifact", "label": "Artifact" },
+            { "id": "module", "label": "Module" },
+            { "id": "declaration", "label": "Declaration" }
+          ]
+        }
+      ],
+      "placements": [
+        {
+          "referenceId": "lean:content:group",
+          "parentReferenceId": null,
+          "kind": "group",
+          "label": "Definition of a group",
+          "order": 0,
+          "state": "mapped",
+          "contentId": "cnt:definition:group",
+          "canonicalRoute": "/content/grp0000001/group/",
+          "aliases": ["current content"],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["definition"] },
+          "structuralTokens": {}
+        },
+        {
+          "referenceId": "lean:artifact:mathlib",
+          "parentReferenceId": "lean:content:group",
+          "kind": "artifact",
+          "label": "mathlib artifact",
+          "order": 0,
+          "state": "mapped",
+          "contentId": "lean:artifact:mathlib",
+          "canonicalRoute": "/formal/mathlib/",
+          "aliases": ["compiled artifact"],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["context"] },
+          "structuralTokens": { "lean-level": ["artifact"] }
+        },
+        {
+          "referenceId": "lean:module:group-basic",
+          "parentReferenceId": "lean:artifact:mathlib",
+          "kind": "module",
+          "label": "Mathlib.Algebra.Group.Basic",
+          "order": 0,
+          "state": "mapped",
+          "contentId": "lean:module:Mathlib.Algebra.Group.Basic",
+          "canonicalRoute": "/formal/mathlib/Mathlib/Algebra/Group/Basic/",
+          "aliases": ["group module"],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["context"] },
+          "structuralTokens": { "lean-level": ["module"] }
+        },
+        {
+          "referenceId": "lean:declaration:group",
+          "parentReferenceId": "lean:module:group-basic",
+          "kind": "declaration",
+          "label": "Group",
+          "order": 0,
+          "state": "mapped",
+          "contentId": "cnt:definition:group",
+          "canonicalRoute": "/content/grp0000001/group/",
+          "aliases": ["class Group"],
+          "universalTokens": { "coverage": ["mapped"], "content-kind": ["definition"] },
+          "structuralTokens": { "lean-level": ["declaration"] }
+        }
+      ]
+    }
+  ]
+}
