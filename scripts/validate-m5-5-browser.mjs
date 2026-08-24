@@ -608,6 +608,7 @@ try {
   const trigger = narrowPage.locator('[data-fmc-outline-open]');
   const dialog = narrowPage.locator('[data-fmc-outline-dialog]');
   await trigger.click();
+  await narrowPage.screenshot({ path: join(evidenceDirectory, 'm5-5-narrow-modal.png') });
   await row('B18', 'Material', 'The same narrow dialog is modal, contains sequential focus, closes on Escape and restores trigger focus', async () => {
     const modal = await dialog.evaluate((element) => element.matches(':modal'));
     let contained = true;
@@ -630,7 +631,6 @@ try {
       contained &&= focused.contained;
       focusTrace.push(focused);
     }
-    await narrowPage.screenshot({ path: join(evidenceDirectory, 'm5-5-narrow-modal.png'), fullPage: true });
     await narrowPage.keyboard.press('Escape');
     await narrowPage.waitForFunction(() => !document.querySelector('[data-fmc-outline-dialog]')?.open);
     const restored = await trigger.evaluate((button) => document.activeElement === button);
