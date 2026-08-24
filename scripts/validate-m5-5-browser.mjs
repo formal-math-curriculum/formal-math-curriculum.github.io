@@ -146,6 +146,9 @@ async function waitForEnhancement(page) {
 
 function parseColor(color) {
   const value = color.trim();
+  if (/^#[0-9a-f]{3}$/i.test(value)) {
+    return value.slice(1).split('').map((channel) => Number.parseInt(`${channel}${channel}`, 16));
+  }
   if (/^#[0-9a-f]{6}$/i.test(value)) {
     return [1, 3, 5].map((start) => Number.parseInt(value.slice(start, start + 2), 16));
   }
