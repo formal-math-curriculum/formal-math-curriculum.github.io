@@ -1,12 +1,335 @@
 :root {
-  --sl-color-accent-low: #162f2a;
-  --sl-color-accent: #2f927f;
-  --sl-color-accent-high: #b9f4e7;
+  --fmc-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --fmc-font-serif: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  --fmc-font-code: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --fmc-control-min-size: 2.75rem;
+  --fmc-focus-width: 0.1875rem;
+  --fmc-radius-sm: 0.375rem;
+  --fmc-radius-md: 0.625rem;
+  --fmc-space-1: 0.25rem;
+  --fmc-space-2: 0.5rem;
+  --fmc-space-3: 0.75rem;
+  --fmc-space-4: 1rem;
+  --fmc-motion-fast: 120ms;
+  --fmc-motion-normal: 180ms;
+  --fmc-line-height: 1.65;
+  --fmc-body-weight: 400;
+  --fmc-body-scale: 1;
+  --fmc-body-family: var(--fmc-font-sans);
+  font-synthesis: none;
 }
 
-:root[data-theme='light'] {
-  --sl-color-accent-low: #d9f5ed;
-  --sl-color-accent: #176e5d;
-  --sl-color-accent-high: #0d392f;
+:root[data-fmc-theme='light'] {
+  --fmc-surface: #ffffff;
+  --fmc-surface-raised: #f3f6f8;
+  --fmc-surface-muted: #e7edf2;
+  --fmc-text: #172033;
+  --fmc-text-muted: #3f4d63;
+  --fmc-border: #64748b;
+  --fmc-accent: #075985;
+  --fmc-accent-strong: #0c4a6e;
+  --fmc-accent-soft: #dbeafe;
+  --fmc-focus: #9f1239;
+  --fmc-success: #166534;
+  --fmc-warning: #854d0e;
+  --fmc-danger: #991b1b;
 }
 
+:root[data-fmc-theme='light-high-contrast'] {
+  --fmc-surface: #ffffff;
+  --fmc-surface-raised: #ffffff;
+  --fmc-surface-muted: #eeeeee;
+  --fmc-text: #000000;
+  --fmc-text-muted: #111111;
+  --fmc-border: #000000;
+  --fmc-accent: #003c78;
+  --fmc-accent-strong: #00264d;
+  --fmc-accent-soft: #d9ecff;
+  --fmc-focus: #8b0000;
+  --fmc-success: #004d1a;
+  --fmc-warning: #5c3200;
+  --fmc-danger: #7a0000;
+}
+
+:root[data-fmc-theme='dark'] {
+  --fmc-surface: #0b1220;
+  --fmc-surface-raised: #111c2e;
+  --fmc-surface-muted: #1c2a40;
+  --fmc-text: #eef5ff;
+  --fmc-text-muted: #c0ccdc;
+  --fmc-border: #7890aa;
+  --fmc-accent: #5eead4;
+  --fmc-accent-strong: #99f6e4;
+  --fmc-accent-soft: #123c3a;
+  --fmc-focus: #fbbf24;
+  --fmc-success: #86efac;
+  --fmc-warning: #fde68a;
+  --fmc-danger: #fca5a5;
+}
+
+:root[data-fmc-theme='dark-high-contrast'] {
+  --fmc-surface: #000000;
+  --fmc-surface-raised: #000000;
+  --fmc-surface-muted: #151515;
+  --fmc-text: #ffffff;
+  --fmc-text-muted: #ffffff;
+  --fmc-border: #ffffff;
+  --fmc-accent: #7fffd4;
+  --fmc-accent-strong: #b8ffe8;
+  --fmc-accent-soft: #003b2d;
+  --fmc-focus: #ffff00;
+  --fmc-success: #9dffb4;
+  --fmc-warning: #ffff80;
+  --fmc-danger: #ffb3b3;
+}
+
+:root {
+  --sl-color-bg: var(--fmc-surface);
+  --sl-color-bg-nav: var(--fmc-surface-raised);
+  --sl-color-bg-sidebar: var(--fmc-surface-raised);
+  --sl-color-text: var(--fmc-text);
+  --sl-color-text-accent: var(--fmc-accent);
+  --sl-color-accent-low: var(--fmc-accent-soft);
+  --sl-color-accent: var(--fmc-accent);
+  --sl-color-accent-high: var(--fmc-accent-strong);
+  --sl-color-gray-1: var(--fmc-text);
+  --sl-color-gray-2: var(--fmc-text-muted);
+  --sl-color-gray-3: var(--fmc-border);
+  --sl-color-gray-4: color-mix(in srgb, var(--fmc-border) 72%, var(--fmc-surface));
+  --sl-color-gray-5: var(--fmc-surface-muted);
+  --sl-color-gray-6: var(--fmc-surface-raised);
+  --sl-color-black: var(--fmc-surface);
+  --sl-color-white: var(--fmc-text);
+}
+
+:root[data-fmc-font-family='sans-serif'] {
+  --fmc-body-family: var(--fmc-font-sans);
+}
+
+:root[data-fmc-font-family='serif'] {
+  --fmc-body-family: var(--fmc-font-serif);
+}
+
+:root[data-fmc-text-size='small'] {
+  --fmc-body-scale: 0.9375;
+}
+
+:root[data-fmc-text-size='default'] {
+  --fmc-body-scale: 1;
+}
+
+:root[data-fmc-text-size='large'] {
+  --fmc-body-scale: 1.125;
+}
+
+:root[data-fmc-text-weight='regular'] {
+  --fmc-body-weight: 400;
+}
+
+:root[data-fmc-text-weight='medium'] {
+  --fmc-body-weight: 500;
+}
+
+html {
+  background: var(--fmc-surface);
+  color: var(--fmc-text);
+  font-size: calc(100% * var(--fmc-body-scale));
+  scroll-padding-block-start: 5rem;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--fmc-body-family);
+}
+
+body {
+  background: var(--fmc-surface);
+  color: var(--fmc-text);
+  font-weight: var(--fmc-body-weight);
+  line-height: var(--fmc-line-height);
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--fmc-font-code);
+  font-weight: 400;
+}
+
+/* Math renderer output owns its qualified glyph stack. */
+math,
+.katex,
+.MathJax {
+  font-weight: normal;
+}
+
+a {
+  text-decoration-thickness: 0.1em;
+  text-underline-offset: 0.15em;
+}
+
+:where(a, button, input, select, summary, textarea, [tabindex]):focus-visible {
+  border-radius: var(--fmc-radius-sm);
+  outline: var(--fmc-focus-width) solid var(--fmc-focus);
+  outline-offset: 0.1875rem;
+}
+
+[data-fmc-control] {
+  min-block-size: var(--fmc-control-min-size);
+  min-inline-size: var(--fmc-control-min-size);
+}
+
+fmc-preference-controls {
+  display: block;
+  position: relative;
+  z-index: 30;
+}
+
+.fmc-preferences {
+  color: var(--fmc-text);
+  position: relative;
+}
+
+.fmc-preferences > summary {
+  align-items: center;
+  background: var(--fmc-surface-raised);
+  border: 0.125rem solid var(--fmc-border);
+  border-radius: var(--fmc-radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 700;
+  gap: var(--fmc-space-2);
+  justify-content: center;
+  list-style: none;
+  padding: var(--fmc-space-2) var(--fmc-space-3);
+  white-space: nowrap;
+}
+
+.fmc-preferences > summary::-webkit-details-marker {
+  display: none;
+}
+
+.fmc-preferences > summary::after {
+  content: '▾';
+}
+
+.fmc-preferences[open] > summary::after {
+  content: '▴';
+}
+
+.fmc-preferences__panel {
+  background: var(--fmc-surface-raised);
+  border: 0.125rem solid var(--fmc-border);
+  border-radius: var(--fmc-radius-md);
+  box-shadow: 0 0.75rem 2rem color-mix(in srgb, var(--fmc-text) 18%, transparent);
+  display: grid;
+  gap: var(--fmc-space-3);
+  inset-block-start: calc(100% + var(--fmc-space-2));
+  inset-inline-end: 0;
+  max-block-size: min(70vh, 36rem);
+  min-inline-size: min(22rem, calc(100vw - 2rem));
+  overflow: auto;
+  padding: var(--fmc-space-4);
+  position: absolute;
+}
+
+.fmc-preferences__panel label {
+  display: grid;
+  font-weight: 700;
+  gap: var(--fmc-space-1);
+}
+
+.fmc-preferences__panel select,
+.fmc-preferences__panel button {
+  background: var(--fmc-surface);
+  border: 0.125rem solid var(--fmc-border);
+  border-radius: var(--fmc-radius-sm);
+  color: var(--fmc-text);
+  font: inherit;
+  padding: var(--fmc-space-2);
+}
+
+.fmc-preferences__panel button {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.fmc-preferences__panel button:hover {
+  background: var(--fmc-accent-soft);
+}
+
+.fmc-preferences__note,
+.fmc-preferences__status {
+  color: var(--fmc-text-muted);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.fmc-preferences__status {
+  min-block-size: 1.5em;
+}
+
+@media (max-width: 50rem) {
+  .fmc-preferences__panel {
+    inset-inline: 0;
+    min-inline-size: min(22rem, calc(100vw - 2rem));
+    position: fixed;
+    inset-block-start: auto;
+    inset-block-end: var(--fmc-space-4);
+    margin-inline: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --fmc-motion-fast: 0ms;
+    --fmc-motion-normal: 0ms;
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :root {
+    --fmc-surface: Canvas;
+    --fmc-surface-raised: Canvas;
+    --fmc-surface-muted: Canvas;
+    --fmc-text: CanvasText;
+    --fmc-text-muted: CanvasText;
+    --fmc-border: CanvasText;
+    --fmc-accent: LinkText;
+    --fmc-accent-strong: LinkText;
+    --fmc-accent-soft: Canvas;
+    --fmc-focus: Highlight;
+  }
+
+  *,
+  *::before,
+  *::after {
+    forced-color-adjust: auto;
+  }
+
+  :where(a, button, input, select, summary, textarea, [tabindex]):focus-visible {
+    outline-color: Highlight;
+  }
+
+  .fmc-preferences__panel,
+  .fmc-preferences > summary,
+  .fmc-preferences__panel select,
+  .fmc-preferences__panel button {
+    border-color: CanvasText;
+    box-shadow: none;
+  }
+}

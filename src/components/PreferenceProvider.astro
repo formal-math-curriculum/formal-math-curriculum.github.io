@@ -1,0 +1,93 @@
+---
+import {
+  DEFAULT_PREFERENCES,
+  PREFERENCE_STORAGE_KEY,
+  PREFERENCE_VALUES
+} from '../lib/preferences.mjs';
+---
+
+<!-- Intentionally inline so validated theme/type preferences apply before first paint. -->
+<script
+  is:inline
+  define:vars={{
+    storageKey: PREFERENCE_STORAGE_KEY,
+    defaults: DEFAULT_PREFERENCES,
+    values: PREFERENCE_VALUES
+  }}
+>
+  (() => {
+    const copyDefaults = () => ({ ...defaults, typography: { ...defaults.typography } });
+    const oneOf = (value, allowed) => typeof value === 'string' && allowed.includes(value);
+    const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+
+    const parse = (raw) => {
+      try {
+        const value = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (!isRecord(value) || value.schemaVersion !== 1 || !isRecord(value.typography)) {
+          return null;
+        }
+        if (
+          !oneOf(value.themePreference, values.themePreference) ||
+          !oneOf(value.typography.family, values.typographyFamily) ||
+          !oneOf(value.typography.size, values.typographySize) ||
+          !oneOf(value.typography.weight, values.typographyWeight) ||
+          !oneOf(value.representationDefault, values.representationDefault) ||
+          !oneOf(value.outlineProjection, values.outlineProjection)
+        ) {
+          return null;
+        }
+        return {
+          schemaVersion: 1,
+          themePreference: value.themePreference,
+          typography: {
+            family: value.typography.family,
+            size: value.typography.size,
+            weight: value.typography.weight
+          },
+          representationDefault: value.representationDefault,
+          outlineProjection: value.outlineProjection
+        };
+      } catch {
+        return null;
+      }
+    };
+
+    let preferences = copyDefaults();
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw !== null) {
+        const parsed = parse(raw);
+        if (parsed) preferences = parsed;
+        else localStorage.removeItem(storageKey);
+      }
+    } catch {
+      // Storage denial is handled by the interactive in-memory store after paint.
+    }
+
+    const darkSystem = matchMedia('(prefers-color-scheme: dark)').matches;
+    const highContrastSystem = matchMedia('(prefers-contrast: more)').matches;
+    let theme = preferences.themePreference;
+    if (theme === 'system') {
+      theme = darkSystem
+        ? highContrastSystem ? 'dark-high-contrast' : 'dark'
+        : highContrastSystem ? 'light-high-contrast' : 'light';
+    }
+
+    const effectiveFamily = values.qualifiedTypographyFamily.includes(preferences.typography.family)
+      ? preferences.typography.family
+      : defaults.typography.family;
+    const root = document.documentElement;
+    const dark = theme.startsWith('dark');
+
+    root.dataset.theme = dark ? 'dark' : 'light';
+    root.dataset.fmcTheme = theme;
+    root.dataset.fmcThemePreference = preferences.themePreference;
+    root.dataset.fmcFontFamily = effectiveFamily;
+    root.dataset.fmcTextSize = preferences.typography.size;
+    root.dataset.fmcTextWeight = preferences.typography.weight;
+    root.dataset.fmcRepresentation = preferences.representationDefault;
+    root.dataset.fmcProjection = preferences.outlineProjection;
+    root.style.colorScheme = dark ? 'dark' : 'light';
+  })();
+</script>
+
