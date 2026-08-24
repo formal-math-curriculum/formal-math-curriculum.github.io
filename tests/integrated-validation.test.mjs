@@ -127,7 +127,10 @@ test('M5.10 release workflow advances from exact authority through durable draft
   assert.match(workflow, /actions\/attest@[0-9a-f]{40}/u);
   assert.equal((workflow.match(/\(cd release-assets && sha256sum --check SHA256SUMS\)/gu) ?? []).length, 2);
   assert.match(workflow, /gh release create p5-web-v0\.1\.0[\s\S]*--draft/u);
+  assert.match(workflow, /git\/refs[\s\S]*refs\/tags\/\$tag[\s\S]*gh release create/u);
+  assert.match(workflow, /gh release upload "\$tag"[\s\S]*--clobber[\s\S]*gh release download "\$tag"[\s\S]*cmp/u);
   assert.match(workflow, /verify-public-release\.mjs[\s\S]*gh release edit p5-web-v0\.1\.0/u);
+  assert.match(workflow, /gh release edit p5-web-v0\.1\.0[\s\S]*'\.draft'\)" = "false"/u);
   assert.match(gate, /deploymentAuthorized !== true/);
   assert.match(gate, /unresolvedFindings\?\.Blocker !== 0/);
   assert.match(gate, /validation.+m5-10/u);

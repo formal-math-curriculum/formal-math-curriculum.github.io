@@ -6,6 +6,8 @@ The application candidate is `cc137e0f47e324acbb8b864212a1dd4387c54d23` (tree `9
 
 The production workflow remains manually dispatched. It validates the exact tuple, rebuilds from the frozen content commit, runs every mandatory qualification gate, removes validation-only routes and evidence, regenerates the public artifact manifest, packages a reproducible `site-dist.tar.zst`, attests the distributable, and uploads the exact required assets to a draft GitHub Release. It deploys that same prepared `dist`, verifies the public origin and only then publishes the release.
 
+Before deployment, the workflow binds the release tag directly to the exact workflow commit and refuses an existing mismatched tag or a published release. A retry after a partial run may reuse only an existing draft: it replaces every staged asset, downloads the draft again and byte-compares all six files before deployment. Publication verifies the tag and draft state before transition, then confirms both the published state and unchanged tag target.
+
 ## Accessibility risk decision
 
 P5-DEC-033 is an accepted, narrowly scoped product risk. Accessibility-only failures and unavailable manual assistive-technology execution are nonblocking. A10 remains `blocked_manual_required`, is not represented as pass, and no WCAG or screen-reader conformance claim is made. Mandatory functional portions of mixed checks remain blocking.
