@@ -187,6 +187,8 @@ test('N16 wide sidebar and narrow drawer are the same logical dialog/nav data so
 test('N17 narrow modal uses showModal, native cancel, explicit close and trigger focus restoration', () => {
   assert.match(componentSource, /dialog\.showModal\(\)/);
   assert.match(componentSource, /addEventListener\('cancel'/);
+  assert.match(componentSource, /addEventListener\('keydown'/);
+  assert.match(componentSource, /event\.key !== 'Tab'/);
   assert.match(componentSource, /data-fmc-outline-close/);
   assert.match(componentSource, /lastTrigger\?\.focus\(\)/);
   assert.match(componentSource, /event\.target === dialog/);

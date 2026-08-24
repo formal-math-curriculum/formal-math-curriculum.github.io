@@ -273,11 +273,14 @@ export function decodeSourcePayload(payload) {
 }
 
 export function createRepresentationDomId(identity) {
-  const seed = `${identity.contentId}:${identity.blockId}:${identity.revision}`;
-  let hash = 2166136261;
-  for (const character of seed) {
-    hash ^= character.codePointAt(0);
-    hash = Math.imul(hash, 16777619);
-  }
-  return `fmc-math-${(hash >>> 0).toString(36)}`;
+  const seed = JSON.stringify([
+    identity.contentId,
+    identity.blockId,
+    identity.revision
+  ]);
+  const encoded = encodeSourcePayload(seed)
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
+    .replace(/=+$/u, '');
+  return `fmc-math-${encoded}`;
 }

@@ -255,6 +255,23 @@ test('R16 identity is stable and component state cannot manufacture route or loc
   assert.match(component, /data-fmc-chrome/);
 });
 
+test('MAT-399 F03 valid identities cannot collide in representation DOM IDs', () => {
+  const left = {
+    contentId: 'audit-nvq07x-kpaqu0',
+    blockId: 'block',
+    revision: 'v1'
+  };
+  const right = {
+    contentId: 'audit-1f118lz-4560qy',
+    blockId: 'block',
+    revision: 'v1'
+  };
+
+  assert.equal(createRepresentationDomId(left), createRepresentationDomId({ ...left }));
+  assert.notEqual(createRepresentationDomId(left), createRepresentationDomId(right));
+  assert.match(createRepresentationDomId(left), /^fmc-math-[A-Za-z0-9_-]+$/u);
+});
+
 test('validator rejects missing identity, missing records and incompatible schema majors', () => {
   assert.equal(validateRepresentationBlock({}).ok, false);
   assert.equal(validateRepresentationBlock(blockFixture({ schemaVersion: 2 })).ok, false);

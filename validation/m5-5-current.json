@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "p5-current-baseline-selector/v1",
+  "releaseRecord": "validation/m5-5-requalification-v2.json",
+  "status": "qualified-m5-5-baseline-deployment-withheld",
+  "deploymentAuthorized": false
+}

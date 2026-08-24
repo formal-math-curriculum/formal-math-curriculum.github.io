@@ -221,6 +221,10 @@ const componentId = `fmc-outline-${value.currentContent.contentId.replace(/[^a-z
       const close = this.querySelector('[data-fmc-outline-close]');
       this.narrowQuery = matchMedia('(max-width: 50rem)');
 
+      const focusableDialogControls = () => [...dialog.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'
+      )].filter((element) => element.getClientRects().length > 0);
+
       this.syncDrawerMode = () => {
         if (this.narrowQuery.matches) {
           if (dialog.open && dialog.dataset.fmcModal !== 'true') dialog.close();
@@ -245,6 +249,25 @@ const componentId = `fmc-outline-${value.currentContent.contentId.replace(/[^a-z
       };
       close.addEventListener('click', closeDrawer);
       dialog.addEventListener('cancel', () => queueMicrotask(() => this.lastTrigger?.focus()));
+      dialog.addEventListener('keydown', (event) => {
+        if (event.key !== 'Tab' || dialog.dataset.fmcModal !== 'true' || !dialog.matches(':modal')) return;
+        const controls = focusableDialogControls();
+        const first = controls[0];
+        const last = controls.at(-1);
+        if (!first || !last) {
+          event.preventDefault();
+          dialog.focus();
+          return;
+        }
+        const active = document.activeElement;
+        if (event.shiftKey && (active === first || !dialog.contains(active))) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && (active === last || !dialog.contains(active))) {
+          event.preventDefault();
+          first.focus();
+        }
+      });
       dialog.addEventListener('click', (event) => {
         if (event.target === dialog && dialog.dataset.fmcModal === 'true') closeDrawer();
       });

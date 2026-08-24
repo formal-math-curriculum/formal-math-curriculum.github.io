@@ -1,0 +1,68 @@
+---
+import MathematicalBlock from '../../../components/MathematicalBlock.astro';
+import PreferenceProvider from '../../../components/PreferenceProvider.astro';
+import '../../../styles/custom.css';
+
+const identities = [
+  { contentId: 'audit-nvq07x-kpaqu0', blockId: 'block', revision: 'v1' },
+  { contentId: 'audit-1f118lz-4560qy', blockId: 'block', revision: 'v1' }
+];
+const blocks = identities.map((identity, index) => ({
+  schemaVersion: 1,
+  identity,
+  title: `MAT-399 collision regression block ${index + 1}`,
+  representations: {
+    rendered: {
+      availability: 'current',
+      correspondence: 'exact',
+      renderer: 'mathml',
+      provenance: { subject: `synthetic:collision:${index + 1}`, revision: 'v2' }
+    },
+    latex: {
+      availability: 'current',
+      correspondence: 'exact',
+      source: `x_${index + 1} = x_${index + 1}`,
+      provenance: { subject: `synthetic:collision:${index + 1}:latex`, revision: 'v2' }
+    },
+    lean: {
+      availability: 'current',
+      correspondence: 'scoped',
+      source: `example (x : Nat) : x = x := by rfl`,
+      provenance: { subject: `synthetic:collision:${index + 1}:lean`, revision: 'v2' }
+    }
+  }
+}));
+---
+
+<!doctype html>
+<html lang="en" data-fmc-validation-fixture="synthetic-collision">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>MAT-399 mathematical-block ID collision regression</title>
+    <PreferenceProvider />
+  </head>
+  <body>
+    <main data-pagefind-ignore>
+      <h1>MAT-399 F03 collision regression</h1>
+      <p>Synthetic validation only; this route is removed from authorized release output.</p>
+      {blocks.map((block, index) => (
+        <MathematicalBlock block={block}>
+          <math
+            slot="rendered"
+            xmlns="http://www.w3.org/1998/Math/MathML"
+            aria-label={`x ${index + 1} equals itself`}
+          >
+            <mrow><mi>x</mi><mo>=</mo><mi>x</mi></mrow>
+          </math>
+        </MathematicalBlock>
+      ))}
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  body { margin: 0; }
+  main { margin-inline: auto; max-inline-size: 70rem; padding: 1rem; }
+</style>

@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -49,6 +49,7 @@ jobs:
         env:
           FMC_REQUIRE_BROWSER: '1'
           FMC_SOURCE_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+          FMC_RUNNER_IMAGE_LABEL: ubuntu-24.04
       - name: Upload bounded preview artifact
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
