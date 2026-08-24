@@ -25,6 +25,29 @@ test('candidate manifest freezes exact entry subjects, runtime and synthetic lim
   });
 });
 
+test('MAT-399 v2 record versions the audit dispositions and owns one-to-one D/R/N/X evidence', async () => {
+  const manifest = JSON.parse(await read('validation/m5-5-requalification-v2.json'));
+  const selector = JSON.parse(await read('validation/m5-5-current.json'));
+  assert.equal(manifest.schemaVersion, 'p5-m5.5-requalification/v2');
+  assert.equal(manifest.immutableAudit.mergeCommit, 'a071e58473646f00ea163b3f745c752228a0a8a2');
+  assert.equal(manifest.runtime.runnerLabel, 'ubuntu-24.04');
+  assert.equal(manifest.deploymentAuthorized, false);
+  assert.deepEqual(manifest.unresolvedFindings, { Blocker: 0, Material: 0, Minor: 0 });
+  assert.equal(Object.keys(manifest.evidenceMatrix.design).length, 16);
+  assert.equal(Object.keys(manifest.evidenceMatrix.representation).length, 16);
+  assert.equal(Object.keys(manifest.evidenceMatrix.outline).length, 26);
+  assert.equal(Object.keys(manifest.evidenceMatrix.crossComponent).length, 16);
+  assert.equal(manifest.findingDispositions.length, 7);
+  assert.deepEqual(manifest.findingDispositions.slice(0, 4).map(({ id, disposition }) => ({ id, disposition })), [
+    { id: 'F01', disposition: 'remediated' },
+    { id: 'F02', disposition: 'remediated' },
+    { id: 'F03', disposition: 'remediated' },
+    { id: 'F04', disposition: 'remediated' }
+  ]);
+  assert.equal(selector.releaseRecord, 'validation/m5-5-requalification-v2.json');
+  assert.equal(selector.deploymentAuthorized, false);
+});
+
 test('one noindex fixture mounts preferences, representation and outline together without production claims', async () => {
   const page = await read('src/pages/validation/m5-5.astro');
   assert.equal((page.match(/<PreferenceControls \/>/g) ?? []).length, 1);
@@ -48,29 +71,31 @@ test('browser validation is pinned, required in CI and runs before search/artifa
   assert.match(pkg.scripts.build, /build:astro && pnpm run test:browser && pnpm run build:search && pnpm run verify:artifact/);
   assert.match(workflow, /FMC_REQUIRE_BROWSER: '1'/);
   assert.match(workflow, /FMC_SOURCE_REVISION: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/);
+  assert.match(workflow, /runs-on: ubuntu-24\.04/);
+  assert.match(workflow, /FMC_RUNNER_IMAGE_LABEL: ubuntu-24\.04/);
   assert.doesNotMatch(workflow, /FMC_SKIP_BROWSER/);
   assert.doesNotMatch(workflow, /deploy-pages|pages: write|id-token: write/);
 });
 
-test('browser program has no silent CI skip and owns B01-B23 plus exact evidence outputs', async () => {
+test('v2 browser program has no silent CI skip and owns B01-B30 plus versioned evidence outputs', async () => {
   const script = await read('scripts/validate-m5-5-browser.mjs');
-  for (let id = 1; id <= 23; id += 1) {
+  for (let id = 1; id <= 30; id += 1) {
     assert.match(script, new RegExp(`['\"]B${String(id).padStart(2, '0')}['\"]`));
   }
   assert.match(script, /FMC_SKIP_BROWSER is forbidden when FMC_REQUIRE_BROWSER=1/);
   assert.match(script, /requires an identifiable Chrome executable/);
-  assert.match(script, /p5-m5\.5-browser-qualification\/v1/);
+  assert.match(script, /p5-m5\.5-requalification-browser\/v2/);
   assert.match(script, /locator\('fmc-mathematical-block'\)/);
   assert.match(script, /locator\('fmc-outline-navigator'\)/);
   assert.match(script, /ariaSnapshot\(\)/);
   assert.match(script, /forcedColors: 'active'/);
   assert.match(script, /javaScriptEnabled: false/);
   assert.match(script, /viewport: \{ width: 320, height: 800 \}/);
-  assert.match(script, /m5-5-report\.json/);
-  assert.match(script, /m5-5-aria\.txt/);
+  assert.match(script, /m5-5-requalification-v2-report\.json/);
+  assert.match(script, /m5-5-requalification-v2-aria\.txt/);
   assert.match(script, /blockerFailures = failed\.filter/);
-  assert.match(script, /coherent-candidate-with-known-findings/);
   assert.match(script, /blockerFailures\.length > 0/);
+  assert.match(script, /v2 requalification has \$\{failed\.length\} unresolved non-Blocker failure/);
 });
 
 test('browser dependency lock is exact and contains one dependency-free playwright-core snapshot', async () => {
@@ -89,4 +114,17 @@ test('qualification documentation preserves the audit and release interpretation
   assert.match(documentation, /B18[\s\S]*forward `Tab` reaches `BODY`/);
   assert.match(documentation, /Material[\s\S]*does not erase an otherwise reproducible candidate/);
   assert.match(documentation, /must not be interpreted as a public curriculum route/i);
+});
+
+test('MAT-399 release workflow enforces the versioned selector before Pages upload', async () => {
+  const workflow = await read('.github/workflows/deploy-pages.yml');
+  const gate = await read('scripts/prepare-release.mjs');
+  const documentation = await read('docs/architecture/m5-5-requalification-v2.md');
+  assert.match(workflow, /prepare-release\.mjs validation\/m5-5-current\.json/);
+  assert.ok(workflow.indexOf('prepare-release.mjs') < workflow.indexOf('actions/upload-pages-artifact'));
+  assert.match(gate, /deploymentAuthorized !== true/);
+  assert.match(gate, /unresolvedFindings\?\.Blocker !== 0/);
+  assert.match(gate, /validation.+m5-5/u);
+  assert.match(documentation, /deploymentAuthorized=false/);
+  assert.match(documentation, /do not themselves authorize public deployment/i);
 });

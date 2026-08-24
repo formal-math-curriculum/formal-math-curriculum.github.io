@@ -11,8 +11,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = join(root, 'dist');
 const evidenceDirectory = join(dist, '_validation');
 const fixturePath = join(dist, 'validation', 'm5-5', 'index.html');
-const reportPath = join(evidenceDirectory, 'm5-5-report.json');
-const ariaPath = join(evidenceDirectory, 'm5-5-aria.txt');
+const reportPath = join(evidenceDirectory, 'm5-5-requalification-v2-report.json');
+const ariaPath = join(evidenceDirectory, 'm5-5-requalification-v2-aria.txt');
 const storageKey = 'fmc:site-preferences:v1';
 const requiredBrowser = process.env.FMC_REQUIRE_BROWSER === '1';
 const explicitSkip = process.env.FMC_SKIP_BROWSER === '1';
@@ -192,7 +192,7 @@ async function rootTokens(page) {
 const sourceRevision = process.env.FMC_SOURCE_REVISION
   ?? execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
 const packageManifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
-const candidateManifest = JSON.parse(readFileSync(join(root, 'validation', 'm5-5-candidate.json'), 'utf8'));
+const candidateManifest = JSON.parse(readFileSync(join(root, 'validation', 'm5-5-requalification-v2.json'), 'utf8'));
 
 try {
   const desktopContext = await browser.newContext({
@@ -513,7 +513,7 @@ try {
       borderSurface: contrast(tokens['--fmc-border'], tokens['--fmc-surface'])
     };
     themeMeasurements.push({ theme, tokens, ratios });
-    await page.screenshot({ path: join(evidenceDirectory, `m5-5-theme-${theme}.png`), fullPage: true });
+    await page.screenshot({ path: join(evidenceDirectory, `m5-5-requalification-v2-theme-${theme}.png`), fullPage: true });
   }
   await row('B14', 'Blocker', 'All four official computed themes pass text/focus 4.5:1 and border 3:1 gates', async () => {
     const failures = themeMeasurements.flatMap((measurement) => {
@@ -608,11 +608,11 @@ try {
   const trigger = narrowPage.locator('[data-fmc-outline-open]');
   const dialog = narrowPage.locator('[data-fmc-outline-dialog]');
   await trigger.click();
-  await narrowPage.screenshot({ path: join(evidenceDirectory, 'm5-5-narrow-modal.png') });
-  await row('B18', 'Material', 'The same narrow dialog is modal, contains sequential focus, closes on Escape and restores trigger focus', async () => {
+  await narrowPage.screenshot({ path: join(evidenceDirectory, 'm5-5-requalification-v2-narrow-modal.png') });
+  await row('B18', 'Material', 'The same narrow dialog is modal, contains forward/reverse sequential focus, closes on Escape and restores trigger focus', async () => {
     const modal = await dialog.evaluate((element) => element.matches(':modal'));
     let contained = true;
-    const focusTrace = [];
+    const forwardFocusTrace = [];
     for (let index = 0; index < 24; index += 1) {
       await narrowPage.keyboard.press('Tab');
       const focused = await dialog.evaluate((element) => {
@@ -629,12 +629,31 @@ try {
         };
       });
       contained &&= focused.contained;
-      focusTrace.push(focused);
+      forwardFocusTrace.push(focused);
+    }
+    const reverseFocusTrace = [];
+    for (let index = 0; index < 24; index += 1) {
+      await narrowPage.keyboard.press('Shift+Tab');
+      const focused = await dialog.evaluate((element) => {
+        const active = document.activeElement;
+        return {
+          contained: element.contains(active),
+          tag: active?.tagName ?? null,
+          control: active?.getAttribute('data-fmc-field')
+            ?? active?.getAttribute('data-fmc-projection')
+            ?? active?.getAttribute('data-fmc-outline-query')
+            ?? active?.getAttribute('data-fmc-outline-close')
+            ?? active?.textContent?.trim().slice(0, 80)
+            ?? null
+        };
+      });
+      contained &&= focused.contained;
+      reverseFocusTrace.push(focused);
     }
     await narrowPage.keyboard.press('Escape');
     await narrowPage.waitForFunction(() => !document.querySelector('[data-fmc-outline-dialog]')?.open);
     const restored = await trigger.evaluate((button) => document.activeElement === button);
-    return { pass: modal && contained && restored, actual: { modal, contained, restored, focusTrace } };
+    return { pass: modal && contained && restored, actual: { modal, contained, restored, forwardFocusTrace, reverseFocusTrace } };
   });
 
   await row('B19', 'Material', '320px/400% proxy and 200% text reflow avoid page-wide overflow while source overflow stays local', async () => {
@@ -668,7 +687,7 @@ try {
   await forcedPage.goto(fixtureUrl, { waitUntil: 'networkidle' });
   await waitForEnhancement(forcedPage);
   await forcedPage.locator('details.fmc-preferences summary').focus();
-  await forcedPage.screenshot({ path: join(evidenceDirectory, 'm5-5-forced-colors.png'), fullPage: true });
+  await forcedPage.screenshot({ path: join(evidenceDirectory, 'm5-5-requalification-v2-forced-colors.png'), fullPage: true });
   await row('B20', 'Material', 'Forced colors and reduced motion media are active with visible system-color focus and effectively zero motion', async () => {
     const actual = await forcedPage.evaluate(() => {
       const focus = document.querySelector('details.fmc-preferences summary');
@@ -694,7 +713,7 @@ try {
   const noJsPage = await noJsContext.newPage();
   observePage(noJsPage, 'no-javascript');
   await noJsPage.goto(fixtureUrl, { waitUntil: 'networkidle' });
-  await noJsPage.screenshot({ path: join(evidenceDirectory, 'm5-5-no-javascript.png'), fullPage: true });
+  await noJsPage.screenshot({ path: join(evidenceDirectory, 'm5-5-requalification-v2-no-javascript.png'), fullPage: true });
   await row('B21', 'Blocker', 'No-JavaScript output retains Course navigation, ordinary links, all representation sections and provenance', async () => {
     const actual = await noJsPage.evaluate(() => ({
       courseLists: document.querySelectorAll('[data-fmc-static-outline]').length,
@@ -718,6 +737,230 @@ try {
   });
   await noJsContext.close();
 
+  const themeReloadContext = await browser.newContext({ viewport: { width: 1000, height: 800 } });
+  const themeReloadPage = await themeReloadContext.newPage();
+  observePage(themeReloadPage, 'theme-reload-matrix');
+  await themeReloadPage.goto(fixtureUrl, { waitUntil: 'networkidle' });
+  await waitForEnhancement(themeReloadPage);
+  await row('B24', 'Material', 'D02 every explicit official theme persists and survives a fresh document reload', async () => {
+    const actual = [];
+    for (const theme of ['light', 'light-high-contrast', 'dark', 'dark-high-contrast']) {
+      await themeReloadPage.evaluate((value) => window.FMCPreferenceStore.set({ themePreference: value }, 'd02-reload'), theme);
+      await themeReloadPage.reload({ waitUntil: 'networkidle' });
+      await waitForEnhancement(themeReloadPage);
+      actual.push(await themeReloadPage.evaluate(() => ({
+        requested: window.FMCPreferenceStore.getSnapshot().preferences.themePreference,
+        effective: document.documentElement.dataset.fmcTheme
+      })));
+    }
+    return {
+      pass: actual.length === 4 && actual.every((item) => item.requested === item.effective),
+      actual
+    };
+  });
+  await themeReloadContext.close();
+
+  const typographyContext = await browser.newContext({ viewport: { width: 400, height: 800 } });
+  const typographyPage = await typographyContext.newPage();
+  observePage(typographyPage, 'typography-metrics-matrix');
+  await typographyPage.goto(fixtureUrl, { waitUntil: 'networkidle' });
+  await waitForEnhancement(typographyPage);
+  await row('B25', 'Material', 'D05 every qualified typography combination retains bounded metrics and wrapping without page overflow', async () => {
+    const actual = [];
+    for (const family of ['sans-serif', 'serif']) {
+      for (const size of ['small', 'default', 'large']) {
+        for (const weight of ['regular', 'medium']) {
+          actual.push(await typographyPage.evaluate(({ family, size, weight }) => {
+            window.FMCPreferenceStore.set({ typography: { family, size, weight } }, 'd05-metrics');
+            const body = getComputedStyle(document.body);
+            const main = document.querySelector('main');
+            const fontSize = Number.parseFloat(body.fontSize);
+            const lineHeight = Number.parseFloat(body.lineHeight);
+            return {
+              requested: { family, size, weight },
+              effective: {
+                family: document.documentElement.dataset.fmcFontFamily,
+                size: document.documentElement.dataset.fmcTextSize,
+                weight: document.documentElement.dataset.fmcTextWeight
+              },
+              fontSize,
+              lineHeight,
+              pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+              mainOverflow: (main?.scrollWidth ?? 0) - (main?.clientWidth ?? 0)
+            };
+          }, { family, size, weight }));
+        }
+      }
+    }
+    return {
+      pass: actual.length === 12 && actual.every((item) =>
+        JSON.stringify(item.requested) === JSON.stringify(item.effective)
+        && item.fontSize > 0
+        && item.lineHeight >= item.fontSize
+        && item.pageOverflow <= 1
+        && item.mainOverflow <= 1),
+      actual
+    };
+  });
+  await typographyContext.close();
+
+  const transitionContext = await browser.newContext({ viewport: { width: 1000, height: 800 } });
+  const transitionPage = await transitionContext.newPage();
+  observePage(transitionPage, 'missing-cross-transitions');
+  await transitionPage.goto(fixtureUrl, { waitUntil: 'networkidle' });
+  await waitForEnhancement(transitionPage);
+
+  await row('B26', 'Material', 'X06 theme and typography changes preserve focus, names and state in representation and outline controls', async () => {
+    const leanTab = transitionPage.locator('fmc-mathematical-block').getByRole('tab', { name: 'Lean source' });
+    await leanTab.focus();
+    const beforeTabName = await leanTab.textContent();
+    await transitionPage.evaluate(() => window.FMCPreferenceStore.set({
+      themePreference: 'dark-high-contrast',
+      typography: { family: 'serif', size: 'large', weight: 'medium' }
+    }, 'x06-tab-focus'));
+    const tab = await leanTab.evaluate((element) => ({
+      focused: document.activeElement === element,
+      name: element.textContent?.trim(),
+      selected: element.getAttribute('aria-selected')
+    }));
+    const query = transitionPage.locator('[data-fmc-outline-query]');
+    await query.focus();
+    await transitionPage.evaluate(() => window.FMCPreferenceStore.set({
+      themePreference: 'light',
+      typography: { family: 'sans-serif', size: 'small', weight: 'regular' }
+    }, 'x06-outline-focus'));
+    const outline = await query.evaluate((element) => ({
+      focused: document.activeElement === element,
+      label: element.closest('label')?.textContent?.trim()
+    }));
+    return {
+      pass: tab.focused && tab.name === beforeTabName?.trim() && tab.selected === 'true'
+        && outline.focused && outline.label === 'Search this projection',
+      actual: { tab, outline }
+    };
+  });
+
+  await row('B27', 'Material', 'X08 full reset on a localized-route proxy preserves locale and path while restoring Course/rendered', async () => {
+    const actual = await transitionPage.evaluate(() => {
+      history.replaceState(history.state, '', '/fr/validation/m5-5/');
+      document.documentElement.lang = 'fr';
+      window.FMCPreferenceStore.set({ outlineProjection: 'msc2020', representationDefault: 'lean' }, 'x08-setup');
+      window.FMCPreferenceStore.reset();
+      return {
+        pathname: location.pathname,
+        locale: document.documentElement.lang,
+        projection: window.FMCPreferenceStore.getSnapshot().preferences.outlineProjection,
+        representation: window.FMCPreferenceStore.getSnapshot().preferences.representationDefault,
+        block: document.querySelector('fmc-mathematical-block')?.dataset.fmcEffectiveView
+      };
+    });
+    return {
+      pass: actual.pathname === '/fr/validation/m5-5/' && actual.locale === 'fr'
+        && actual.projection === 'course' && actual.representation === 'rendered' && actual.block === 'rendered',
+      actual
+    };
+  });
+
+  await transitionPage.goto(fixtureUrl, { waitUntil: 'networkidle' });
+  await waitForEnhancement(transitionPage);
+  await row('B28', 'Material', 'X12 incompatible projection recovers independently while representation and route remain valid', async () => {
+    await transitionPage.evaluate(() => {
+      const original = document.querySelector('fmc-outline-navigator');
+      const clone = original.cloneNode(true);
+      const manifest = JSON.parse(decodeURIComponent(clone.dataset.fmcOutlineManifest));
+      const descriptor = manifest.projections.find((item) => item.id === 'msc2020');
+      descriptor.state = 'incompatible';
+      descriptor.placements = [];
+      descriptor.activeReferenceId = null;
+      clone.dataset.fmcOutlineManifest = encodeURIComponent(JSON.stringify(manifest));
+      clone.dataset.fmcAuditX12 = '';
+      document.body.append(clone);
+      window.FMCPreferenceStore.set({ outlineProjection: 'msc2020' }, 'x12-incompatible');
+    });
+    await transitionPage.waitForFunction(() => document.querySelector('[data-fmc-audit-x12]')?.effectiveProjection === 'course');
+    const actual = await transitionPage.evaluate(() => {
+      const clone = document.querySelector('[data-fmc-audit-x12]');
+      const value = {
+        requested: window.FMCPreferenceStore.getSnapshot().preferences.outlineProjection,
+        effective: clone?.effectiveProjection,
+        status: clone?.querySelector('[data-fmc-outline-status]')?.textContent,
+        block: document.querySelector('fmc-mathematical-block')?.dataset.fmcEffectiveView,
+        pathname: location.pathname
+      };
+      clone?.remove();
+      return value;
+    });
+    return {
+      pass: actual.requested === 'msc2020' && actual.effective === 'course'
+        && /incompatible/u.test(actual.status ?? '') && actual.block === 'rendered'
+        && actual.pathname === '/validation/m5-5/',
+      actual
+    };
+  });
+
+  await transitionPage.evaluate(() => window.FMCPreferenceStore.reset());
+  await row('B29', 'Material', 'X13 representation failure degrades independently while the valid Course outline and route remain usable', async () => {
+    await transitionPage.evaluate(() => {
+      const original = document.querySelector('fmc-mathematical-block');
+      const clone = original.cloneNode(true);
+      clone.dataset.fmcOperable = '';
+      clone.dataset.fmcAuditX13 = '';
+      clone.querySelector('[data-fmc-tabs]')?.remove();
+      clone.querySelectorAll('[data-fmc-panel]').forEach((panel) => panel.remove());
+      document.body.append(clone);
+    });
+    await transitionPage.waitForFunction(() => document.querySelector('[data-fmc-audit-x13]')?.dataset.fmcEffectiveView === 'unavailable');
+    const actual = await transitionPage.evaluate(() => {
+      const clone = document.querySelector('[data-fmc-audit-x13]');
+      const outline = document.querySelector('fmc-outline-navigator');
+      const value = {
+        block: clone?.dataset.fmcEffectiveView,
+        fallback: clone?.querySelector('[data-fmc-fallback]')?.textContent,
+        projection: outline?.effectiveProjection,
+        outlineLinks: outline?.querySelectorAll('nav a').length,
+        pathname: location.pathname
+      };
+      clone?.remove();
+      return value;
+    });
+    return {
+      pass: actual.block === 'unavailable' && /No current compatible representation/u.test(actual.fallback ?? '')
+        && actual.projection === 'course' && actual.outlineLinks > 0 && actual.pathname === '/validation/m5-5/',
+      actual
+    };
+  });
+  await transitionContext.close();
+
+  const collisionContext = await browser.newContext({ viewport: { width: 1000, height: 900 } });
+  const collisionPage = await collisionContext.newPage();
+  observePage(collisionPage, 'representation-id-collision');
+  await collisionPage.goto(`${origin}/validation/m5-5/collision/`, { waitUntil: 'networkidle' });
+  await collisionPage.waitForFunction(() => [...document.querySelectorAll('fmc-mathematical-block')]
+    .every((block) => block.dataset.fmcEffectiveView === 'rendered'));
+  await row('B30', 'Blocker', 'F03 exact collision pair renders with document-wide unique per-block ARIA ID relationships', async () => {
+    const actual = await collisionPage.evaluate(() => {
+      const ids = [...document.querySelectorAll('[id]')].map((element) => element.id);
+      const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
+      const relations = [...document.querySelectorAll('fmc-mathematical-block')].map((block) => ({
+        tabs: [...block.querySelectorAll('[role="tab"]')].every((tab) => {
+          const target = document.getElementById(tab.getAttribute('aria-controls'));
+          return Boolean(target && target.closest('fmc-mathematical-block') === block);
+        }),
+        panels: [...block.querySelectorAll('[role="tabpanel"]')].every((panel) => {
+          const label = document.getElementById(panel.getAttribute('aria-labelledby'));
+          return Boolean(label && label.closest('fmc-mathematical-block') === block);
+        })
+      }));
+      return { blockCount: relations.length, duplicates, relations };
+    });
+    return {
+      pass: actual.blockCount === 2 && actual.duplicates.length === 0
+        && actual.relations.every((relation) => relation.tabs && relation.panels),
+      actual
+    };
+  });
+  await collisionContext.close();
+
   await row('B22', 'Blocker', 'No browser page or console errors occurred in any executed scenario', async () => ({
     pass: consoleFailures.length === 0,
     actual: consoleFailures
@@ -728,14 +971,14 @@ try {
 }
 
 const evidenceNames = [
-  'm5-5-aria.txt',
-  'm5-5-theme-light.png',
-  'm5-5-theme-light-high-contrast.png',
-  'm5-5-theme-dark.png',
-  'm5-5-theme-dark-high-contrast.png',
-  'm5-5-narrow-modal.png',
-  'm5-5-forced-colors.png',
-  'm5-5-no-javascript.png'
+  'm5-5-requalification-v2-aria.txt',
+  'm5-5-requalification-v2-theme-light.png',
+  'm5-5-requalification-v2-theme-light-high-contrast.png',
+  'm5-5-requalification-v2-theme-dark.png',
+  'm5-5-requalification-v2-theme-dark-high-contrast.png',
+  'm5-5-requalification-v2-narrow-modal.png',
+  'm5-5-requalification-v2-forced-colors.png',
+  'm5-5-requalification-v2-no-javascript.png'
 ];
 const missingEvidence = evidenceNames.filter((name) => !existsSync(join(evidenceDirectory, name)));
 results.push({
@@ -759,13 +1002,13 @@ const evidenceFiles = evidenceNames.filter((name) => existsSync(join(evidenceDir
 const failed = results.filter((result) => result.status === 'fail');
 const blockerFailures = failed.filter((result) => result.severity === 'Blocker');
 const report = {
-  schemaVersion: 'p5-m5.5-browser-qualification/v1',
+  schemaVersion: 'p5-m5.5-requalification-browser/v2',
   candidate: {
     sourceRevision,
     entryWebsiteRevision: candidateManifest.entryWebsiteRevision,
     contentRevision: candidateManifest.contentRevision,
     fixtureClassification: candidateManifest.fixtureClassification,
-    deploymentAuthorized: false
+    deploymentAuthorized: candidateManifest.deploymentAuthorized
   },
   environment: {
     node: process.version,
@@ -774,7 +1017,10 @@ const report = {
     browser: browserVersion,
     executable: chromeExecutable,
     platform: platform(),
-    architecture: arch()
+    architecture: arch(),
+    runnerImageLabel: process.env.FMC_RUNNER_IMAGE_LABEL ?? null,
+    runnerImageOS: process.env.ImageOS ?? null,
+    runnerImageVersion: process.env.ImageVersion ?? null
   },
   execution: {
     candidateStatus: blockerFailures.length > 0
@@ -806,8 +1052,8 @@ if (blockerFailures.length > 0) {
 
 if (failed.length > 0) {
   const summary = failed.map((result) => `${result.id}: ${JSON.stringify(result.actual)}`).join('\n');
-  console.warn(`M5.5 browser qualification completed with ${failed.length} known Material finding(s) across ${results.length} rows on ${report.environment.browser}:\n${summary}`);
+  throw new Error(`M5.5 v2 requalification has ${failed.length} unresolved non-Blocker failure(s) across ${results.length} rows on ${report.environment.browser}:\n${summary}`);
 } else {
-  console.log(`M5.5 browser qualification passed ${results.length}/${results.length} rows on ${report.environment.browser}`);
+  console.log(`M5.5 v2 requalification passed ${results.length}/${results.length} rows on ${report.environment.browser}`);
 }
-console.log(`M5.5 evidence: ${reportPath}`);
+console.log(`M5.5 v2 evidence: ${reportPath}`);

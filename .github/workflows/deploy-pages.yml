@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -34,6 +34,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: node .inputs/content/scripts/validate.mjs .inputs/content/fixtures/minimal/manifest.json
       - run: pnpm build
+        env:
+          FMC_REQUIRE_BROWSER: '1'
+          FMC_SOURCE_REVISION: ${{ github.sha }}
+          FMC_RUNNER_IMAGE_LABEL: ubuntu-24.04
+      - name: Enforce release authorization and prepare public artifact
+        run: node scripts/prepare-release.mjs validation/m5-5-current.json
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
@@ -41,7 +47,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       pages: write

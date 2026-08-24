@@ -1,0 +1,165 @@
+{
+  "schemaVersion": "p5-m5.5-requalification/v2",
+  "predecessor": {
+    "candidateManifest": "validation/m5-5-candidate.json",
+    "reviewedHead": "0605255cb9dfaad28c1c425feff558288bb81cc7",
+    "artifactId": 9505961644
+  },
+  "immutableAudit": {
+    "report": "docs/audits/m5-5-candidate-adversarial-audit-v1.md",
+    "structuredReport": "validation/m5-5-audit-v1.json",
+    "mergeCommit": "a071e58473646f00ea163b3f745c752228a0a8a2"
+  },
+  "entryWebsiteRevision": "a071e58473646f00ea163b3f745c752228a0a8a2",
+  "contentRevision": "fb3df63b27ae54d4dc237a421dd241d4c59330e4",
+  "componentSubjects": {
+    "preferences": "bb693450c2c18cacdb4913e27811e16b688e8fbe",
+    "representationBlock": "442a4b0f778698c725825f9615be1a0aa09da9e5",
+    "outlineNavigator": "37346c7e77f80da6cbce4547c24e55de2c704f57",
+    "remediation": "FMC_SOURCE_REVISION on the required v2 CI execution"
+  },
+  "runtime": {
+    "node": "24.19.0",
+    "pnpm": "11.23.0",
+    "astro": "7.2.4",
+    "starlight": "0.41.7",
+    "pagefind": "1.5.2",
+    "playwrightCore": "1.62.1",
+    "runnerLabel": "ubuntu-24.04",
+    "browserSource": "runner-installed Chrome; exact browser and observed runner-image identity recorded at execution"
+  },
+  "fixtureRoutes": [
+    "/validation/m5-5/",
+    "/validation/m5-5/collision/"
+  ],
+  "fixtureClassification": "synthetic-requalification-only",
+  "requiredEvidence": {
+    "report": "dist/_validation/m5-5-requalification-v2-report.json",
+    "ariaSnapshot": "dist/_validation/m5-5-requalification-v2-aria.txt",
+    "screenshots": [
+      "m5-5-requalification-v2-theme-light.png",
+      "m5-5-requalification-v2-theme-light-high-contrast.png",
+      "m5-5-requalification-v2-theme-dark.png",
+      "m5-5-requalification-v2-theme-dark-high-contrast.png",
+      "m5-5-requalification-v2-narrow-modal.png",
+      "m5-5-requalification-v2-forced-colors.png",
+      "m5-5-requalification-v2-no-javascript.png"
+    ]
+  },
+  "requiredBrowserRows": "B01-B30",
+  "requiredFrozenRows": {
+    "design": "D01-D16",
+    "representation": "R01-R16",
+    "outline": "N01-N26",
+    "crossComponent": "X01-X16"
+  },
+  "evidenceMatrix": {
+    "design": {
+      "D01": ["preferences.test defaults", "B02"],
+      "D02": ["B24"],
+      "D03": ["preferences.test system media", "B14"],
+      "D04": ["B14"],
+      "D05": ["B15", "B25"],
+      "D06": ["B15"],
+      "D07": ["B13", "B26"],
+      "D08": ["B20"],
+      "D09": ["B20"],
+      "D10": ["B12"],
+      "D11": ["preferences.test invalid objects", "B16"],
+      "D12": ["preferences.test storage failures", "B17"],
+      "D13": ["preferences.test unknown major"],
+      "D14": ["preferences.test storage event", "B09"],
+      "D15": ["preferences.test reset", "B08", "B27"],
+      "D16": ["B21"]
+    },
+    "representation": {
+      "R01": ["representation-block.test R01", "B02"],
+      "R02": ["representation-block.test R02", "B04"],
+      "R03": ["representation-block.test R03", "B03"],
+      "R04": ["representation-block.test R04", "B04"],
+      "R05": ["representation-block.test R05", "B04"],
+      "R06": ["representation-block.test R06", "B09"],
+      "R07": ["representation-block.test R07", "B29"],
+      "R08": ["representation-block.test R08", "B29"],
+      "R09": ["representation-block.test R09", "B03"],
+      "R10": ["representation-block.test R10", "B11", "B30"],
+      "R11": ["representation-block.test R11", "B21"],
+      "R12": ["representation-block.test R12", "B10"],
+      "R13": ["representation-block.test R13", "B19"],
+      "R14": ["representation-block.test R14", "B21"],
+      "R15": ["representation-block.test R15", "B08", "B27"],
+      "R16": ["representation-block.test R16", "B05", "B27", "B30"]
+    },
+    "outline": {
+      "N01": ["outline-navigator.test N01", "B02", "B08"],
+      "N02": ["outline-navigator.test N02", "B05"],
+      "N03": ["outline-navigator.test N03", "B05"],
+      "N04": ["outline-navigator.test N04", "B06"],
+      "N05": ["outline-navigator.test N05", "B06"],
+      "N06": ["outline-navigator.test N06"],
+      "N07": ["outline-navigator.test N07"],
+      "N08": ["outline-navigator.test N08"],
+      "N09": ["outline-navigator.test N09"],
+      "N10": ["outline-navigator.test N10", "B07"],
+      "N11": ["outline-navigator.test N11", "B07"],
+      "N12": ["outline-navigator.test N12", "B28"],
+      "N13": ["outline-navigator.test N13", "B07"],
+      "N14": ["outline-navigator.test N14", "B07"],
+      "N15": ["outline-navigator.test N15", "B11", "B13"],
+      "N16": ["outline-navigator.test N16", "B18"],
+      "N17": ["outline-navigator.test N17", "B18"],
+      "N18": ["outline-navigator.test N18"],
+      "N19": ["outline-navigator.test N19", "B28"],
+      "N20": ["outline-navigator.test N20", "B28"],
+      "N21": ["outline-navigator.test N21", "B28"],
+      "N22": ["outline-navigator.test N22", "B12-B14", "B19-B20"],
+      "N23": ["outline-navigator.test N23", "B21"],
+      "N24": ["outline-navigator.test N24", "B27-B28"],
+      "N25": ["outline-navigator.test N25", "B11"],
+      "N26": ["outline-navigator.test N26", "B11"]
+    },
+    "crossComponent": {
+      "X01": ["B04"],
+      "X02": ["B08"],
+      "X03": ["B08"],
+      "X04": ["B09"],
+      "X05": ["B05"],
+      "X06": ["B26"],
+      "X07": ["B07"],
+      "X08": ["B27"],
+      "X09": ["B17"],
+      "X10": ["B20"],
+      "X11": ["B19"],
+      "X12": ["B28"],
+      "X13": ["B29"],
+      "X14": ["B21"],
+      "X15": ["B09"],
+      "X16": ["B01-B30 on exact remediation head", "B14 four-theme matrix", "B24 reload matrix", "B25 typography matrix"]
+    }
+  },
+  "findingDispositions": [
+    { "id": "F01", "severity": "Material", "disposition": "remediated", "evidence": ["B18"] },
+    { "id": "F02", "severity": "Material", "disposition": "remediated", "evidence": ["release-gate.test", "scripts/prepare-release.mjs"] },
+    { "id": "F03", "severity": "Material", "disposition": "remediated", "evidence": ["representation-block.test collision pair", "B30"] },
+    { "id": "F04", "severity": "Material", "disposition": "remediated", "evidence": ["evidenceMatrix", "B24-B29"] },
+    { "id": "F05", "severity": "Minor", "disposition": "accepted-with-controls", "evidence": ["ubuntu-24.04 label", "recorded ImageOS/ImageVersion/browser", "browser/runner evolution trigger"] },
+    { "id": "O01", "severity": "Observation", "disposition": "retained" },
+    { "id": "O02", "severity": "Observation", "disposition": "retained" }
+  ],
+  "unresolvedFindings": { "Blocker": 0, "Material": 0, "Minor": 0 },
+  "deploymentAuthorized": false,
+  "candidateRevisionSource": "FMC_SOURCE_REVISION on the required v2 CI execution",
+  "limitations": [
+    "Fixtures do not establish production curriculum, mapping, translation or formal-verification coverage.",
+    "Chromium automation does not establish cross-engine or manual screen-reader conformance.",
+    "The localized-route case is a synthetic ownership proxy, not future-locale chrome qualification.",
+    "Screenshots require independent inspection and are not self-approving golden images.",
+    "Deployment remains denied by the current selector despite M5.6 eligibility."
+  ],
+  "revalidateOn": [
+    "runner label or observed runner image change",
+    "browser or Playwright change",
+    "component, schema, route, locale, release workflow or content input change",
+    "new Blocker or Material finding"
+  ]
+}
