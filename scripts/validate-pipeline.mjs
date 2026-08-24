@@ -106,6 +106,14 @@ export function validatePipeline({ ciSource, deploySource, lock }) {
   const releaseDraft = steps(deploy).find(step => String(step.run ?? '').includes('gh release create p5-web-v0.1.0'));
   const releasePublish = steps(deploy).find(step => String(step.run ?? '').includes('gh release edit p5-web-v0.1.0'));
   invariant(releaseDraft && releasePublish, 'draft-before-publish release lifecycle is incomplete');
+  const draftRun = String(releaseDraft.run);
+  invariant(draftRun.includes('refs/tags/$tag') && draftRun.includes('git/refs'), 'release draft must explicitly bind an exact tag ref');
+  invariant(draftRun.indexOf('git/refs') < draftRun.indexOf('gh release create'), 'exact tag binding must precede draft creation');
+  invariant(draftRun.includes('gh release upload "$tag"') && draftRun.includes('--clobber'), 'partial-run draft recovery must replace assets');
+  invariant(draftRun.includes('gh release download "$tag"') && draftRun.includes('cmp "release-assets/$asset"'), 'staged release assets must be byte-compared');
+  const publishRun = String(releasePublish.run);
+  invariant(publishRun.indexOf("--jq '.draft')\" = \"true\"") < publishRun.indexOf('gh release edit'), 'release must remain draft until public verification completes');
+  invariant(publishRun.indexOf('gh release edit') < publishRun.lastIndexOf("--jq '.draft')\" = \"false\""), 'release publication must be confirmed');
 
   return true;
 }
