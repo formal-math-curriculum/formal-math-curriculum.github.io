@@ -1,12 +1,12 @@
 export const MAX_PAGEFIND_CANDIDATES = 250;
 export const MAX_RENDERED_SEARCH_RESULTS = 100;
 export const CONTENT_KIND_RANKING_PRIOR = Object.freeze({
-  editorial_unit: 5,
-  theorem: 4,
-  exercise: 3,
-  definition: 2,
-  unit: 1,
-  learning_path: 0.5,
+  editorial_unit: 12,
+  theorem: 8,
+  exercise: 6,
+  definition: 4,
+  unit: 2,
+  learning_path: 1,
   module: 0,
   example: 0
 });

@@ -86,8 +86,8 @@ test('client ordering privileges exact identities and then uses stable score/URL
 
 test('query-independent content-kind prior repairs graded ranking and exposes complete metrics', () => {
   const rows = [
-    { url: '/content/p5m56c0010/negative-times-negative-example/', score: 12.75, meta: { 'content-id': 'cnt:p5m56:000010', 'content-kind': 'example' } },
-    { url: '/content/p5m56c0009/sign-rules-for-products/', score: 15.07, meta: { 'content-id': 'cnt:p5m56:000009', 'content-kind': 'editorial_unit' } },
+    { url: '/content/p5m56c0010/negative-times-negative-example/', score: 27.31, meta: { 'content-id': 'cnt:p5m56:000010', 'content-kind': 'example' } },
+    { url: '/content/p5m56c0009/sign-rules-for-products/', score: 16.10, meta: { 'content-id': 'cnt:p5m56:000009', 'content-kind': 'editorial_unit' } },
     { url: '/content/p5m56c0001/integers/', score: 11, meta: { 'content-id': 'cnt:p5m56:000001', 'content-kind': 'learning_path' } }
   ];
   const ordered = sortSearchRows(rows, 'negative multiplication').map(({ meta }) => meta['content-id']);
