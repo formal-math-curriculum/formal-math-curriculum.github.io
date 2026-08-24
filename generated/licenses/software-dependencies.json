@@ -4,7 +4,7 @@
   "package_manager": "pnpm@11.23.0",
   "node_version": "24.19.0",
   "lockfile_sha256": "5bc6e61817b88aa16ddde81d8d4453ec340013a203a0efc582864b6d2816f21f",
-  "package_json_sha256": "b803647cf500b3a67b61c3166cbcb563f95153ef5ca0c7c43d718fb4c4ac0240",
+  "package_json_sha256": "1e05aa5241688d80d45be048b7046c29c2b36e76cb8e8f8639e3ece6257b8057",
   "lock_counts": {
     "packages": 551,
     "snapshots": 552,
