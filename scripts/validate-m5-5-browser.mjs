@@ -418,15 +418,27 @@ try {
   await outline.locator('[data-fmc-expand-all]').click();
   const tabAria = await mathBlock.getByRole('tablist').ariaSnapshot();
   const outlineAria = await outlineNav.ariaSnapshot();
-  writeFileSync(ariaPath, `# Representation tablist\n${tabAria}\n\n# Outline navigation\n${outlineAria}\n`, 'utf8');
-  await row('B11', 'Material', 'ARIA snapshot exposes tab selection, named navigation, disclosures, current traversal and live status', async () => {
+  const currentTraversal = await outlineNav.locator('a[aria-current="page"]').evaluateAll((links) => links.map((link) => ({
+    name: link.textContent?.trim() ?? '',
+    href: link.getAttribute('href'),
+    ariaCurrent: link.getAttribute('aria-current')
+  })));
+  writeFileSync(
+    ariaPath,
+    `# Representation tablist\n${tabAria}\n\n# Outline navigation\n${outlineAria}\n\n# Exact current traversal semantics\n${JSON.stringify(currentTraversal, null, 2)}\n`,
+    'utf8'
+  );
+  await row('B11', 'Material', 'ARIA evidence exposes tab selection, named navigation, disclosures, current traversal and live status', async () => {
     const labelledBy = await outlineNav.getAttribute('aria-labelledby');
     const checks = {
       tablistRole: await mathBlock.getByRole('tablist').getAttribute('role') === 'tablist',
       leanSelected: /tab "Lean source" \[selected\]/.test(tabAria),
       namedNavigation: Boolean(labelledBy) && await page.locator(`#${labelledBy}`).textContent() === 'Synthetic course outline',
       disclosureState: /button "(Expand|Collapse)/.test(outlineAria),
-      currentTraversal: /link "Definition of a group" \[current\]/.test(outlineAria),
+      currentTraversal: currentTraversal.length === 1
+        && currentTraversal[0].name === 'Definition of a group'
+        && currentTraversal[0].href === '/content/grp0000001/group/'
+        && currentTraversal[0].ariaCurrent === 'page',
       liveStatus: await outline.locator('[data-fmc-outline-status]').getAttribute('aria-live') === 'polite'
     };
     return {
@@ -471,17 +483,17 @@ try {
       await page.keyboard.press('Shift+Tab');
       steps += 1;
     }
-    const actual = await summary.evaluate((element) => {
+    const measurement = await summary.evaluate((element) => {
       const style = getComputedStyle(element);
       const rect = element.getBoundingClientRect();
       return {
-        steps,
         keyboardFocused: document.activeElement === element,
         outlineStyle: style.outlineStyle,
         outlineWidth: style.outlineWidth,
         visible: rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth
       };
     });
+    const actual = { steps, ...measurement };
     return { pass: actual.keyboardFocused && actual.outlineStyle !== 'none' && Number.parseFloat(actual.outlineWidth) > 0 && actual.visible, actual };
   });
 
