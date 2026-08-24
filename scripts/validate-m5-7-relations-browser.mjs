@@ -297,4 +297,7 @@ const report = {
 };
 writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 console.log(`M5.7 relation browser qualification: ${report.execution.passed}/${report.execution.total} pass; ${report.execution.failed} fail`);
-if (failed.length) throw new Error(`M5.7 relation browser qualification failed: ${failed.map(({ id }) => id).join(', ')}`);
+if (failed.length) {
+  console.error(JSON.stringify(failed, null, 2));
+  throw new Error(`M5.7 relation browser qualification failed: ${failed.map(({ id }) => id).join(', ')}`);
+}

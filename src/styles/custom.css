@@ -625,7 +625,7 @@ fmc-preference-controls {
 
 @media (prefers-reduced-motion: reduce) {
   .fmc-relation-map__edges {
-    transition: none;
+    transition: none !important;
   }
 }
 
