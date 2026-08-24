@@ -166,6 +166,7 @@ test('R09 enhanced tabs implement horizontal automatic APG keyboard behavior', a
   }
   assert.match(component, /event\.key === ' '/);
   assert.match(component, /event\.preventDefault\(\)/);
+  assert.match(component, /addEventListener\('focus'/);
   assert.doesNotMatch(component, /ArrowUp|ArrowDown/);
 });
 
@@ -250,6 +251,8 @@ test('R16 identity is stable and component state cannot manufacture route or loc
   assert.doesNotMatch(component, /location\.|history\.|document\.documentElement\.lang\s*=/);
   assert.match(component, /data-fmc-content-id/);
   assert.match(component, /data-fmc-revision/);
+  assert.match(component, /labels\?: RepresentationChromeOverride/);
+  assert.match(component, /data-fmc-chrome/);
 });
 
 test('validator rejects missing identity, missing records and incompatible schema majors', () => {

@@ -10,6 +10,7 @@ import {
 
 interface Props {
   block: unknown;
+  labels?: RepresentationChromeOverride;
 }
 
 type RepresentationView = 'rendered' | 'latex' | 'lean';
@@ -31,7 +32,91 @@ interface RepresentationBlockValue {
   representations: Record<RepresentationView, RepresentationRecord>;
 }
 
-const { block } = Astro.props;
+interface RepresentationChrome {
+  eyebrow: string;
+  views: Record<RepresentationView, string>;
+  useGlobalDefault: string;
+  exactSource: string;
+  copy: Record<'latex' | 'lean', string>;
+  sourceEvidence: string;
+  unavailable: string;
+  provenanceTitle: string;
+  availability: string;
+  correspondence: string;
+  source: string;
+  noScript: string;
+  stateLabels: Record<string, string>;
+  messages: Record<
+    | 'requestedUnavailable'
+    | 'noAvailable'
+    | 'override'
+    | 'restore'
+    | 'reset'
+    | 'globalChanged'
+    | 'copied'
+    | 'copyFailed',
+    string
+  >;
+}
+
+type RepresentationChromeOverride = Partial<
+  Omit<RepresentationChrome, 'views' | 'copy' | 'stateLabels' | 'messages'>
+> & {
+  views?: Partial<RepresentationChrome['views']>;
+  copy?: Partial<RepresentationChrome['copy']>;
+  stateLabels?: Record<string, string>;
+  messages?: Partial<RepresentationChrome['messages']>;
+};
+
+const defaultChrome: RepresentationChrome = {
+  eyebrow: 'Mathematical representation',
+  views: REPRESENTATION_LABELS as Record<RepresentationView, string>,
+  useGlobalDefault: 'Use global default',
+  exactSource: 'Exact source text',
+  copy: { latex: 'Copy LaTeX', lean: 'Copy Lean' },
+  sourceEvidence: 'source evidence',
+  unavailable: 'No current compatible representation is available. Provenance and failure states remain below.',
+  provenanceTitle: 'Representation status and provenance',
+  availability: 'availability',
+  correspondence: 'correspondence',
+  source: 'source',
+  noScript: 'All current representations are shown as ordinary sections because interactive tabs require JavaScript.',
+  stateLabels: Object.fromEntries(
+    [
+      'current',
+      'unavailable',
+      'pending',
+      'stale',
+      'incompatible',
+      'withdrawn',
+      'disputed',
+      'exact',
+      'scoped',
+      'related',
+      'unreviewed'
+    ].map((state) => [state, state])
+  ),
+  messages: {
+    requestedUnavailable: '{requested} was requested but is not current and compatible. Showing {effective}.',
+    noAvailable: 'No current compatible representation is available.',
+    override: 'Showing {effective} for this block. Local override active.',
+    restore: 'Local override cleared. Following global default: {global}.',
+    reset: 'Block override cleared. Following global default: {global}.',
+    globalChanged: 'Global default changed. Showing {effective}.',
+    copied: '{view} copied exactly.',
+    copyFailed: '{view} could not be copied. The source remains selectable.'
+  }
+};
+
+const { block, labels = {} } = Astro.props;
+const chrome: RepresentationChrome = {
+  ...defaultChrome,
+  ...labels,
+  views: { ...defaultChrome.views, ...labels.views },
+  copy: { ...defaultChrome.copy, ...labels.copy },
+  stateLabels: { ...defaultChrome.stateLabels, ...labels.stateLabels },
+  messages: { ...defaultChrome.messages, ...labels.messages }
+};
 const parsed = validateRepresentationBlock(block, {
   hasRenderedContent: Astro.slots.has('rendered')
 });
@@ -41,14 +126,15 @@ if (!parsed.ok || !parsed.value) {
 }
 
 const value = parsed.value as RepresentationBlockValue;
-const representationLabels = REPRESENTATION_LABELS as Record<RepresentationView, string>;
+const representationLabels = chrome.views;
 const domId = createRepresentationDomId(value.identity);
 const operableViews = getOperableViews(value) as RepresentationView[];
 const initialView = operableViews.includes('rendered') ? 'rendered' : (operableViews[0] ?? null);
 const isOperable = (view: RepresentationView) => operableViews.includes(view);
-const statusLabel = (value: string) => value.replaceAll('-', ' ');
+const statusLabel = (value: string) => chrome.stateLabels[value] ?? value.replaceAll('-', ' ');
 const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
   encodeSourcePayload(value.representations[view].source ?? '');
+const chromePayload = encodeSourcePayload(JSON.stringify(chrome));
 ---
 
 <fmc-mathematical-block
@@ -58,10 +144,11 @@ const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
   data-fmc-revision={value.identity.revision}
   data-fmc-operable={operableViews.join(' ')}
   data-fmc-effective-view={initialView ?? 'unavailable'}
+  data-fmc-chrome={chromePayload}
 >
   <header class="fmc-math-block__header">
     <div>
-      <p class="fmc-math-block__eyebrow">Mathematical representation</p>
+      <p class="fmc-math-block__eyebrow">{chrome.eyebrow}</p>
       <h2 id={`${domId}-title`}>{value.title}</h2>
     </div>
     <button
@@ -71,7 +158,7 @@ const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
       data-fmc-restore-global
       hidden
     >
-      Use global default
+      {chrome.useGlobalDefault}
     </button>
   </header>
 
@@ -107,7 +194,7 @@ const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
       data-fmc-panel="rendered"
       data-fmc-tab-id={`${domId}-tab-rendered`}
     >
-      <h3>Rendered mathematics</h3>
+      <h3>{chrome.views.rendered}</h3>
       <div class="fmc-math-block__rendered" data-fmc-rendered-kind={value.representations.rendered.renderer}>
         <slot name="rendered" />
       </div>
@@ -121,16 +208,16 @@ const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
       data-fmc-panel="latex"
       data-fmc-tab-id={`${domId}-tab-latex`}
     >
-      <h3>LaTeX source</h3>
+      <h3>{chrome.views.latex}</h3>
       <div class="fmc-source-shell">
         <div class="fmc-source-shell__toolbar">
-          <span>Exact source bytes</span>
+          <span>{chrome.exactSource}</span>
           <button
             type="button"
             data-fmc-control
             data-fmc-copy="latex"
             data-fmc-source-payload={sourcePayload('latex')}
-          >Copy LaTeX</button>
+          >{chrome.copy.latex}</button>
         </div>
         <pre tabindex="0"><code>{value.representations.latex.source}</code></pre>
       </div>
@@ -144,16 +231,16 @@ const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
       data-fmc-panel="lean"
       data-fmc-tab-id={`${domId}-tab-lean`}
     >
-      <h3>Lean source</h3>
+      <h3>{chrome.views.lean}</h3>
       <div class="fmc-source-shell">
         <div class="fmc-source-shell__toolbar">
-          <span>Exact source bytes</span>
+          <span>{chrome.exactSource}</span>
           <button
             type="button"
             data-fmc-control
             data-fmc-copy="lean"
             data-fmc-source-payload={sourcePayload('lean')}
-          >Copy Lean</button>
+          >{chrome.copy.lean}</button>
         </div>
         <pre tabindex="0"><code>{value.representations.lean.source}</code></pre>
       </div>
@@ -163,7 +250,7 @@ const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
   {!isOperable('latex') && value.representations.latex.source ? (
     <details class="fmc-representation-evidence">
       <summary data-fmc-control>
-        LaTeX source evidence ({statusLabel(value.representations.latex.availability)})
+        {chrome.views.latex} {chrome.sourceEvidence} ({statusLabel(value.representations.latex.availability)})
       </summary>
       <pre tabindex="0"><code>{value.representations.latex.source}</code></pre>
     </details>
@@ -172,7 +259,7 @@ const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
   {!isOperable('lean') && value.representations.lean.source ? (
     <details class="fmc-representation-evidence">
       <summary data-fmc-control>
-        Lean source evidence ({statusLabel(value.representations.lean.availability)})
+        {chrome.views.lean} {chrome.sourceEvidence} ({statusLabel(value.representations.lean.availability)})
       </summary>
       <pre tabindex="0"><code>{value.representations.lean.source}</code></pre>
     </details>
@@ -180,22 +267,22 @@ const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
 
   {operableViews.length === 0 ? (
     <p class="fmc-math-block__unavailable" role="status">
-      No current compatible representation is available. Provenance and failure states remain below.
+      {chrome.unavailable}
     </p>
   ) : null}
 
   <aside class="fmc-representation-provenance" aria-labelledby={`${domId}-provenance-title`}>
-    <h3 id={`${domId}-provenance-title`}>Representation status and provenance</h3>
+    <h3 id={`${domId}-provenance-title`}>{chrome.provenanceTitle}</h3>
     <ul>
       {(REPRESENTATION_VIEWS as readonly RepresentationView[]).map((view) => {
         const representation = value.representations[view];
         return (
           <li data-fmc-representation-state={view}>
             <strong>{representationLabels[view]}:</strong>{' '}
-            <span>availability {statusLabel(representation.availability)};</span>{' '}
-            <span>correspondence {statusLabel(representation.correspondence)};</span>{' '}
+            <span>{chrome.availability} {statusLabel(representation.availability)};</span>{' '}
+            <span>{chrome.correspondence} {statusLabel(representation.correspondence)};</span>{' '}
             <span>
-              source <code>{representation.provenance.subject}@{representation.provenance.revision}</code>
+              {chrome.source} <code>{representation.provenance.subject}@{representation.provenance.revision}</code>
             </span>
             {representation.note ? <span>; {representation.note}</span> : null}
           </li>
@@ -206,7 +293,7 @@ const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
 
   <noscript>
     <p class="fmc-math-block__noscript">
-      All current representations are shown as ordinary sections because interactive tabs require JavaScript.
+      {chrome.noScript}
     </p>
   </noscript>
 </fmc-mathematical-block>
@@ -221,6 +308,11 @@ const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
   } from '../lib/representation-block.mjs';
 
   type RepresentationView = 'rendered' | 'latex' | 'lean';
+  type ClientChrome = {
+    views: Record<RepresentationView, string>;
+    useGlobalDefault: string;
+    messages: Record<string, string>;
+  };
   const representationLabels = REPRESENTATION_LABELS as Record<RepresentationView, string>;
   const representationViews = REPRESENTATION_VIEWS as readonly RepresentationView[];
 
@@ -241,6 +333,26 @@ const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
       this.initialized = true;
       this.abortController = new AbortController();
       const signal = this.abortController.signal;
+      const fallbackChrome: ClientChrome = {
+        views: representationLabels,
+        useGlobalDefault: 'Use global default',
+        messages: {
+          requestedUnavailable: '{requested} was requested but is not current and compatible. Showing {effective}.',
+          noAvailable: 'No current compatible representation is available.',
+          override: 'Showing {effective} for this block. Local override active.',
+          restore: 'Local override cleared. Following global default: {global}.',
+          reset: 'Block override cleared. Following global default: {global}.',
+          globalChanged: 'Global default changed. Showing {effective}.',
+          copied: '{view} copied exactly.',
+          copyFailed: '{view} could not be copied. The source remains selectable.'
+        }
+      };
+      let chrome = fallbackChrome;
+      try {
+        chrome = JSON.parse(decodeSourcePayload(this.dataset.fmcChrome ?? '')) as ClientChrome;
+      } catch {
+        chrome = fallbackChrome;
+      }
 
       const operableViews = (this.dataset.fmcOperable ?? '')
         .split(' ')
@@ -284,8 +396,11 @@ const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
 
       const viewLabel = (view: string | null | undefined) =>
         view && representationViews.includes(view as RepresentationView)
-          ? representationLabels[view as RepresentationView]
+          ? chrome.views[view as RepresentationView]
           : 'no available representation';
+
+      const formatMessage = (template: string, values: Record<string, string>) =>
+        template.replaceAll(/\{([a-z]+)\}/g, (_, key: string) => values[key] ?? '');
 
       const render = (detail: ReturnType<typeof controller.getSnapshot>) => {
         this.dataset.fmcEffectiveView = detail.effectiveView ?? 'unavailable';
@@ -302,31 +417,36 @@ const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
 
         if (restore) {
           restore.hidden = detail.override === null;
-          restore.textContent = `Use global default (${viewLabel(detail.globalDefault)})`;
+          restore.textContent = `${chrome.useGlobalDefault} (${viewLabel(detail.globalDefault)})`;
         }
 
         if (fallback) {
           fallback.hidden = detail.fallbackReason === null;
           fallback.textContent =
             detail.fallbackReason === 'requested-unavailable'
-              ? `${viewLabel(detail.requestedView)} was requested but is not current and compatible. Showing ${viewLabel(detail.effectiveView)}.`
+              ? formatMessage(chrome.messages.requestedUnavailable, {
+                  requested: viewLabel(detail.requestedView),
+                  effective: viewLabel(detail.effectiveView)
+                })
               : detail.fallbackReason === 'no-operable-view'
-                ? 'No current compatible representation is available.'
+                ? chrome.messages.noAvailable
                 : '';
         }
 
         if (detail.source === 'override') {
-          announce(`Showing ${viewLabel(detail.effectiveView)} for this block. Local override active.`);
+          announce(formatMessage(chrome.messages.override, { effective: viewLabel(detail.effectiveView) }));
         }
         if (detail.source === 'restore-global') {
-          announce(`Local override cleared. Following global default: ${viewLabel(detail.globalDefault)}.`);
+          announce(formatMessage(chrome.messages.restore, { global: viewLabel(detail.globalDefault) }));
         }
         if (detail.source === 'reset') {
-          announce(`Block override cleared. Following global default: ${viewLabel(detail.globalDefault)}.`);
+          announce(formatMessage(chrome.messages.reset, { global: viewLabel(detail.globalDefault) }));
         }
         if (detail.source === 'storage' || (detail.source === 'global' && detail.changed)) {
           if (detail.override === null) {
-            announce(`Global default changed. Showing ${viewLabel(detail.effectiveView)}.`);
+            announce(formatMessage(chrome.messages.globalChanged, {
+              effective: viewLabel(detail.effectiveView)
+            }));
           }
         }
       };
@@ -342,6 +462,9 @@ const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
 
       for (const tab of tabs) {
         tab.addEventListener('click', () => activate(tab), { signal });
+        tab.addEventListener('focus', () => {
+          if (controller.getSnapshot().effectiveView !== tab.dataset.fmcTab) activate(tab);
+        }, { signal });
         tab.addEventListener('keydown', (event) => {
           const currentIndex = tabs.indexOf(tab);
           let targetIndex: number | null = null;
@@ -372,9 +495,9 @@ const sourcePayload = (view: Exclude<RepresentationView, 'rendered'>) =>
             if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
             const source = decodeSourcePayload(button.dataset.fmcSourcePayload ?? '');
             await navigator.clipboard.writeText(source);
-            announce(`${viewLabel(button.dataset.fmcCopy)} copied exactly.`);
+            announce(formatMessage(chrome.messages.copied, { view: viewLabel(button.dataset.fmcCopy) }));
           } catch {
-            announce(`${viewLabel(button.dataset.fmcCopy)} could not be copied. The source remains selectable.`);
+            announce(formatMessage(chrome.messages.copyFailed, { view: viewLabel(button.dataset.fmcCopy) }));
           }
         }, { signal });
       }

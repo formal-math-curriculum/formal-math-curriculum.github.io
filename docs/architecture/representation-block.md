@@ -42,6 +42,11 @@ panel is fetched or generated on focus:
 * roles, selection, controls and labelling relationships are installed together only
   after enhancement succeeds.
 
+English is the root default. A caller for a future qualified locale supplies the
+component's bounded `labels` object, including view/state names and live-message
+templates. That object changes chrome only; it cannot change block identity, source
+provenance, route, or document language.
+
 Long math and source scroll inside their own bounded container. The component uses the
 shared MAT-357 tokens, target sizes, focus, reduced-motion and forced-colors policy.
 
