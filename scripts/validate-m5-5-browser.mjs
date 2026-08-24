@@ -132,7 +132,16 @@ async function row(id, severity, expected, execute) {
 function observePage(page, name) {
   page.on('pageerror', (error) => consoleFailures.push({ page: name, type: 'pageerror', text: error.message }));
   page.on('console', (message) => {
-    if (message.type() === 'error') consoleFailures.push({ page: name, type: 'console-error', text: message.text() });
+    if (message.type() === 'error') {
+      const location = message.location();
+      consoleFailures.push({
+        page: name,
+        type: 'console-error',
+        text: message.text(),
+        url: location.url || null,
+        line: location.lineNumber ?? null
+      });
+    }
   });
 }
 
@@ -409,15 +418,22 @@ try {
   const tabAria = await mathBlock.getByRole('tablist').ariaSnapshot();
   const outlineAria = await outlineNav.ariaSnapshot();
   writeFileSync(ariaPath, `# Representation tablist\n${tabAria}\n\n# Outline navigation\n${outlineAria}\n`, 'utf8');
-  await row('B11', 'Material', 'ARIA snapshot exposes tab selection, named navigation, disclosures, current traversal and live status', async () => ({
-    pass: /tablist/.test(tabAria)
-      && /tab "Lean source" \[selected\]/.test(tabAria)
-      && /navigation "Synthetic course outline"/.test(outlineAria)
-      && /button "(Expand|Collapse)/.test(outlineAria)
-      && /link .*current/.test(outlineAria),
-    actual: { tabAriaLines: tabAria.split('\n').length, outlineAriaLines: outlineAria.split('\n').length },
-    evidence: '_validation/m5-5-aria.txt'
-  }));
+  await row('B11', 'Material', 'ARIA snapshot exposes tab selection, named navigation, disclosures, current traversal and live status', async () => {
+    const labelledBy = await outlineNav.getAttribute('aria-labelledby');
+    const checks = {
+      tablistRole: await mathBlock.getByRole('tablist').getAttribute('role') === 'tablist',
+      leanSelected: /tab "Lean source" \[selected\]/.test(tabAria),
+      namedNavigation: Boolean(labelledBy) && await page.locator(`#${labelledBy}`).textContent() === 'Synthetic course outline',
+      disclosureState: /button "(Expand|Collapse)/.test(outlineAria),
+      currentTraversal: /link "Definition of a group" \[current\]/.test(outlineAria),
+      liveStatus: await outline.locator('[data-fmc-outline-status]').getAttribute('aria-live') === 'polite'
+    };
+    return {
+      pass: Object.values(checks).every(Boolean),
+      actual: { checks, tabAria, outlineAria },
+      evidence: '_validation/m5-5-aria.txt'
+    };
+  });
 
   await row('B12', 'Material', 'Every visible standalone project control is at least 44×44 CSS pixels and checkbox labels are 44px tall', async () => {
     const actual = await page.evaluate(() => {
@@ -448,17 +464,19 @@ try {
   });
 
   await row('B13', 'Material', 'Keyboard focus has a nonzero visible outline and intersects the viewport', async () => {
-    await preferences.locator('summary').focus();
+    await page.evaluate(() => document.activeElement?.blur());
+    await page.keyboard.press('Tab');
     const actual = await preferences.locator('summary').evaluate((element) => {
       const style = getComputedStyle(element);
       const rect = element.getBoundingClientRect();
       return {
+        keyboardFocused: document.activeElement === element,
         outlineStyle: style.outlineStyle,
         outlineWidth: style.outlineWidth,
         visible: rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth
       };
     });
-    return { pass: actual.outlineStyle !== 'none' && Number.parseFloat(actual.outlineWidth) > 0 && actual.visible, actual };
+    return { pass: actual.keyboardFocused && actual.outlineStyle !== 'none' && Number.parseFloat(actual.outlineWidth) > 0 && actual.visible, actual };
   });
 
   const themes = ['light', 'light-high-contrast', 'dark', 'dark-high-contrast'];
@@ -575,15 +593,30 @@ try {
   await row('B18', 'Material', 'The same narrow dialog is modal, contains sequential focus, closes on Escape and restores trigger focus', async () => {
     const modal = await dialog.evaluate((element) => element.matches(':modal'));
     let contained = true;
+    const focusTrace = [];
     for (let index = 0; index < 24; index += 1) {
       await narrowPage.keyboard.press('Tab');
-      contained &&= await dialog.evaluate((element) => element.contains(document.activeElement));
+      const focused = await dialog.evaluate((element) => {
+        const active = document.activeElement;
+        return {
+          contained: element.contains(active),
+          tag: active?.tagName ?? null,
+          control: active?.getAttribute('data-fmc-field')
+            ?? active?.getAttribute('data-fmc-projection')
+            ?? active?.getAttribute('data-fmc-outline-query')
+            ?? active?.getAttribute('data-fmc-outline-close')
+            ?? active?.textContent?.trim().slice(0, 80)
+            ?? null
+        };
+      });
+      contained &&= focused.contained;
+      focusTrace.push(focused);
     }
     await narrowPage.screenshot({ path: join(evidenceDirectory, 'm5-5-narrow-modal.png'), fullPage: true });
     await narrowPage.keyboard.press('Escape');
     await narrowPage.waitForFunction(() => !document.querySelector('[data-fmc-outline-dialog]')?.open);
     const restored = await trigger.evaluate((button) => document.activeElement === button);
-    return { pass: modal && contained && restored, actual: { modal, contained, restored } };
+    return { pass: modal && contained && restored, actual: { modal, contained, restored, focusTrace } };
   });
 
   await row('B19', 'Material', '320px/400% proxy and 200% text reflow avoid page-wide overflow while source overflow stays local', async () => {
