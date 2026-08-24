@@ -13,9 +13,10 @@
     "test": "node --test tests/*.test.mjs",
     "ingest": "node scripts/ingest-content.mjs",
     "build:astro": "astro build",
+    "test:browser": "node scripts/validate-m5-5-browser.mjs",
     "build:search": "pagefind --site dist",
     "verify:artifact": "node scripts/verify-artifact.mjs",
-    "build": "pnpm run check && pnpm run test && pnpm run ingest && pnpm run build:astro && pnpm run build:search && pnpm run verify:artifact"
+    "build": "pnpm run check && pnpm run test && pnpm run ingest && pnpm run build:astro && pnpm run test:browser && pnpm run build:search && pnpm run verify:artifact"
   },
   "dependencies": {
     "@astrojs/starlight": "0.41.7",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
+    "playwright-core": "1.62.1",
     "typescript": "6.0.3",
     "yaml": "2.9.0"
   }

@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "p5-m5.5-candidate-qualification/v1",
+  "entryWebsiteRevision": "37346c7e77f80da6cbce4547c24e55de2c704f57",
+  "contentRevision": "fb3df63b27ae54d4dc237a421dd241d4c59330e4",
+  "componentSubjects": {
+    "preferences": "bb693450c2c18cacdb4913e27811e16b688e8fbe",
+    "representationBlock": "442a4b0f778698c725825f9615be1a0aa09da9e5",
+    "outlineNavigator": "37346c7e77f80da6cbce4547c24e55de2c704f57"
+  },
+  "runtime": {
+    "node": "24.19.0",
+    "pnpm": "11.23.0",
+    "astro": "7.2.4",
+    "starlight": "0.41.7",
+    "pagefind": "1.5.2",
+    "playwrightCore": "1.62.1",
+    "browserSource": "GitHub ubuntu-latest installed Chrome; exact version recorded at execution"
+  },
+  "fixtureRoute": "/validation/m5-5/",
+  "fixtureClassification": "synthetic-integration-only",
+  "requiredEvidence": {
+    "report": "dist/_validation/m5-5-report.json",
+    "ariaSnapshot": "dist/_validation/m5-5-aria.txt",
+    "screenshots": [
+      "m5-5-theme-light.png",
+      "m5-5-theme-light-high-contrast.png",
+      "m5-5-theme-dark.png",
+      "m5-5-theme-dark-high-contrast.png",
+      "m5-5-narrow-modal.png",
+      "m5-5-forced-colors.png",
+      "m5-5-no-javascript.png"
+    ]
+  },
+  "requiredFrozenRows": {
+    "design": "D01-D16",
+    "representation": "R01-R16",
+    "outline": "N01-N26",
+    "crossComponent": "X01-X16"
+  },
+  "candidateRevisionSource": "FMC_SOURCE_REVISION on the required CI execution",
+  "deploymentAuthorized": false,
+  "knownAuditFindings": [
+    {
+      "id": "B18",
+      "severity": "Material",
+      "subject": "native narrow outline dialog sequential focus",
+      "finding": "In runner Chrome, forward Tab reaches the document body for one step after the last dialog control before returning to the modal dialog. Outside interactive controls remain inert, Escape closes the modal, and trigger focus is restored.",
+      "remediationInMat375": false,
+      "revalidateOn": [
+        "outline focus-management change",
+        "runner Chrome change",
+        "dialog interaction audit"
+      ]
+    }
+  ],
+  "limitations": [
+    "Fixtures do not establish production curriculum, mapping, translation or formal-verification coverage.",
+    "Chromium automation does not establish cross-engine or manual screen-reader conformance.",
+    "Screenshots require independent inspection and are not self-approving golden images."
+  ]
+}
