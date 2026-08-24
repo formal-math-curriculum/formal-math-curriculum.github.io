@@ -17,6 +17,8 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
+    env:
+      FMC_SOURCE_REVISION: ${{ github.sha }}
     permissions:
       contents: read
       id-token: write
