@@ -39,7 +39,7 @@ jobs:
           FMC_SOURCE_REVISION: ${{ github.sha }}
           FMC_RUNNER_IMAGE_LABEL: ubuntu-24.04
       - name: Enforce release authorization and prepare public artifact
-        run: node scripts/prepare-release.mjs validation/m5-5-current.json
+        run: node scripts/prepare-release.mjs validation/m5-6-current.json
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:

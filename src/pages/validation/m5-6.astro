@@ -1,0 +1,131 @@
+---
+import MathematicalBlock from '../../components/MathematicalBlock.astro';
+import OutlineNavigator from '../../components/OutlineNavigator.astro';
+import PreferenceControls from '../../components/PreferenceControls.astro';
+import PreferenceProvider from '../../components/PreferenceProvider.astro';
+import RenderedMath from '../../components/RenderedMath.astro';
+import { loadSiteBundle, makeValidationOutline, toRepresentationBlock } from '../../lib/m5-6-publication.mjs';
+import '../../styles/custom.css';
+
+export const prerender = true;
+
+const bundle = await loadSiteBundle();
+const fixture = bundle.validationFixture;
+const entity = bundle.publication.content.find((candidate: Record<string, any>) => candidate.content_id === fixture.subject_content_id);
+const dependencyBlock = entity.blocks.find((block: Record<string, any>) => block.formal_binding.fart_id === 'FART-P2-000005');
+const outline = makeValidationOutline(bundle);
+const reservedIdentifiers = fixture.projections.flatMap((projection: Record<string, any>) =>
+  projection.placements.flatMap((placement: Record<string, any>) => placement.external_id ? [placement.external_id] : [])
+);
+---
+
+<!doctype html>
+<html lang="en" data-fmc-m5-6-validation={fixture.fingerprint}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta
+      name="description"
+      content="Synthetic M5.6 five-projection validation harness. This route is excluded from publication coverage."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>M5.6 all-projection validation harness</title>
+    <PreferenceProvider />
+  </head>
+  <body>
+    <main id="main-content" data-pagefind-ignore="all">
+      <header class="validation-header">
+        <div>
+          <p class="validation-kicker">MAT-398 · validation only · {fixture.fingerprint}</p>
+          <h1>M5.6 five-projection contract harness</h1>
+          <p>
+            This noindex route consumes the content-owned synthetic fixture. Reserved OntoMathPRO,
+            MSC and arXiv identifiers exercise mechanics only and are excluded from canonical metadata,
+            global search, sitemap output and publication coverage.
+          </p>
+        </div>
+        <PreferenceControls />
+      </header>
+
+      <div class="validation-grid">
+        <aside aria-label="M5.6 all-projection validation outline">
+          <OutlineNavigator manifest={outline} heading="M5.6 validation outline" />
+        </aside>
+
+        <article>
+          <h2>Exact dependency-backed representation</h2>
+          <p>
+            The Course and Lean subjects are governed. External labels on this page are reserved
+            synthetic mechanics and make no production mapping claim.
+          </p>
+          <MathematicalBlock block={toRepresentationBlock(entity, dependencyBlock)}>
+            <RenderedMath slot="rendered" latex={dependencyBlock.latex} label={dependencyBlock.rendered} />
+          </MathematicalBlock>
+
+          <section aria-labelledby="fixture-boundary-title">
+            <h2 id="fixture-boundary-title">Fixture boundary</h2>
+            <dl>
+              <div><dt>Classification</dt><dd>{fixture.classification}</dd></div>
+              <div><dt>Subject</dt><dd><code>{fixture.subject_content_id}</code></dd></div>
+              <div><dt>Fingerprint</dt><dd><code>{fixture.fingerprint}</code></dd></div>
+              <div><dt>Canonical coverage</dt><dd>false</dd></div>
+            </dl>
+            <ul>
+              {fixture.leakage_guards.map((guard: string) => <li>{guard.replaceAll('_', ' ')}</li>)}
+            </ul>
+            <h3>Reserved mechanics probes</h3>
+            <ul data-fmc-reserved-identifiers>
+              {reservedIdentifiers.map((identifier: string) => <li><code>{identifier}</code></li>)}
+            </ul>
+          </section>
+        </article>
+      </div>
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  #main-content {
+    inline-size: min(100%, 92rem);
+    margin-inline: auto;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    padding: clamp(0.75rem, 2vw, 2rem);
+  }
+  .validation-header {
+    align-items: start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fmc-space-4);
+    justify-content: space-between;
+    margin-block-end: var(--fmc-space-4);
+  }
+  .validation-header > div { max-inline-size: 54rem; }
+  .validation-kicker {
+    color: var(--fmc-color-accent-strong);
+    font-size: var(--fmc-font-size-sm);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .validation-grid {
+    align-items: start;
+    display: grid;
+    gap: var(--fmc-space-5);
+    grid-template-columns: minmax(18rem, 30rem) minmax(0, 1fr);
+  }
+  .validation-grid > * { min-inline-size: 0; }
+  .validation-grid dl > div {
+    display: grid;
+    gap: var(--fmc-space-2);
+    grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr);
+    padding-block: var(--fmc-space-2);
+  }
+  .validation-grid dt { font-weight: 800; }
+  @media (max-width: 52rem) {
+    .validation-grid { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

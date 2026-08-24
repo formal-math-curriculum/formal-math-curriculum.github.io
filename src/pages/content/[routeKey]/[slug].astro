@@ -1,7 +1,7 @@
 ---
 import CoursePage from '../../../components/CoursePage.astro';
 import CourseLayout from '../../../layouts/CourseLayout.astro';
-import { buildCourseModel, loadSiteBundle, makePageOutline } from '../../../lib/m5-6-publication.mjs';
+import { buildCourseModel, getCourseRoot, loadSiteBundle, makePageOutline } from '../../../lib/m5-6-publication.mjs';
 
 export const prerender = true;
 
@@ -18,13 +18,14 @@ const bundle = await loadSiteBundle();
 const model = buildCourseModel(bundle);
 const context = model.context(contentId);
 const outline = makePageOutline(bundle, context.entity);
+const courseRoot = getCourseRoot(bundle);
 ---
 
 <CourseLayout
   title={context.entity.title}
   description={context.entity.summary}
   canonicalPath={context.route}
-  pageKind={context.entity.kind}
+  courseRootRoute={courseRoot.route}
   outline={outline}
   searchDocuments={bundle.search.documents}
 >

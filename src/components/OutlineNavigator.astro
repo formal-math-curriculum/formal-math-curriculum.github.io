@@ -381,6 +381,9 @@ const componentId = `fmc-outline-${value.currentContent.contentId.replace(/[^a-z
       if (focusedInsideTree) this.querySelector('[data-fmc-outline-results]').focus();
 
       const result = filterProjection(this.manifest, this.effectiveProjection, this.currentContext());
+      if (result.context.query) {
+        result.context.expandedReferenceIds = getEligibleExpansionIds(result.nodes);
+      }
       this.contexts.set(this.effectiveProjection, result.context);
       const query = this.querySelector('[data-fmc-outline-query]');
       query.value = result.context.query;

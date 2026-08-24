@@ -1,9 +1,25 @@
 ---
 import PreferenceControls from '../components/PreferenceControls.astro';
 import PreferenceProvider from '../components/PreferenceProvider.astro';
+import { loadSiteBundle } from '../lib/m5-6-publication.mjs';
 import '../styles/custom.css';
 
 export const prerender = true;
+
+const bundle = await loadSiteBundle();
+const routeByContent = new Map(bundle.manifest.routes.map((route: Record<string, any>) => [route.content_id, route.path]));
+const courseRoot = bundle.publication.content.find((entity: Record<string, any>) => entity.content_id === bundle.publication.course.root_content_id);
+const courseRootRoute = routeByContent.get(courseRoot.content_id) as string;
+const localeRecovery = bundle.publication.content.flatMap((entity: Record<string, any>) =>
+  entity.locales
+    .filter((locale: Record<string, any>) => locale.locale !== 'en' && locale.translation_state === 'unavailable')
+    .map((locale: Record<string, any>) => ({
+      requestedPath: `/${locale.locale}${routeByContent.get(entity.content_id)}`,
+      locale: locale.locale,
+      title: entity.title,
+      englishPath: routeByContent.get(entity.content_id)
+    }))
+);
 ---
 
 <!doctype html>
@@ -18,17 +34,22 @@ export const prerender = true;
     <PreferenceProvider />
   </head>
   <body>
-    <main id="main-content" class="fmc-recovery-page">
+    <main
+      id="main-content"
+      class="fmc-recovery-page"
+      data-fmc-recovery-page
+      data-fmc-locale-recovery={JSON.stringify(localeRecovery)}
+    >
       <div class="fmc-recovery-page__controls"><PreferenceControls /></div>
       <p class="fmc-course-kicker">404 · explicit recovery state</p>
-      <h1>This course page is not available</h1>
-      <p>
+      <h1 data-fmc-recovery-heading>This course page is not available</h1>
+      <p data-fmc-recovery-message>
         The representative slice currently publishes English routes only. Portuguese content is recorded
         as unavailable, so the site will not invent a translation or silently redirect to a different subject.
       </p>
       <div class="fmc-course-card-grid">
-        <a class="fmc-course-card" href="/content/p5m56c0001/arithmetic-to-algebra/">
-          <small>Course start</small><strong>Arithmetic to algebra</strong><span>Return to the bounded English slice.</span>
+        <a class="fmc-course-card" href={courseRootRoute} data-fmc-english-counterpart>
+          <small data-fmc-counterpart-kind>Course start</small><strong data-fmc-counterpart-title>{courseRoot.title}</strong><span data-fmc-counterpart-description>Return to the bounded English slice.</span>
         </a>
         <a class="fmc-course-card" href="/">
           <small>Site home</small><strong>Publication overview</strong><span>Review authority, scope and current limitations.</span>
@@ -37,3 +58,47 @@ export const prerender = true;
     </main>
   </body>
 </html>
+
+<script>
+  const recovery = document.querySelector<HTMLElement>('[data-fmc-recovery-page]');
+  if (recovery) {
+    const heading = recovery.querySelector<HTMLElement>('[data-fmc-recovery-heading]');
+    const message = recovery.querySelector<HTMLElement>('[data-fmc-recovery-message]');
+    const counterpart = recovery.querySelector<HTMLAnchorElement>('[data-fmc-english-counterpart]');
+    const kind = recovery.querySelector<HTMLElement>('[data-fmc-counterpart-kind]');
+    const title = recovery.querySelector<HTMLElement>('[data-fmc-counterpart-title]');
+    const description = recovery.querySelector<HTMLElement>('[data-fmc-counterpart-description]');
+    let rows: Array<{ requestedPath: string; locale: string; title: string; englishPath: string }> = [];
+    try {
+      rows = JSON.parse(recovery.dataset.fmcLocaleRecovery ?? '[]');
+    } catch {
+      recovery.dataset.fmcRecoveryState = 'corrupt-recovery-payload';
+    }
+    const requestedPath = window.location.pathname.endsWith('/') ? window.location.pathname : `${window.location.pathname}/`;
+    const exact = rows.find((row) => row.requestedPath === requestedPath);
+    if (exact && heading && message && counterpart && kind && title && description) {
+      counterpart.hidden = false;
+      recovery.dataset.fmcRecoveryState = 'known-locale-translation-unavailable';
+      heading.textContent = 'Portuguese translation is unavailable';
+      message.textContent = `No Portuguese page was generated for ${exact.title}. The English page below is the same canonical content identity.`;
+      counterpart.href = exact.englishPath;
+      kind.textContent = 'Exact English counterpart';
+      title.textContent = exact.title;
+      description.textContent = 'Open the governed English page without changing the content identity.';
+    } else {
+      if (counterpart) counterpart.hidden = true;
+      const localeSegment = requestedPath.split('/').filter(Boolean)[0] ?? '';
+      if (localeSegment === 'pt') {
+        recovery.dataset.fmcRecoveryState = 'known-locale-unknown-content';
+        if (heading) heading.textContent = 'Portuguese route is not in this slice';
+        if (message) message.textContent = 'Portuguese is a recognized future locale, but this path does not identify a governed unavailable translation record.';
+      } else if (/^[a-z]{2}(?:-[A-Z]{2})?$/u.test(localeSegment)) {
+        recovery.dataset.fmcRecoveryState = 'unknown-locale';
+        if (heading) heading.textContent = 'This locale is not supported';
+        if (message) message.textContent = `The locale “${localeSegment}” is not governed by this representative slice. No redirect or translation was invented.`;
+      } else {
+        recovery.dataset.fmcRecoveryState = 'unknown-route';
+      }
+    }
+  }
+</script>

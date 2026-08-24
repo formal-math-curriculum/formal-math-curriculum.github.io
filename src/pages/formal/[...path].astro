@@ -1,6 +1,6 @@
 ---
 import CourseLayout from '../../layouts/CourseLayout.astro';
-import { buildFormalRecords, loadSiteBundle } from '../../lib/m5-6-publication.mjs';
+import { buildFormalRecords, getCourseRoot, loadSiteBundle } from '../../lib/m5-6-publication.mjs';
 
 export const prerender = true;
 
@@ -14,6 +14,7 @@ export async function getStaticPaths() {
 
 const record = Astro.props.record as any;
 const bundle = await loadSiteBundle();
+const courseRoot = getCourseRoot(bundle);
 const uniqueEntries = record.entries.filter((entry: any, index: number, entries: any[]) =>
   entries.findIndex((candidate: any) => candidate.entity.content_id === entry.entity.content_id && candidate.block.block_id === entry.block.block_id) === index
 );
@@ -26,14 +27,14 @@ const description = record.kind === 'artifact'
   title={record.title}
   description={description}
   canonicalPath={record.route}
-  pageKind={`formal_${record.kind}`}
+  courseRootRoute={courseRoot.route}
   searchDocuments={bundle.search.documents}
 >
   <article class="fmc-course-article fmc-formal-record">
     <nav class="fmc-breadcrumbs" aria-label="Breadcrumb">
       <ol>
         <li><a href="/">Home</a></li>
-        <li><a href="/content/p5m56c0001/arithmetic-to-algebra/">Course</a></li>
+        <li><a href={courseRoot.route}>Course</a></li>
         <li><span aria-current="page">{record.title}</span></li>
       </ol>
     </nav>

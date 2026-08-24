@@ -1,0 +1,129 @@
+{
+  "schemaVersion": "p5-m5.6-requalification/v2",
+  "subject": {
+    "repository": "formal-math-curriculum/formal-math-curriculum.github.io",
+    "entryRevision": "56d898b40823db17d92164cfdc93a0fb9d7a175b",
+    "contentRepository": "formal-math-curriculum/content",
+    "contentRevision": "2da8fdb43074d00fea5fc6201d239e5f26a43250",
+    "contentTree": "d51b0c7cfe44feec2b6eb176fd6ce1825a8ab458",
+    "sourceIdentity": "P5-M5.6-CONTENT-v1",
+    "selectorSha256": "280ad055d9235077b398d26dd6abb40c9d13ae089ad6d5a8fd0b11baed805aaf",
+    "fixtureFingerprint": "synthetic-m5-6-v1"
+  },
+  "immutableAudit": {
+    "linearDocumentId": "cecc72c7-49de-4c24-8ed9-5b0b22a58a31",
+    "url": "https://linear.app/verified-mathematics/document/p5-m56-adversarial-audit-v1-immutable-findings-and-remediation-input-8be972ec2ada",
+    "findingCount": 8,
+    "preserved": true
+  },
+  "qualificationEvidence": {
+    "artifactReport": "dist/_validation/m5-6-requalification-artifact-v2.json",
+    "browserReport": "dist/_validation/m5-6-requalification-v2-report.json",
+    "browserRows": ["M01-M15", "P01-P05"],
+    "performanceProfile": {
+      "cpuThrottlingRate": 4,
+      "latencyMs": 50,
+      "downloadBitsPerSecond": 10000000,
+      "uploadBitsPerSecond": 5000000
+    },
+    "requiredRuntime": {
+      "node": "24.19.0",
+      "pnpm": "11.23.0",
+      "playwrightCore": "1.62.1",
+      "runner": "ubuntu-24.04"
+    }
+  },
+  "findingDispositions": [
+    {
+      "id": "A01",
+      "severity": "Blocker",
+      "disposition": "remediated",
+      "owner": "site",
+      "affectedArtifacts": ["inputs.lock.json", "scripts/ingest-content.mjs", "src/pages/validation/m5-6.astro"],
+      "requalification": ["M01", "M02", "M03", "artifact fixture leakage checks"]
+    },
+    {
+      "id": "A02",
+      "severity": "Material",
+      "disposition": "remediated",
+      "owner": "site CI",
+      "affectedArtifacts": ["scripts/validate-m5-6-browser.mjs", "package.json", ".github/workflows/ci.yml"],
+      "requalification": ["M01-M15", "CI FMC_REQUIRE_BROWSER=1"]
+    },
+    {
+      "id": "A03",
+      "severity": "Material",
+      "disposition": "remediated",
+      "owner": "site representation adapter",
+      "affectedArtifacts": ["src/lib/latex-mathml.mjs", "src/components/RenderedMath.astro", "src/components/CoursePage.astro"],
+      "requalification": ["M08", "M09", "M14", "exact annotation and source artifact checks"]
+    },
+    {
+      "id": "A04",
+      "severity": "Material",
+      "disposition": "remediated",
+      "owner": "site CI",
+      "affectedArtifacts": ["scripts/validate-m5-6-browser.mjs"],
+      "requalification": ["P01-P05 under the recorded throttle and byte/time budgets"]
+    },
+    {
+      "id": "A05",
+      "severity": "Material",
+      "disposition": "remediated",
+      "owner": "site routing",
+      "affectedArtifacts": ["src/pages/404.astro"],
+      "requalification": ["M11", "M12", "M13", "all governed unavailable-locale pairs in artifact validation"]
+    },
+    {
+      "id": "A06",
+      "severity": "Material",
+      "disposition": "remediated",
+      "owner": "site publication",
+      "affectedArtifacts": ["src/components/CoursePage.astro"],
+      "requalification": ["every governed source license_state rendered on each referencing page"]
+    },
+    {
+      "id": "A07",
+      "severity": "Material",
+      "disposition": "remediated",
+      "owner": "site publication and release",
+      "affectedArtifacts": ["src/lib/m5-6-publication.mjs", "src/components/GlobalSearch.astro", "src/layouts/CourseLayout.astro", "scripts/prepare-release.mjs", "scripts/validate-m5-6-artifact.mjs"],
+      "requalification": ["governed cardinality test", "successor-content evolution test", "dynamic revision and validation-route checks"]
+    },
+    {
+      "id": "A08",
+      "severity": "Minor",
+      "disposition": "remediated",
+      "owner": "site build",
+      "affectedArtifacts": ["src/layouts/CourseLayout.astro", "scripts/build-search.mjs", "package.json"],
+      "requalification": ["remove unused unordered Pagefind filter metadata", "clean Pagefind directory", "single-threaded indexed build", "two-clean-build manifest comparison"]
+    }
+  ],
+  "observations": [
+    {
+      "id": "O01",
+      "disposition": "accepted-limitation",
+      "evidence": "Automated Chromium coverage is bounded and does not claim manual screen-reader or cross-engine conformance.",
+      "revalidationTrigger": "public deployment authorization or a cross-engine/accessibility release gate"
+    },
+    {
+      "id": "O02",
+      "disposition": "accepted-boundary",
+      "evidence": "The external projection fixture exercises navigation mechanics only and contributes zero mapping coverage.",
+      "revalidationTrigger": "adoption of a governed external snapshot"
+    }
+  ],
+  "unresolvedFindings": {
+    "Blocker": 0,
+    "Material": 0,
+    "Minor": 0
+  },
+  "deploymentAuthorized": false,
+  "downstreamDecision": {
+    "m5_7DiscoveryExpansionReady": true,
+    "scope": "discovery and governed expansion only",
+    "excludedClaims": ["public deployment authorization", "full-course coverage", "production external-taxonomy mapping", "manual screen-reader conformance", "cross-engine conformance"],
+    "reopenTriggers": ["any failed required CI row", "artifact identity drift", "new Blocker or Material audit finding", "upstream content selector change"]
+  },
+  "handoff": "docs/architecture/m5-6-requalification-v2.md"
+}

@@ -68,7 +68,7 @@ test('browser validation is pinned, required in CI and runs before search/artifa
   const workflow = await read('.github/workflows/ci.yml');
   assert.equal(pkg.devDependencies['playwright-core'], '1.62.1');
   assert.equal(pkg.scripts['test:browser'], 'node scripts/validate-m5-5-browser.mjs');
-  assert.match(pkg.scripts.build, /build:astro && pnpm run test:browser && pnpm run build:search && pnpm run validate:m5-6-artifact && pnpm run verify:artifact/);
+  assert.match(pkg.scripts.build, /build:astro && pnpm run test:browser && pnpm run test:m5-6-browser && pnpm run build:search && pnpm run validate:m5-6-artifact && pnpm run verify:artifact/);
   assert.match(workflow, /FMC_REQUIRE_BROWSER: '1'/);
   assert.match(workflow, /FMC_SOURCE_REVISION: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/);
   assert.match(workflow, /runs-on: ubuntu-24\.04/);
@@ -116,15 +116,76 @@ test('qualification documentation preserves the audit and release interpretation
   assert.match(documentation, /must not be interpreted as a public curriculum route/i);
 });
 
-test('MAT-399 release workflow enforces the versioned selector before Pages upload', async () => {
+test('MAT-398 release workflow advances to the corrected selector before Pages upload', async () => {
   const workflow = await read('.github/workflows/deploy-pages.yml');
   const gate = await read('scripts/prepare-release.mjs');
-  const documentation = await read('docs/architecture/m5-5-requalification-v2.md');
-  assert.match(workflow, /prepare-release\.mjs validation\/m5-5-current\.json/);
+  const documentation = await read('docs/architecture/m5-6-requalification-v2.md');
+  assert.match(workflow, /prepare-release\.mjs validation\/m5-6-current\.json/);
   assert.ok(workflow.indexOf('prepare-release.mjs') < workflow.indexOf('actions/upload-pages-artifact'));
   assert.match(gate, /deploymentAuthorized !== true/);
   assert.match(gate, /unresolvedFindings\?\.Blocker !== 0/);
-  assert.match(gate, /validation.+m5-5/u);
+  assert.match(gate, /validation.+m5-6/u);
   assert.match(documentation, /deploymentAuthorized=false/);
-  assert.match(documentation, /do not themselves authorize public deployment/i);
+  assert.match(documentation, /does not authorize public deployment/i);
+});
+
+test('MAT-398 versions all immutable audit dispositions and makes only a bounded M5.7 readiness decision', async () => {
+  const record = JSON.parse(await read('validation/m5-6-requalification-v2.json'));
+  const selector = JSON.parse(await read('validation/m5-6-current.json'));
+  assert.equal(record.schemaVersion, 'p5-m5.6-requalification/v2');
+  assert.equal(record.immutableAudit.linearDocumentId, 'cecc72c7-49de-4c24-8ed9-5b0b22a58a31');
+  assert.equal(record.immutableAudit.preserved, true);
+  assert.deepEqual(record.findingDispositions.map(({ id, severity, disposition }) => ({ id, severity, disposition })), [
+    { id: 'A01', severity: 'Blocker', disposition: 'remediated' },
+    { id: 'A02', severity: 'Material', disposition: 'remediated' },
+    { id: 'A03', severity: 'Material', disposition: 'remediated' },
+    { id: 'A04', severity: 'Material', disposition: 'remediated' },
+    { id: 'A05', severity: 'Material', disposition: 'remediated' },
+    { id: 'A06', severity: 'Material', disposition: 'remediated' },
+    { id: 'A07', severity: 'Material', disposition: 'remediated' },
+    { id: 'A08', severity: 'Minor', disposition: 'remediated' }
+  ]);
+  assert.deepEqual(record.unresolvedFindings, { Blocker: 0, Material: 0, Minor: 0 });
+  assert.equal(record.deploymentAuthorized, false);
+  assert.equal(record.downstreamDecision.m5_7DiscoveryExpansionReady, true);
+  assert.ok(record.downstreamDecision.excludedClaims.includes('public deployment authorization'));
+  assert.equal(selector.releaseRecord, 'validation/m5-6-requalification-v2.json');
+  assert.equal(selector.deploymentAuthorized, false);
+});
+
+test('M5.6 browser requalification owns all behavior, regression and performance rows without CI skip', async () => {
+  const script = await read('scripts/validate-m5-6-browser.mjs');
+  const pkg = JSON.parse(await read('package.json'));
+  for (let id = 1; id <= 15; id += 1) assert.match(script, new RegExp(`['"]M${String(id).padStart(2, '0')}['"]`));
+  for (let id = 1; id <= 5; id += 1) assert.match(script, new RegExp(`['"]P${String(id).padStart(2, '0')}['"]`));
+  assert.equal(pkg.scripts['test:m5-6-browser'], 'node scripts/validate-m5-6-browser.mjs');
+  assert.match(script, /p5-m5\.6-requalification-browser\/v2/);
+  assert.match(script, /FMC_SKIP_BROWSER is forbidden when FMC_REQUIRE_BROWSER=1/);
+  assert.match(script, /requires an identifiable Chrome executable/);
+  assert.match(script, /Network\.emulateNetworkConditions/);
+  assert.match(script, /Emulation\.setCPUThrottlingRate/);
+  assert.match(script, /documentBytes: 120_000/);
+  assert.match(script, /totalBytes: 520_000/);
+  assert.match(script, /failed\.length/);
+});
+
+test('M5.6 fixture and artifact validators enforce noindex, leakage and exact MathML derivation', async () => {
+  const [page, artifact, config, search] = await Promise.all([
+    read('src/pages/validation/m5-6.astro'),
+    read('scripts/validate-m5-6-artifact.mjs'),
+    read('astro.config.mjs'),
+    read('scripts/build-search.mjs')
+  ]);
+  assert.match(page, /noindex, nofollow/);
+  assert.match(page, /data-pagefind-ignore="all"/);
+  assert.match(page, /makeValidationOutline/);
+  assert.match(page, /Reserved OntoMathPRO/);
+  assert.doesNotMatch(page, /<GlobalSearch/);
+  assert.match(config, /startsWith\('\/validation\/'\)/);
+  assert.match(artifact, /validation fixture identifier missing/);
+  assert.match(artifact, /exact MathML annotation missing/);
+  assert.match(artifact, /license state missing/);
+  assert.match(artifact, /required M5\.6 browser report is missing/);
+  assert.match(search, /rm\(output/);
+  assert.match(search, /RAYON_NUM_THREADS: '1'/);
 });

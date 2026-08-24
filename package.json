@@ -14,12 +14,14 @@
     "ingest": "node scripts/ingest-content.mjs",
     "build:astro": "astro build",
     "test:browser": "node scripts/validate-m5-5-browser.mjs",
-    "build:search": "pagefind --site dist",
+    "test:m5-6-browser": "node scripts/validate-m5-6-browser.mjs",
+    "build:search": "node scripts/build-search.mjs",
     "validate:m5-6-artifact": "node scripts/validate-m5-6-artifact.mjs",
     "verify:artifact": "node scripts/verify-artifact.mjs",
-    "build": "pnpm run check && pnpm run test && pnpm run ingest && pnpm run build:astro && pnpm run test:browser && pnpm run build:search && pnpm run validate:m5-6-artifact && pnpm run verify:artifact"
+    "build": "pnpm run check && pnpm run test && pnpm run ingest && pnpm run build:astro && pnpm run test:browser && pnpm run test:m5-6-browser && pnpm run build:search && pnpm run validate:m5-6-artifact && pnpm run verify:artifact"
   },
   "dependencies": {
+    "@astrojs/sitemap": "3.7.3",
     "@astrojs/starlight": "0.41.7",
     "astro": "7.2.4",
     "pagefind": "1.5.2"

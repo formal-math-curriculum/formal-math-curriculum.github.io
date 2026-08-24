@@ -34,7 +34,7 @@ export function validatePipeline({ ciSource, deploySource, lock }) {
   const deploy = parse(deploySource);
   const revision = lock.consumed?.content?.revision;
 
-  invariant(lock.lock_version === 'p5-m5.6-site-input-lock/v1', 'input lock version drift');
+  invariant(lock.lock_version === 'p5-m5.6-site-input-lock/v2', 'input lock version drift');
   invariant(/^[0-9a-f]{40}$/.test(revision ?? ''), 'content lock must be an immutable SHA');
 
   const ciEvents = Object.keys(ci.on ?? {}).sort();
@@ -71,6 +71,15 @@ export function validatePipeline({ ciSource, deploySource, lock }) {
   invariant(preview?.with?.['if-no-files-found'] === 'error', 'missing preview artifact must fail');
   const pagesArtifact = actionSteps(deploy).find(step => step.uses.startsWith('actions/upload-pages-artifact@'));
   invariant(pagesArtifact?.with?.path === 'dist', 'Pages artifact path drift');
+
+  for (const workflow of [ci, deploy]) {
+    const build = steps(workflow).find(step => step.run === 'pnpm build');
+    invariant(build?.env?.FMC_REQUIRE_BROWSER === '1', 'M5.6 browser qualification must be mandatory in CI');
+    invariant(!Object.hasOwn(build?.env ?? {}, 'FMC_SKIP_BROWSER'), 'CI must not skip browser qualification');
+  }
+  const releaseGate = steps(deploy).find(step => String(step.run ?? '').includes('prepare-release.mjs'));
+  invariant(releaseGate?.run === 'node scripts/prepare-release.mjs validation/m5-6-current.json', 'M5.6 current selector release gate drift');
+  invariant(steps(deploy).indexOf(releaseGate) < steps(deploy).indexOf(pagesArtifact), 'release gate must precede Pages upload');
 
   return true;
 }

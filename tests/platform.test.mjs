@@ -13,6 +13,7 @@ test('runtime and package manager are exact', () => {
 
 test('Astro, Starlight, and Pagefind are exact', () => {
   assert.deepEqual(pkg.dependencies, {
+    '@astrojs/sitemap': '3.7.3',
     '@astrojs/starlight': '0.41.7',
     astro: '7.2.4',
     pagefind: '1.5.2'
