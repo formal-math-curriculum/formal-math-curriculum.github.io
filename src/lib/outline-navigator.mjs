@@ -277,6 +277,18 @@ export function validateOutlineManifest(input) {
       }
     }
 
+    if (descriptor.id === 'lean-mathlib' && USABLE_PROJECTION_STATES.includes(descriptor.state)) {
+      const roots = descriptor.placements.filter((placement) => placement.parentReferenceId === null);
+      if (
+        roots.length !== 1
+        || roots[0].kind !== 'group'
+        || roots[0].contentId !== input.currentContent?.contentId
+        || roots[0].canonicalRoute !== input.currentContent?.canonicalRoute
+      ) {
+        errors.push(`${path} must have one content-centered root for currentContent`);
+      }
+    }
+
     if (descriptor.activeReferenceId !== null) {
       const active = byId.get(descriptor.activeReferenceId);
       if (!active) {
@@ -427,8 +439,7 @@ export function filterProjection(manifest, projectionId, inputContext) {
     ...descriptor,
     placements: descriptor.placements.filter((placement) => visible.has(placement.referenceId))
   };
-  const resultKinds = new Set(['reference', 'prerequisite', 'declaration', 'missing-state']);
-  const resultCount = [...ownMatches].filter((referenceId) => resultKinds.has(byId.get(referenceId)?.kind)).length;
+  const resultCount = ownMatches.size;
   return {
     nodes: buildProjectionTree(filteredDescriptor),
     matchingReferenceIds: [...ownMatches],

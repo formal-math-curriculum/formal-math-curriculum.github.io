@@ -306,7 +306,7 @@ const componentId = `fmc-outline-${value.currentContent.contentId.replace(/[^a-z
       this.requestedProjection = requested;
       this.effectiveProjection = resolution.effectiveProjection;
       const next = this.currentContext();
-      if (previous !== this.effectiveProjection && Object.keys(next.universalFilters).length === 0) {
+      if (previous !== this.effectiveProjection) {
         next.universalFilters = structuredClone(previousUniversal);
       }
       const selector = this.querySelector('[data-fmc-projection]');

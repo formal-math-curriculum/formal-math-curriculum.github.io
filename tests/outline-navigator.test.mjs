@@ -344,6 +344,11 @@ test('invalid tokens, active traversal, projection state payload and Lean over-d
     parentReferenceId = referenceId;
   }
   assert.ok(validateOutlineManifest(deep).errors.some((error) => error.includes('exceeds the bounded depth')));
+
+  const wrongLeanRoot = clone();
+  projection(wrongLeanRoot, 'lean-mathlib').placements[0].contentId = 'lean:not-current';
+  projection(wrongLeanRoot, 'lean-mathlib').placements[0].canonicalRoute = '/formal/not-current/';
+  assert.ok(validateOutlineManifest(wrongLeanRoot).errors.some((error) => error.includes('one content-centered root')));
 });
 
 test('X03/X05/X07–X12/X14 ownership stays within the shared store and ephemeral component state', () => {
