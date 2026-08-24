@@ -66,7 +66,7 @@ const { documentCount, filters, ranking, fingerprint } = Astro.props;
 </fmc-global-search>
 
 <script>
-  import { buildPagefindFilters, normalizeSearchToken, sortSearchRows } from '../lib/m5-7-search-client.mjs';
+  import { buildPagefindFilters, filterSearchRows, normalizeSearchToken, sortSearchRows } from '../lib/m5-7-search-client.mjs';
 
   interface PagefindResult {
     id: string;
@@ -160,7 +160,7 @@ const { documentCount, filters, ranking, fingerprint } = Astro.props;
             score: result.score
           })));
           if (sequence !== this.requestSequence) return;
-          const sorted = sortSearchRows(rows, query);
+          const sorted = sortSearchRows(filterSearchRows(rows, query), query);
           renderRows(sorted);
           empty.hidden = sorted.length !== 0;
           status.textContent = `${sorted.length} matching governed learner ${sorted.length === 1 ? 'page' : 'pages'}.`;

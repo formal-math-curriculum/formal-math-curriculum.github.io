@@ -979,6 +979,7 @@ fmc-outline-navigator [hidden] {
 .fmc-site-actions {
   align-items: start;
   display: flex;
+  flex-wrap: wrap;
   gap: var(--fmc-space-2);
   justify-content: end;
   min-inline-size: 0;

@@ -47,6 +47,7 @@ for (const document of model.documents) {
   const html = await readFile(path, 'utf8');
   learnerHtml.push(html);
   invariant(html.includes(`data-pagefind-meta="content-id[content]" content="${document.contentId}"`), `search content identity missing: ${document.contentId}`);
+  invariant(html.includes('data-pagefind-meta="search-text[content]"'), `governed search text metadata missing: ${document.contentId}`);
   invariant(html.includes('data-pagefind-filter="fmc-result-kind[content]" content="learner-content"'), `learner result boundary missing: ${document.contentId}`);
   invariant(html.includes(`data-fmc-search-fingerprint="${model.fingerprint}"`), `discovery fingerprint mismatch: ${document.contentId}`);
   invariant(!html.includes('data-fmc-search-text='), `embedded corpus leaked: ${document.contentId}`);

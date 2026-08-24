@@ -7,7 +7,7 @@ import {
   GLOBAL_JUDGMENTS,
   searchDiscoveryDocuments
 } from '../src/lib/m5-7-discovery.mjs';
-import { buildPagefindFilters, normalizeSearchToken, sortSearchRows } from '../src/lib/m5-7-search-client.mjs';
+import { buildPagefindFilters, filterSearchRows, normalizeSearchToken, sortSearchRows } from '../src/lib/m5-7-search-client.mjs';
 import { loadSiteBundle } from '../src/lib/m5-6-publication.mjs';
 
 const bundle = await loadSiteBundle();
@@ -73,12 +73,14 @@ test('the deterministic 2,000-document scale fixture is validation-only and exer
 
 test('client ordering privileges exact identities and then uses stable score/URL ties', () => {
   const rows = [
-    { url: '/z/', score: 99, meta: { title: 'Other', 'content-id': 'cnt:z' } },
-    { url: '/b/', score: 1, meta: { title: 'Exact', 'content-id': 'FART-P2-000010' } },
-    { url: '/a/', score: 1, meta: { title: 'Exact', aliases: 'FART-P2-000010' } }
+    { url: '/z/', score: 99, meta: { title: 'Other', 'content-id': 'cnt:z', 'search-text': 'unrelated governed page' } },
+    { url: '/b/', score: 1, meta: { title: 'Exact', 'content-id': 'FART-P2-000010', 'search-text': 'exact FART-P2-000010 proof' } },
+    { url: '/a/', score: 1, meta: { title: 'Exact', aliases: 'FART-P2-000010', 'search-text': 'exact FART-P2-000010 example' } }
   ];
   assert.deepEqual(sortSearchRows(rows, 'FART-P2-000010').map(({ url }) => url), ['/a/', '/b/', '/z/']);
   assert.deepEqual(sortSearchRows(rows, 'no exact').map(({ url }) => url), ['/z/', '/a/', '/b/']);
+  assert.deepEqual(filterSearchRows(rows, 'FART-P2-000010').map(({ url }) => url), ['/b/', '/a/']);
+  assert.deepEqual(filterSearchRows(rows, 'math.NT'), []);
 });
 
 test('client filters always retain the learner-content boundary', () => {
@@ -93,10 +95,11 @@ test('client filters always retain the learner-content boundary', () => {
 });
 
 test('global search source uses the static Pagefind API and safe deterministic rendering', async () => {
-  const [component, layout, route] = await Promise.all([
+  const [component, layout, route, css] = await Promise.all([
     readFile('src/components/GlobalSearch.astro', 'utf8'),
     readFile('src/layouts/CourseLayout.astro', 'utf8'),
-    readFile('src/pages/content/[routeKey]/[slug].astro', 'utf8')
+    readFile('src/pages/content/[routeKey]/[slug].astro', 'utf8'),
+    readFile('src/styles/custom.css', 'utf8')
   ]);
   assert.match(component, /\/pagefind\/pagefind\.js/u);
   assert.match(component, /pagefind\.search\(query \|\| null, \{ filters \}\)/u);
@@ -109,9 +112,11 @@ test('global search source uses the static Pagefind API and safe deterministic r
   assert.match(layout, /data-pagefind-filter/u);
   assert.match(layout, /fmc-result-kind/u);
   assert.match(layout, /data-pagefind-meta/u);
+  assert.match(layout, /search-text/u);
   assert.match(layout, /data-pagefind-weight="5"/u);
   assert.match(route, /buildDiscoveryModel/u);
   assert.match(route, /currentSearchDocument/u);
+  assert.match(css, /\.fmc-site-actions\s*\{[\s\S]*?flex-wrap: wrap;/u);
 });
 
 test('MAT-363 implementation record preserves the scale, privacy and deployment boundaries', async () => {

@@ -30,6 +30,15 @@ export function sortSearchRows(rows, query) {
   });
 }
 
+export function filterSearchRows(rows, query) {
+  const terms = normalizeSearchToken(query).split(' ').filter(Boolean);
+  if (!terms.length) return [...rows];
+  return rows.filter((row) => {
+    const governedSearchText = normalizeSearchToken(row?.meta?.['search-text']);
+    return terms.every((term) => governedSearchText.includes(term));
+  });
+}
+
 export function buildPagefindFilters(selects) {
   const filters = { 'fmc-result-kind': 'learner-content' };
   for (const select of selects) {

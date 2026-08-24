@@ -30,6 +30,7 @@ const pagefindMetadata = currentSearchDocument ? [
   ['summary', currentSearchDocument.summary],
   ['identifiers', currentSearchDocument.identifiers.join('|')],
   ['aliases', currentSearchDocument.aliases.join('|')],
+  ['search-text', currentSearchDocument.searchText],
   ['source-revision', currentSearchDocument.sourceRevision],
   ['discovery-fingerprint', searchModel.fingerprint]
 ] : [];
