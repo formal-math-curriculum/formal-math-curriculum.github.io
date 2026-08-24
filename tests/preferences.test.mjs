@@ -139,6 +139,18 @@ test('unqualified width families fall back visibly without changing requested sc
   assert.equal(effective.typography.effectiveFamily, 'sans-serif');
 });
 
+test('store reports an honest fallback for a persisted unqualified family', () => {
+  const storage = createStorage(
+    JSON.stringify(validPreferences({ typography: { family: 'expanded' } }))
+  );
+  const document = createDocument();
+  const window = createWindow(document);
+  const store = createPreferenceStore({ storage, document, window, matchMedia: createMedia() });
+  assert.equal(store.getSnapshot().effective.typography.effectiveFamily, 'sans-serif');
+  assert.match(store.getSnapshot().status, /expanded.*not qualified/);
+  store.destroy();
+});
+
 test('document attributes preserve Starlight light/dark and exact FMC state', () => {
   const document = createDocument();
   applyPreferencesToDocument(
@@ -240,4 +252,3 @@ test('system media change reapplies only while system mode is requested', () => 
   assert.equal(document.documentElement.dataset.fmcTheme, 'light');
   store.destroy();
 });
-

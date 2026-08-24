@@ -14,8 +14,22 @@
   --fmc-motion-normal: 180ms;
   --fmc-line-height: 1.65;
   --fmc-body-weight: 400;
-  --fmc-body-scale: 1;
+  --fmc-body-size: 100%;
   --fmc-body-family: var(--fmc-font-sans);
+  /* Readable no-JavaScript/default palette. The light selector repeats this contract explicitly. */
+  --fmc-surface: #ffffff;
+  --fmc-surface-raised: #f3f6f8;
+  --fmc-surface-muted: #e7edf2;
+  --fmc-text: #172033;
+  --fmc-text-muted: #3f4d63;
+  --fmc-border: #64748b;
+  --fmc-accent: #075985;
+  --fmc-accent-strong: #0c4a6e;
+  --fmc-accent-soft: #dbeafe;
+  --fmc-focus: #9f1239;
+  --fmc-success: #166534;
+  --fmc-warning: #854d0e;
+  --fmc-danger: #991b1b;
   font-synthesis: none;
 }
 
@@ -98,8 +112,6 @@
   --sl-color-gray-4: color-mix(in srgb, var(--fmc-border) 72%, var(--fmc-surface));
   --sl-color-gray-5: var(--fmc-surface-muted);
   --sl-color-gray-6: var(--fmc-surface-raised);
-  --sl-color-black: var(--fmc-surface);
-  --sl-color-white: var(--fmc-text);
 }
 
 :root[data-fmc-font-family='sans-serif'] {
@@ -111,15 +123,15 @@
 }
 
 :root[data-fmc-text-size='small'] {
-  --fmc-body-scale: 0.9375;
+  --fmc-body-size: 93.75%;
 }
 
 :root[data-fmc-text-size='default'] {
-  --fmc-body-scale: 1;
+  --fmc-body-size: 100%;
 }
 
 :root[data-fmc-text-size='large'] {
-  --fmc-body-scale: 1.125;
+  --fmc-body-size: 112.5%;
 }
 
 :root[data-fmc-text-weight='regular'] {
@@ -133,7 +145,7 @@
 html {
   background: var(--fmc-surface);
   color: var(--fmc-text);
-  font-size: calc(100% * var(--fmc-body-scale));
+  font-size: var(--fmc-body-size);
   scroll-padding-block-start: 5rem;
 }
 

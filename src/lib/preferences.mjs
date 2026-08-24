@@ -160,6 +160,12 @@ export function createPreferenceStore(options = {}) {
   let status = '';
   let state = cloneDefaults();
 
+  function typographyFallbackStatus() {
+    return PREFERENCE_VALUES.qualifiedTypographyFamily.includes(state.typography.family)
+      ? ''
+      : `The saved ${state.typography.family} family is not qualified; sans serif is in use.`;
+  }
+
   try {
     storage = Object.hasOwn(options, 'storage') ? options.storage : windowObject?.localStorage;
     if (!storage) throw new Error('storage-unavailable');
@@ -169,6 +175,7 @@ export function createPreferenceStore(options = {}) {
       const parsed = parsePreferences(raw);
       if (parsed.ok) {
         state = parsed.value;
+        status = typographyFallbackStatus();
       } else {
         storage.removeItem(PREFERENCE_STORAGE_KEY);
         status = 'Saved preferences were incompatible and were reset safely.';
@@ -207,7 +214,7 @@ export function createPreferenceStore(options = {}) {
     try {
       storage.setItem(PREFERENCE_STORAGE_KEY, JSON.stringify(state));
       persistenceAvailable = true;
-      status = '';
+      status = typographyFallbackStatus();
       return true;
     } catch {
       persistenceAvailable = false;
@@ -278,7 +285,7 @@ export function createPreferenceStore(options = {}) {
         return;
       }
       state = parsed.value;
-      status = '';
+      status = typographyFallbackStatus();
     }
 
     apply();

@@ -22,6 +22,9 @@ test('defines exactly the four official token theme selectors', () => {
     'dark',
     'dark-high-contrast'
   ]);
+  const rootBlock = css.slice(css.indexOf(':root {'), css.indexOf(":root[data-fmc-theme='light']"));
+  assert.match(rootBlock, /--fmc-surface: #ffffff/);
+  assert.match(rootBlock, /--fmc-text: #172033/);
 });
 
 test('includes focus, target-size, forced-colors and reduced-motion contracts', () => {
@@ -64,4 +67,3 @@ test('store excludes transient outline state and reading history', () => {
   assert.match(store, /outlineProjection/);
   assert.match(store, /representationDefault/);
 });
-
