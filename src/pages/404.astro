@@ -1,0 +1,39 @@
+---
+import PreferenceControls from '../components/PreferenceControls.astro';
+import PreferenceProvider from '../components/PreferenceProvider.astro';
+import '../styles/custom.css';
+
+export const prerender = true;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, follow" />
+    <meta name="description" content="Course route or locale not available." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Page not available · Formal Mathematics Curriculum</title>
+    <PreferenceProvider />
+  </head>
+  <body>
+    <main id="main-content" class="fmc-recovery-page">
+      <div class="fmc-recovery-page__controls"><PreferenceControls /></div>
+      <p class="fmc-course-kicker">404 · explicit recovery state</p>
+      <h1>This course page is not available</h1>
+      <p>
+        The representative slice currently publishes English routes only. Portuguese content is recorded
+        as unavailable, so the site will not invent a translation or silently redirect to a different subject.
+      </p>
+      <div class="fmc-course-card-grid">
+        <a class="fmc-course-card" href="/content/p5m56c0001/arithmetic-to-algebra/">
+          <small>Course start</small><strong>Arithmetic to algebra</strong><span>Return to the bounded English slice.</span>
+        </a>
+        <a class="fmc-course-card" href="/">
+          <small>Site home</small><strong>Publication overview</strong><span>Review authority, scope and current limitations.</span>
+        </a>
+      </div>
+    </main>
+  </body>
+</html>

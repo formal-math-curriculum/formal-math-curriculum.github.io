@@ -34,7 +34,7 @@ export function validatePipeline({ ciSource, deploySource, lock }) {
   const deploy = parse(deploySource);
   const revision = lock.consumed?.content?.revision;
 
-  invariant(lock.lock_version === 'm5.4-input-lock/v1', 'input lock version drift');
+  invariant(lock.lock_version === 'p5-m5.6-site-input-lock/v1', 'input lock version drift');
   invariant(/^[0-9a-f]{40}$/.test(revision ?? ''), 'content lock must be an immutable SHA');
 
   const ciEvents = Object.keys(ci.on ?? {}).sort();

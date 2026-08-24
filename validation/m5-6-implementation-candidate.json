@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "p5-m5.6-implementation-candidate/v1",
+  "issue": "MAT-361",
+  "status": "implementation_candidate_not_end_to_end_qualified",
+  "siteBaseRevision": "a263c9e5629728308911d993d97df74ff99f6e9a",
+  "content": {
+    "repository": "formal-math-curriculum/content",
+    "revision": "2da8fdb43074d00fea5fc6201d239e5f26a43250",
+    "tree": "d51b0c7cfe44feec2b6eb176fd6ce1825a8ab458",
+    "sourceIdentity": "P5-M5.6-CONTENT-v1",
+    "selectorSha256": "280ad055d9235077b398d26dd6abb40c9d13ae089ad6d5a8fd0b11baed805aaf",
+    "formalDependencySha256": "f8c79c8d196952e4827c72d394039862935689b2e100f821697c41bad8cb1438"
+  },
+  "expectedArtifact": {
+    "learnerContentPages": 15,
+    "derivedFormalRecords": 20,
+    "projectionLandingPages": 5,
+    "htmlPagesIncludingExistingBaselineAndRecovery": 45,
+    "governedGlobalSearchDocuments": 15,
+    "pagefindIndexedPages": 42,
+    "portugueseRoutes": 0,
+    "externalPayloads": 0,
+    "exerciseSolutionInitiallyOpen": false,
+    "brokenInternalLinksOutsideSyntheticFixture": 0
+  },
+  "implementationGates": {
+    "astroCheckErrors": 0,
+    "nodeTests": 104,
+    "contentValidator": "required",
+    "artifactValidator": "required",
+    "m5_5ChromiumRegression": "required_in_CI",
+    "m5_6CleanInputQualification": "owned_by_MAT-376"
+  },
+  "deploymentAuthorized": false,
+  "limitations": [
+    "representative_partial_corpus_not_full_course",
+    "portuguese_unavailable",
+    "ontomathpro_unavailable",
+    "msc2020_license_needs_review",
+    "arxiv_unavailable",
+    "no_remote_lean_execution",
+    "manual_screen_reader_and_cross_engine_qualification_pending",
+    "production_deployment_not_authorized"
+  ],
+  "nextIssue": "MAT-376"
+}

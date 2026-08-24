@@ -24,8 +24,8 @@ test('organization-root URL has no base path', () => {
   assert.doesNotMatch(config, /\bbase\s*:/);
 });
 
-test('bootstrap does not overclaim a released corpus', () => {
-  assert.match(home, /minimal M5\.4 platform bootstrap/);
-  assert.match(home, /Missing external classifications and translations remain explicit/);
+test('home presents the bounded M5.6 corpus without a full-course or deployment claim', () => {
+  assert.match(home, /15-page representative vertical slice/);
+  assert.match(home, /not a complete course or a deployment\s+authorization/);
+  assert.match(home, /Portuguese remains explicitly\s+unavailable/);
 });
-

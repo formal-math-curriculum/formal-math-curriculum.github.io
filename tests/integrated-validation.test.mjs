@@ -68,7 +68,7 @@ test('browser validation is pinned, required in CI and runs before search/artifa
   const workflow = await read('.github/workflows/ci.yml');
   assert.equal(pkg.devDependencies['playwright-core'], '1.62.1');
   assert.equal(pkg.scripts['test:browser'], 'node scripts/validate-m5-5-browser.mjs');
-  assert.match(pkg.scripts.build, /build:astro && pnpm run test:browser && pnpm run build:search && pnpm run verify:artifact/);
+  assert.match(pkg.scripts.build, /build:astro && pnpm run test:browser && pnpm run build:search && pnpm run validate:m5-6-artifact && pnpm run verify:artifact/);
   assert.match(workflow, /FMC_REQUIRE_BROWSER: '1'/);
   assert.match(workflow, /FMC_SOURCE_REVISION: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/);
   assert.match(workflow, /runs-on: ubuntu-24\.04/);

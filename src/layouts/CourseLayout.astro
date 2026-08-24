@@ -1,0 +1,81 @@
+---
+import GlobalSearch from '../components/GlobalSearch.astro';
+import OutlineNavigator from '../components/OutlineNavigator.astro';
+import PreferenceControls from '../components/PreferenceControls.astro';
+import PreferenceProvider from '../components/PreferenceProvider.astro';
+import '../styles/custom.css';
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath: string;
+  pageKind: string;
+  outline?: unknown;
+  searchDocuments: Array<Record<string, unknown>>;
+}
+
+const { title, description, canonicalPath, pageKind, outline, searchDocuments } = Astro.props;
+const canonical = new URL(canonicalPath, 'https://formal-math-curriculum.github.io').href;
+---
+
+<!doctype html>
+<html lang="en" data-fmc-course-slice="p5-m5.6">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Formal Mathematics Curriculum" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta data-pagefind-filter="kind[content]" content={pageKind} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href={canonical} />
+    <title>{title} · Formal Mathematics Curriculum</title>
+    <PreferenceProvider />
+  </head>
+  <body>
+    <a class="fmc-skip-link" href="#main-content">Skip to course content</a>
+    <header class="fmc-site-header" data-pagefind-ignore="all">
+      <a class="fmc-site-brand" href="/">
+        <span aria-hidden="true">∀</span>
+        <span>Formal Mathematics Curriculum</span>
+      </a>
+      <nav aria-label="Primary">
+        <a href="/content/p5m56c0001/arithmetic-to-algebra/">Course</a>
+        <a href="/about/method/">Authority</a>
+      </nav>
+      <div class="fmc-site-actions">
+        <GlobalSearch documents={searchDocuments} />
+        <PreferenceControls />
+      </div>
+    </header>
+
+    <div class:list={["fmc-course-shell", { "fmc-course-shell--without-outline": !outline }]}>
+      {outline ? (
+        <aside class="fmc-course-outline" aria-label="Course and formal navigation" data-pagefind-ignore="all">
+          <OutlineNavigator manifest={outline} heading="Explore this slice" />
+          <p class="fmc-outline-help">
+            Use Content kind to isolate Exercise, or select Module and Unit together. Menu search and
+            Expand all / Collapse all operate only on this outline.
+          </p>
+        </aside>
+      ) : null}
+      <main id="main-content" class="fmc-course-main" data-pagefind-body>
+        <slot />
+      </main>
+    </div>
+
+    <footer class="fmc-site-footer" data-pagefind-ignore="all">
+      <p>
+        Representative partial corpus · English current · Portuguese unavailable · static/no backend.
+      </p>
+      <p>
+        Content authority <code>P5-M5.6-CONTENT-v1</code> at
+        <a href="https://github.com/formal-math-curriculum/content/commit/2da8fdb43074d00fea5fc6201d239e5f26a43250"><code>2da8fdb…</code></a>.
+      </p>
+    </footer>
+  </body>
+</html>

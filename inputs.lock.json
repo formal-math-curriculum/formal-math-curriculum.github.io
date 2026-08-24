@@ -1,21 +1,68 @@
 {
-  "lock_version": "m5.4-input-lock/v1",
-  "site_base_revision": "2caead4d4222d98e8be73b851f8e8d5fba265218",
+  "lock_version": "p5-m5.6-site-input-lock/v1",
+  "site_base_revision": "a263c9e5629728308911d993d97df74ff99f6e9a",
   "consumed": {
     "content": {
       "repository": "formal-math-curriculum/content",
-      "revision": "fb3df63b27ae54d4dc237a421dd241d4c59330e4",
-      "manifest_path": "fixtures/minimal/manifest.json",
-      "manifest_sha256": "d0aeec037358655271b52c13e57e66c2a47ca44ba8f572ef4c95e49e8eb85642",
-      "validator_path": "scripts/validate.mjs",
-      "validator_sha256": "dfb6147ff81cc1224d200a814be99694e13dfccc20476576d5b41041e9f4c49b",
-      "schema_version": "p5-content-manifest/v1"
+      "revision": "2da8fdb43074d00fea5fc6201d239e5f26a43250",
+      "tree": "d51b0c7cfe44feec2b6eb176fd6ce1825a8ab458",
+      "source_identity": "P5-M5.6-CONTENT-v1",
+      "selector_sha256": "280ad055d9235077b398d26dd6abb40c9d13ae089ad6d5a8fd0b11baed805aaf",
+      "formal_dependency_sha256": "f8c79c8d196952e4827c72d394039862935689b2e100f821697c41bad8cb1438",
+      "validator_path": "scripts/validate-m5-6.mjs",
+      "validator_sha256": "fc8625ceb464adb1d9f776422933a6819a3b7612e06ae559458df4269ac77932",
+      "generator_path": "scripts/generate-m5-6.mjs",
+      "generator_sha256": "ed4785450186bd63062af942805689630a687f137108a7eb8e9f7307ebfff990",
+      "outputs": {
+        "content-manifest.json": {
+          "path": "generated/m5-6/content-manifest.json",
+          "sha256": "7bd7020156e0d20767e06d5fcb48f1eebfa1f0d24dd52b749135d16e39f7ed60",
+          "schema_version": "p5-content-manifest/v1"
+        },
+        "outline-manifest.json": {
+          "path": "generated/m5-6/outline-manifest.json",
+          "sha256": "b94d8a104a91f768ab5002cc8d505fb98bd537794a02c82e38a1ff7da48a2ed6",
+          "schema_version": "p5-outline-manifest/v1"
+        },
+        "provenance.json": {
+          "path": "generated/m5-6/provenance.json",
+          "sha256": "de960870b40ec7f8c9bd680467f692725d6487f3fa6f8695c4104534437f3068",
+          "schema_version": "p5-m56-provenance/v1"
+        },
+        "publication.json": {
+          "path": "generated/m5-6/publication.json",
+          "sha256": "3be1b29a8c282207d0ddd64a2edbc6d79a397d2b6c72cfee024e2fe4430b7bbe",
+          "schema_version": "p5-m56-publication/v1"
+        },
+        "search-index.json": {
+          "path": "generated/m5-6/search-index.json",
+          "sha256": "26134e026a2336634ea88f2d8291bef66924ba81a0fe72d1ab726a9e689b1f02",
+          "schema_version": "p5-search-index/v1"
+        }
+      },
+      "validation_inputs": [
+        "scripts/validate-m5-6.mjs",
+        "scripts/generate-m5-6.mjs",
+        "scripts/validate.mjs",
+        "source/m5-6/slice.json",
+        "source/m5-6/formal-authority.json",
+        "fixtures/m5-6/validation/all-projections.json",
+        "generated/m5-6/content-manifest.json",
+        "generated/m5-6/outline-manifest.json",
+        "generated/m5-6/provenance.json",
+        "generated/m5-6/publication.json",
+        "generated/m5-6/search-index.json"
+      ]
     }
   },
   "recorded_not_consumed": {
     "lean": {
       "repository": "formal-math-curriculum/lean",
-      "revision": "3f1a315f438af37a327eaf8b9b9c1dbc6f409394"
+      "revision": "3f1a315f438af37a327eaf8b9b9c1dbc6f409394",
+      "boundary": "site consumes content-owned exact source/provenance; it does not check out or execute Lean"
+    },
+    "lean_core": {
+      "revision": "d8b18978322de05a8f3dba51ef03cf5461676c17"
     },
     "mathlib": {
       "revision": "db584cd6d46c92f209a44c0f1c829460d327499d"

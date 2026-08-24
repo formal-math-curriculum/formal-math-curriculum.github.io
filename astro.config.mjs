@@ -8,6 +8,7 @@ export default defineConfig({
     starlight({
       title: 'Formal Mathematics Curriculum',
       description: 'A bounded, versioned course connecting mathematical exposition and Lean 4 evidence.',
+      disable404Route: true,
       customCss: ['./src/styles/custom.css'],
       components: {
         ThemeProvider: './src/components/PreferenceProvider.astro',
@@ -18,11 +19,13 @@ export default defineConfig({
         root: { label: 'English', lang: 'en' }
       },
       sidebar: [
-        { label: 'Course', items: [{ label: 'Start', link: '/' }] },
+        { label: 'Course', items: [
+          { label: 'Course home', link: '/' },
+          { label: 'Arithmetic to algebra', link: '/content/p5m56c0001/arithmetic-to-algebra/' }
+        ] },
         { label: 'Method', items: [{ label: 'Authority and claims', link: '/about/method/' }] }
       ],
       social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/formal-math-curriculum' }]
     })
   ]
 });
-

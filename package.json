@@ -15,8 +15,9 @@
     "build:astro": "astro build",
     "test:browser": "node scripts/validate-m5-5-browser.mjs",
     "build:search": "pagefind --site dist",
+    "validate:m5-6-artifact": "node scripts/validate-m5-6-artifact.mjs",
     "verify:artifact": "node scripts/verify-artifact.mjs",
-    "build": "pnpm run check && pnpm run test && pnpm run ingest && pnpm run build:astro && pnpm run test:browser && pnpm run build:search && pnpm run verify:artifact"
+    "build": "pnpm run check && pnpm run test && pnpm run ingest && pnpm run build:astro && pnpm run test:browser && pnpm run build:search && pnpm run validate:m5-6-artifact && pnpm run verify:artifact"
   },
   "dependencies": {
     "@astrojs/starlight": "0.41.7",

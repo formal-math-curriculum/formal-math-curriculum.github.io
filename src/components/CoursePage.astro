@@ -1,0 +1,177 @@
+---
+import MathematicalBlock from './MathematicalBlock.astro';
+import { CONTENT_REVISION, SOURCE_IDENTITY, toRepresentationBlock } from '../lib/m5-6-publication.mjs';
+
+interface Props {
+  context: Record<string, any>;
+  publication: Record<string, any>;
+}
+
+const { context, publication } = Astro.props;
+const { entity } = context;
+const sourceById = new Map(publication.sources.map((source: any) => [source.id, source]));
+const sources = entity.source_refs.map((id: string) => sourceById.get(id)).filter(Boolean);
+const external = publication.external_alignments.filter((alignment: any) => alignment.content_id === entity.content_id);
+const localeEnglish = entity.locales.find((locale: any) => locale.locale === 'en');
+const localePortuguese = entity.locales.find((locale: any) => locale.locale === 'pt');
+const directBlocks = entity.kind === 'exercise' ? [] : entity.blocks;
+const exerciseBlocks = entity.kind === 'exercise' ? entity.blocks : [];
+const kindLabel = entity.kind.replaceAll('_', ' ');
+---
+
+<article class="fmc-course-article" data-fmc-content-id={entity.content_id} data-fmc-route-key={entity.route_key}>
+  <nav class="fmc-breadcrumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/">Home</a></li>
+      {context.parent ? <li><a href={context.parentRoute}>{context.parent.title}</a></li> : null}
+      <li><span aria-current="page">{entity.title}</span></li>
+    </ol>
+  </nav>
+
+  <header class="fmc-course-hero">
+    <div class="fmc-course-hero__badges">
+      <span>{kindLabel}</span>
+      <span>{entity.maturity.editorial.replaceAll('_', ' ')}</span>
+      <span>{entity.maturity.formal.replaceAll('_', ' ')}</span>
+    </div>
+    <p class="fmc-course-kicker">Arithmetic to algebra · representative M5.6 slice</p>
+    <h1 data-pagefind-meta="title">{entity.title}</h1>
+    <p class="fmc-course-summary" data-pagefind-weight="2">{entity.summary}</p>
+    <div class="fmc-locale-state" role="note" aria-label="Language availability">
+      <strong>Language:</strong> English {localeEnglish.translation_state.replaceAll('_', ' ')};
+      Portuguese {localePortuguese.translation_state} — no fabricated route or translation.
+    </div>
+  </header>
+
+  <section class="fmc-course-section" aria-labelledby="objectives-title">
+    <h2 id="objectives-title">Learning objectives</h2>
+    <ul class="fmc-objective-list">
+      {entity.objectives.map((objective: string) => <li>{objective}</li>)}
+    </ul>
+  </section>
+
+  <section class="fmc-course-section" aria-labelledby="lesson-title">
+    <h2 id="lesson-title">Lesson narrative</h2>
+    {entity.narrative.map((paragraph: string) => <p>{paragraph}</p>)}
+  </section>
+
+  {entity.prerequisite_disclosures.length ? (
+    <section class="fmc-course-section fmc-prerequisite" aria-labelledby="prerequisite-title">
+      <h2 id="prerequisite-title">Learner prerequisite disclosure</h2>
+      {entity.prerequisite_disclosures.map((prerequisite: any) => (
+        <div>
+          <p><strong>{prerequisite.label}</strong> · <code>{prerequisite.relation_id}</code></p>
+          <p>{prerequisite.scope}.</p>
+          <p>This prerequisite is governed separately and is not published inside this partial slice.</p>
+        </div>
+      ))}
+    </section>
+  ) : null}
+
+  {context.children.length ? (
+    <section class="fmc-course-section" aria-labelledby="continue-title">
+      <h2 id="continue-title">Continue in Course order</h2>
+      <div class="fmc-course-card-grid">
+        {context.children.map((child: any) => (
+          <a class="fmc-course-card" href={child.route}>
+            <small>{child.entity.kind.replaceAll('_', ' ')}</small>
+            <strong>{child.entity.title}</strong>
+            <span>{child.entity.summary}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  ) : null}
+
+  {entity.exercise ? (
+    <section class="fmc-course-section fmc-exercise" aria-labelledby="exercise-title">
+      <p class="fmc-course-kicker">Exercise · work before revealing the guide</p>
+      <h2 id="exercise-title">{entity.exercise.prompt}</h2>
+      <h3>Checkpoints</h3>
+      <ol>
+        {entity.exercise.checkpoints.map((checkpoint: string) => <li><code>{checkpoint}</code></li>)}
+      </ol>
+      <p class="fmc-diagnostic"><strong>Diagnostic:</strong> {entity.exercise.diagnostic}</p>
+      <details class="fmc-exercise-solution" data-fmc-exercise-solution>
+        <summary data-fmc-control>Show guided solution and exact evidence</summary>
+        <div>
+          {exerciseBlocks.map((block: any) => (
+            <MathematicalBlock block={toRepresentationBlock(entity, block)}>
+              <p slot="rendered">{block.rendered}</p>
+            </MathematicalBlock>
+          ))}
+        </div>
+      </details>
+    </section>
+  ) : null}
+
+  {directBlocks.length ? (
+    <section class="fmc-course-section" aria-labelledby="representations-title">
+      <h2 id="representations-title">Mathematical representations</h2>
+      <p>Rendered, LaTeX and Lean views share one identity. Exact/scoped correspondence is disclosed per block.</p>
+      {directBlocks.map((block: any) => (
+        <MathematicalBlock block={toRepresentationBlock(entity, block)}>
+          <p slot="rendered">{block.rendered}</p>
+        </MathematicalBlock>
+      ))}
+    </section>
+  ) : null}
+
+  {context.placements.length > 1 ? (
+    <aside class="fmc-course-section fmc-placement-note" aria-labelledby="placement-title">
+      <h2 id="placement-title">One canonical page, multiple Course placements</h2>
+      <p>This content has one stable route and appears in these authored contexts:</p>
+      <ul>
+        {context.placements.map((placement: any) => (
+          <li><code>{placement.reference_id}</code> · {placement.role}</li>
+        ))}
+      </ul>
+    </aside>
+  ) : null}
+
+  {external.length ? (
+    <section class="fmc-course-section" aria-labelledby="external-title">
+      <h2 id="external-title">External classification state</h2>
+      <ul class="fmc-state-list">
+        {external.map((alignment: any) => (
+          <li>
+            <strong>{alignment.system}:</strong> {alignment.coverage_state}; snapshot {alignment.snapshot_state}.
+            <span>{alignment.disclosure}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ) : null}
+
+  <section class="fmc-course-section" aria-labelledby="sources-title">
+    <h2 id="sources-title">Sources and authority</h2>
+    <ul class="fmc-source-list">
+      {sources.map((source: any) => (
+        <li>
+          <a href={source.url}>{source.title}</a>
+          <span>{source.role.replaceAll('_', ' ')} · {source.payload_policy.replaceAll('_', ' ')}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <details class="fmc-release-metadata">
+    <summary data-fmc-control>Bounded release metadata and non-claims</summary>
+    <dl>
+      <div><dt>Content identity</dt><dd><code>{entity.content_id}</code></dd></div>
+      <div><dt>Route key</dt><dd><code>{entity.route_key}</code></dd></div>
+      <div><dt>Content authority</dt><dd><code>{SOURCE_IDENTITY}</code></dd></div>
+      <div><dt>Content commit</dt><dd><code>{CONTENT_REVISION}</code></dd></div>
+      <div><dt>Publication maturity</dt><dd>{entity.maturity.publication.replaceAll('_', ' ')}</dd></div>
+    </dl>
+    <p>
+      This page does not claim full-course coverage, a Portuguese translation, external-taxonomy coverage,
+      remote Lean execution, or whole-topic verification. Formal evidence is bounded to each disclosed link.
+    </p>
+  </details>
+
+  <nav class="fmc-sequential-nav" aria-label="Course sequence">
+    {context.previous ? <a rel="prev" href={context.previous.route}>← {context.previous.entity.title}</a> : <span></span>}
+    {context.next ? <a rel="next" href={context.next.route}>{context.next.entity.title} →</a> : <span></span>}
+  </nav>
+</article>

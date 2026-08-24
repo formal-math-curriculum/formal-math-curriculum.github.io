@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: formal-math-curriculum/content
-          ref: fb3df63b27ae54d4dc237a421dd241d4c59330e4
+          ref: 2da8fdb43074d00fea5fc6201d239e5f26a43250
           path: .inputs/content
           persist-credentials: false
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
@@ -42,8 +42,8 @@ jobs:
           path: ${{ steps.pnpm-store.outputs.path }}
           key: ${{ runner.os }}-node-24.19.0-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm install --frozen-lockfile
-      - name: Validate source-owned content contract
-        run: node .inputs/content/scripts/validate.mjs .inputs/content/fixtures/minimal/manifest.json
+      - name: Validate governed M5.6 content contract
+        run: node .inputs/content/scripts/validate-m5-6.mjs
       - name: Build and run integrated M5.5 browser qualification
         run: pnpm build
         env:
