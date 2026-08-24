@@ -68,7 +68,7 @@ test('browser validation is pinned, required in CI and runs before search/artifa
   const workflow = await read('.github/workflows/ci.yml');
   assert.equal(pkg.devDependencies['playwright-core'], '1.62.1');
   assert.equal(pkg.scripts['test:browser'], 'node scripts/validate-m5-5-browser.mjs');
-  assert.match(pkg.scripts.build, /build:astro && pnpm run test:browser && pnpm run build:search && pnpm run test:m5-7-browser && pnpm run test:m5-6-browser && pnpm run validate:m5-7-artifact && pnpm run validate:m5-6-artifact && pnpm run verify:artifact/);
+  assert.match(pkg.scripts.build, /build:astro && pnpm run test:browser && pnpm run build:search && pnpm run test:m5-7-browser && pnpm run test:m5-7-relations-browser && pnpm run test:m5-6-browser && pnpm run validate:m5-7-artifact && pnpm run validate:m5-7-relations-artifact && pnpm run validate:m5-6-artifact && pnpm run verify:artifact/);
   assert.match(workflow, /FMC_REQUIRE_BROWSER: '1'/);
   assert.match(workflow, /FMC_SOURCE_REVISION: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/);
   assert.match(workflow, /runs-on: ubuntu-24\.04/);
@@ -208,4 +208,28 @@ test('M5.7 static search owns 20 browser rows, required CI execution and a separ
   assert.match(artifact, /generatedInProductionArtifact: false/u);
   assert.match(workflow, /FMC_REQUIRE_BROWSER: '1'/u);
   assert.doesNotMatch(workflow, /FMC_SKIP_BROWSER/u);
+});
+
+test('MAT-364 relation navigation owns typed systems, 22 browser rows and a separate artifact gate', async () => {
+  const [script, artifact, record, documentation, pkg] = await Promise.all([
+    read('scripts/validate-m5-7-relations-browser.mjs'),
+    read('scripts/validate-m5-7-relations-artifact.mjs'),
+    read('validation/m5-7-relations-implementation-v1.json').then(JSON.parse),
+    read('docs/architecture/m5-7-relation-navigation.md'),
+    read('package.json').then(JSON.parse)
+  ]);
+  for (let id = 1; id <= 14; id += 1) assert.match(script, new RegExp(`['"]R${String(id).padStart(2, '0')}['"]`));
+  for (let id = 1; id <= 8; id += 1) assert.match(script, new RegExp(`['"]A${String(id).padStart(2, '0')}['"]`));
+  assert.equal(pkg.scripts['test:m5-7-relations-browser'], 'node scripts/validate-m5-7-relations-browser.mjs');
+  assert.equal(pkg.scripts['validate:m5-7-relations-artifact'], 'node scripts/validate-m5-7-relations-artifact.mjs');
+  assert.match(script, /p5-m5\.7-relations-browser\/v1/u);
+  assert.match(script, /FMC_SKIP_BROWSER is forbidden when FMC_REQUIRE_BROWSER=1/u);
+  assert.match(artifact, /p5-m5\.7-relations-artifact\/v1/u);
+  assert.match(artifact, /generatedInProductionArtifact: false/u);
+  assert.equal(record.schemaVersion, 'p5-m5.7-relations-implementation/v1');
+  assert.equal(record.relationModel.systems.length, 8);
+  assert.equal(record.scaleFixture.documents, 2000);
+  assert.equal(record.deploymentAuthorized, false);
+  assert.match(documentation, /Course order is not readiness authority/u);
+  assert.match(documentation, /ordinary HTML lists and links/u);
 });

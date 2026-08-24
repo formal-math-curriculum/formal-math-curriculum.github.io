@@ -3,6 +3,7 @@ import CoursePage from '../../../components/CoursePage.astro';
 import CourseLayout from '../../../layouts/CourseLayout.astro';
 import { buildCourseModel, getCourseRoot, loadSiteBundle, makePageOutline } from '../../../lib/m5-6-publication.mjs';
 import { buildDiscoveryModel } from '../../../lib/m5-7-discovery.mjs';
+import { makePageRelations } from '../../../lib/m5-7-relations.mjs';
 
 export const prerender = true;
 
@@ -19,6 +20,7 @@ const bundle = await loadSiteBundle();
 const model = buildCourseModel(bundle);
 const context = model.context(contentId);
 const outline = makePageOutline(bundle, context.entity);
+const relations = makePageRelations(bundle, context.entity, { outline });
 const courseRoot = getCourseRoot(bundle);
 const searchModel = buildDiscoveryModel(bundle);
 const currentSearchDocument = searchModel.byContentId.get(contentId);
@@ -33,5 +35,5 @@ const currentSearchDocument = searchModel.byContentId.get(contentId);
   searchModel={searchModel}
   currentSearchDocument={currentSearchDocument}
 >
-  <CoursePage context={context} publication={bundle.publication} />
+  <CoursePage context={context} publication={bundle.publication} relations={relations} />
 </CourseLayout>

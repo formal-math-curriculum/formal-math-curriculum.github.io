@@ -1,14 +1,16 @@
 ---
 import MathematicalBlock from './MathematicalBlock.astro';
+import RelationNavigator from './RelationNavigator.astro';
 import RenderedMath from './RenderedMath.astro';
 import { CONTENT_REVISION, SOURCE_IDENTITY, toRepresentationBlock } from '../lib/m5-6-publication.mjs';
 
 interface Props {
   context: Record<string, any>;
   publication: Record<string, any>;
+  relations: Record<string, any>;
 }
 
-const { context, publication } = Astro.props;
+const { context, publication, relations } = Astro.props;
 const { entity } = context;
 const sourceById = new Map(publication.sources.map((source: any) => [source.id, source]));
 const sources = entity.source_refs.map((id: string) => sourceById.get(id)).filter(Boolean);
@@ -129,6 +131,15 @@ const kindLabel = entity.kind.replaceAll('_', ' ');
       </ul>
     </aside>
   ) : null}
+
+  <section
+    class="fmc-course-section fmc-course-section--relations"
+    aria-label="Learning and dependency relations"
+    data-fmc-relation-search-boundary="pagefind-excluded"
+    data-pagefind-ignore
+  >
+    <RelationNavigator model={relations} />
+  </section>
 
   {external.length ? (
     <section class="fmc-course-section" aria-labelledby="external-title">

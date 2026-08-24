@@ -3,8 +3,10 @@ import MathematicalBlock from '../../components/MathematicalBlock.astro';
 import OutlineNavigator from '../../components/OutlineNavigator.astro';
 import PreferenceControls from '../../components/PreferenceControls.astro';
 import PreferenceProvider from '../../components/PreferenceProvider.astro';
+import RelationNavigator from '../../components/RelationNavigator.astro';
 import RenderedMath from '../../components/RenderedMath.astro';
 import { loadSiteBundle, makeValidationOutline, toRepresentationBlock } from '../../lib/m5-6-publication.mjs';
+import { makePageRelations } from '../../lib/m5-7-relations.mjs';
 import '../../styles/custom.css';
 
 export const prerender = true;
@@ -14,6 +16,7 @@ const fixture = bundle.validationFixture;
 const entity = bundle.publication.content.find((candidate: Record<string, any>) => candidate.content_id === fixture.subject_content_id);
 const dependencyBlock = entity.blocks.find((block: Record<string, any>) => block.formal_binding.fart_id === 'FART-P2-000005');
 const outline = makeValidationOutline(bundle);
+const relations = makePageRelations(bundle, entity, { outline });
 const reservedIdentifiers = fixture.projections.flatMap((projection: Record<string, any>) =>
   projection.placements.flatMap((placement: Record<string, any>) => placement.external_id ? [placement.external_id] : [])
 );
@@ -62,6 +65,12 @@ const reservedIdentifiers = fixture.projections.flatMap((projection: Record<stri
           <MathematicalBlock block={toRepresentationBlock(entity, dependencyBlock)}>
             <RenderedMath slot="rendered" latex={dependencyBlock.latex} label={dependencyBlock.rendered} />
           </MathematicalBlock>
+
+          <section aria-labelledby="validation-relations-title">
+            <h2 id="validation-relations-title">Relation and multi-parent mechanics</h2>
+            <p>The semantic relation surface below is validation-only; it does not create production mappings.</p>
+            <RelationNavigator model={relations} heading="M5.7 validation-only relation navigation" />
+          </section>
 
           <section aria-labelledby="fixture-boundary-title">
             <h2 id="fixture-boundary-title">Fixture boundary</h2>
