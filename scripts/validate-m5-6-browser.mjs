@@ -288,7 +288,7 @@ try {
     const selector = page.locator('select[data-fmc-projection]');
     await selector.selectOption('ontomathpro');
     const actual = await page.evaluate((key) => ({
-      selected: document.querySelector('[data-fmc-projection]')?.value,
+      selected: document.querySelector('select[data-fmc-projection]')?.value,
       status: document.querySelector('[data-fmc-outline-status]')?.textContent,
       stored: JSON.parse(localStorage.getItem(key) ?? '{}').outlineProjection,
       pathname: location.pathname
