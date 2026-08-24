@@ -39,6 +39,20 @@
   },
   "candidateRevisionSource": "FMC_SOURCE_REVISION on the required CI execution",
   "deploymentAuthorized": false,
+  "knownAuditFindings": [
+    {
+      "id": "B18",
+      "severity": "Material",
+      "subject": "native narrow outline dialog sequential focus",
+      "finding": "In runner Chrome, forward Tab reaches the document body for one step after the last dialog control before returning to the modal dialog. Outside interactive controls remain inert, Escape closes the modal, and trigger focus is restored.",
+      "remediationInMat375": false,
+      "revalidateOn": [
+        "outline focus-management change",
+        "runner Chrome change",
+        "dialog interaction audit"
+      ]
+    }
+  ],
   "limitations": [
     "Fixtures do not establish production curriculum, mapping, translation or formal-verification coverage.",
     "Chromium automation does not establish cross-engine or manual screen-reader conformance.",

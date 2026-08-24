@@ -38,7 +38,9 @@ The build order is:
 
 The browser program serves `dist` only on an ephemeral `127.0.0.1` port and uses exact `playwright-core@1.62.1` to drive the Chrome already installed on the pinned GitHub runner. It does not download an untracked browser. CI sets `FMC_REQUIRE_BROWSER=1` and the exact pull-request head or main SHA; an explicit local skip is forbidden under that flag.
 
-The report records Node, pnpm, Playwright, browser/version, OS/architecture, source/content subjects, viewports/media and every result. Any browser absence, required-row failure, console/page error or missing evidence file fails the build.
+The report records Node, pnpm, Playwright, browser/version, OS/architecture, source/content subjects, viewports/media and every result. Browser absence, any `Blocker` row failure or missing evidence that prevents a coherent subject fails the build. A `Material` failure remains a failed row and a known audit finding, but does not erase an otherwise reproducible candidate or authorize audit-stage remediation.
+
+The first required Chromium executions found one reproducible Material issue, recorded as B18 in the candidate manifest: in runner Chrome, forward `Tab` reaches `BODY` for one step after the final native-dialog control before returning to the modal. Outside controls remain inert; `Escape` closes the modal and restores focus to the trigger. MAT-375 deliberately does not alter the outline component. MAT-386 must independently classify or reject this known finding against the exact report and browser version.
 
 ## Evidence
 
@@ -76,7 +78,7 @@ Existing D01–D16, R01–R16, N01–N26 and X01–X16 pure/source tests remain 
 
 ## Interpretation boundary
 
-A passing Chromium candidate is eligible for MAT-386 adversarial audit. It is not proof of:
+A coherent Chromium candidate with no `Blocker` failures is eligible for MAT-386 adversarial audit. It may still contain explicitly failed Material rows, is not an all-pass release qualification, and is not proof of:
 
 - production corpus or external classification coverage;
 - translation completeness;

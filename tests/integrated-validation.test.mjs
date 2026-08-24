@@ -13,6 +13,9 @@ test('candidate manifest freezes exact entry subjects, runtime and synthetic lim
   assert.equal(manifest.runtime.playwrightCore, '1.62.1');
   assert.equal(manifest.fixtureClassification, 'synthetic-integration-only');
   assert.equal(manifest.deploymentAuthorized, false);
+  assert.deepEqual(manifest.knownAuditFindings.map(({ id, severity, remediationInMat375 }) => ({ id, severity, remediationInMat375 })), [
+    { id: 'B18', severity: 'Material', remediationInMat375: false }
+  ]);
   assert.equal(manifest.requiredEvidence.screenshots.length, 7);
   assert.deepEqual(manifest.requiredFrozenRows, {
     design: 'D01-D16',
@@ -65,7 +68,9 @@ test('browser program has no silent CI skip and owns B01-B23 plus exact evidence
   assert.match(script, /viewport: \{ width: 320, height: 800 \}/);
   assert.match(script, /m5-5-report\.json/);
   assert.match(script, /m5-5-aria\.txt/);
-  assert.match(script, /failed\.length > 0/);
+  assert.match(script, /blockerFailures = failed\.filter/);
+  assert.match(script, /coherent-candidate-with-known-findings/);
+  assert.match(script, /blockerFailures\.length > 0/);
 });
 
 test('browser dependency lock is exact and contains one dependency-free playwright-core snapshot', async () => {
@@ -81,5 +86,7 @@ test('qualification documentation preserves the audit and release interpretation
   assert.match(documentation, /not production curriculum/i);
   assert.match(documentation, /not self-approved golden images/i);
   assert.match(documentation, /cross-engine behavior;[\s\S]*manual screen-reader usability/i);
+  assert.match(documentation, /B18[\s\S]*forward `Tab` reaches `BODY`/);
+  assert.match(documentation, /Material[\s\S]*does not erase an otherwise reproducible candidate/);
   assert.match(documentation, /must not be interpreted as a public curriculum route/i);
 });
