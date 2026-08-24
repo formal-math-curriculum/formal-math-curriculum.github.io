@@ -21,6 +21,7 @@
     "licenses:generate": "node scripts/generate-license-inventory.mjs",
     "licenses:check": "node scripts/generate-license-inventory.mjs --check",
     "validate:m5-8-operations": "node scripts/validate-m5-8-operations.mjs",
+    "validate:m5-8-fresh-session": "node scripts/run-m5-8-fresh-session.mjs",
     "validate:m5-8-dogfood": "node scripts/run-m5-8-dogfood.mjs --write",
     "test:m5-7-remediation-baseline": "FMC_M57_REMEDIATION_PASS=baseline node scripts/validate-m5-7-remediation-browser.mjs",
     "test:m5-7-remediation-final": "FMC_M57_REMEDIATION_PASS=final node scripts/validate-m5-7-remediation-browser.mjs",
