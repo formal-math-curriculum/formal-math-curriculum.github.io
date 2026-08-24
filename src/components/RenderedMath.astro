@@ -1,0 +1,24 @@
+---
+import { LATEX_MATHML_RENDERER, renderMathMlTokens } from '../lib/latex-mathml.mjs';
+
+interface Props {
+  latex: string;
+  label: string;
+}
+
+const { latex, label } = Astro.props;
+const tokenMarkup = renderMathMlTokens(latex);
+---
+
+<math
+  xmlns="http://www.w3.org/1998/Math/MathML"
+  display="block"
+  aria-label={label}
+  data-fmc-math-renderer={LATEX_MATHML_RENDERER}
+  data-fmc-latex-source={latex}
+>
+  <semantics>
+    <mrow set:html={tokenMarkup} />
+    <annotation encoding="application/x-tex" set:text={latex} />
+  </semantics>
+</math>

@@ -8,6 +8,7 @@ import {
   FORMAL_DEPENDENCY_SHA256,
   loadSiteBundle,
   makePageOutline,
+  makeValidationOutline,
   searchDocuments,
   SELECTOR_SHA256,
   toRepresentationBlock,
@@ -55,6 +56,9 @@ test('all ten governed blocks adapt to validated rendered, LaTeX and exact Lean 
     const result = validateRepresentationBlock(adapted, { hasRenderedContent: true });
     assert.equal(result.ok, true, `${block.block_id}: ${result.errors.join('; ')}`);
     assert.equal(result.value.representations.latex.source, block.latex);
+    assert.equal(result.value.representations.rendered.renderer, 'mathml');
+    assert.match(result.value.representations.rendered.provenance.subject, /p5-latex-mathml-renderer\/v1/);
+    assert.match(result.value.representations.rendered.note, /derived from exact governed LaTeX/);
     assert.equal(result.value.representations.lean.source, block.lean.source);
     assert.equal(result.value.representations.lean.provenance.revision, block.lean.revision);
   }
@@ -70,6 +74,15 @@ test('every learner page gets a valid current-content Course/Lean outline', () =
     const lean = outline.projections[4];
     assert.equal(lean.state, entity.blocks.length ? 'current' : 'unavailable');
   }
+});
+
+test('content-owned validation fixture activates all five projections without leaking coverage', () => {
+  const outline = makeValidationOutline(bundle);
+  assert.equal(outline.validation.fingerprint, 'synthetic-m5-6-v1');
+  assert.deepEqual(outline.projections.map((projection) => projection.id), ['course', 'ontomathpro', 'msc2020', 'arxiv', 'lean-mathlib']);
+  assert.ok(outline.projections.every((projection) => projection.state === 'current'));
+  assert.ok(outline.projections.find((projection) => projection.id === 'msc2020').placements.some((placement) => placement.aliases.includes('FMC-M56-B')));
+  assert.equal(bundle.publication.external_payloads.length, 0);
 });
 
 test('outline demonstrates exercise-only and combined Module+Unit filtering', () => {
@@ -130,12 +143,17 @@ test('learner route sources expose required recovery, search, navigation and non
   assert.match(layout, /<GlobalSearch/);
   assert.match(layout, /<OutlineNavigator/);
   assert.match(layout, /data-pagefind-body/);
+  assert.doesNotMatch(layout, /data-pagefind-filter/);
+  assert.doesNotMatch(layout, /p5m56c0001|2da8fdb43074d00|15 course pages/);
   assert.match(page, /data-fmc-exercise-solution/);
   assert.match(page, /localePortuguese\.translation_state/);
+  assert.match(page, /RenderedMath/);
+  assert.match(page, /source\.license_state/);
   assert.match(page, /no fabricated route or translation/);
   assert.match(page, /does not claim full-course coverage/);
   assert.match(route, /getStaticPaths/);
   assert.match(recovery, /will not invent a translation/);
+  assert.match(recovery, /known-locale-translation-unavailable/);
   assert.match(artifactValidator, /broken internal link/);
   assert.match(artifactValidator, /Portuguese route leaked into sitemap/);
   assert.match(artifactValidator, /exercise solution must be closed initially/);
@@ -148,6 +166,57 @@ test('bundle validator rejects incompatible and leaking inputs', () => {
   const leaking = structuredClone(bundle);
   leaking.publication.content[0].summary = 'FMC-M56-A';
   assert.match(validateSiteBundle(leaking).errors.join('\n'), /validation fixture leaked/);
+  const incompatibleFixture = structuredClone(bundle);
+  incompatibleFixture.validationFixture.global_search = true;
+  assert.match(validateSiteBundle(incompatibleFixture).errors.join('\n'), /validation fixture boundary mismatch/);
+});
+
+test('governed successor content can evolve cardinalities without changing a site shell constant', () => {
+  const evolved = structuredClone(bundle);
+  const template = structuredClone(evolved.publication.content.at(-1));
+  template.content_id = 'cnt:p5m56:evolution';
+  template.route_key = 'p5m56evolution';
+  template.slug = 'governed-successor';
+  template.title = 'Governed successor';
+  template.blocks = [];
+  template.exercise = null;
+  evolved.publication.content.push(template);
+
+  const routeTemplate = structuredClone(evolved.manifest.routes.at(-1));
+  routeTemplate.content_id = template.content_id;
+  routeTemplate.route_key = template.route_key;
+  routeTemplate.path = `/content/${template.route_key}/${template.slug}/`;
+  evolved.manifest.routes.push(routeTemplate);
+
+  const searchTemplate = structuredClone(evolved.search.documents.at(-1));
+  searchTemplate.content_id = template.content_id;
+  searchTemplate.route_key = template.route_key;
+  searchTemplate.canonical_route = routeTemplate.path;
+  searchTemplate.title = template.title;
+  evolved.search.documents.push(searchTemplate);
+
+  const reference = structuredClone(evolved.publication.course.references.at(-1));
+  reference.reference_id = 'm56cr-evolution';
+  reference.parent_content_id = evolved.publication.course.root_content_id;
+  reference.content_id = template.content_id;
+  reference.role = 'primary';
+  reference.order = 999;
+  evolved.publication.course.references.push(reference);
+
+  const course = evolved.outline.projections.find((projection) => projection.id === 'course');
+  const placement = structuredClone(course.placements.at(-1));
+  placement.referenceId = reference.reference_id;
+  placement.parentReferenceId = course.placements.find((candidate) => candidate.contentId === evolved.publication.course.root_content_id).referenceId;
+  placement.contentId = template.content_id;
+  placement.canonicalRoute = routeTemplate.path;
+  placement.label = template.title;
+  placement.order = 999;
+  placement.aliases = [template.content_id, template.route_key];
+  course.placements.push(placement);
+
+  const result = validateSiteBundle(evolved);
+  assert.equal(result.ok, true, result.errors.join('\n'));
+  assert.equal(evolved.publication.content.length, bundle.publication.content.length + 1);
 });
 
 test('versioned MAT-361 candidate record retains the qualification and deployment boundary', async () => {

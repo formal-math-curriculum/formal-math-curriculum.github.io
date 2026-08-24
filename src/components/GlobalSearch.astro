@@ -10,7 +10,7 @@ const { documents } = Astro.props;
   <details class="fmc-global-search">
     <summary data-fmc-control aria-keyshortcuts="/">Search course</summary>
     <div class="fmc-global-search__panel">
-      <label for="fmc-global-search-query">Search all 15 course pages</label>
+      <label for="fmc-global-search-query">Search all {documents.length} course pages</label>
       <input
         id="fmc-global-search-query"
         type="search"

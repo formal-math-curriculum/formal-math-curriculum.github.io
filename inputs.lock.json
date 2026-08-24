@@ -1,6 +1,6 @@
 {
-  "lock_version": "p5-m5.6-site-input-lock/v1",
-  "site_base_revision": "a263c9e5629728308911d993d97df74ff99f6e9a",
+  "lock_version": "p5-m5.6-site-input-lock/v2",
+  "site_base_revision": "56d898b40823db17d92164cfdc93a0fb9d7a175b",
   "consumed": {
     "content": {
       "repository": "formal-math-curriculum/content",
@@ -38,6 +38,11 @@
           "path": "generated/m5-6/search-index.json",
           "sha256": "26134e026a2336634ea88f2d8291bef66924ba81a0fe72d1ab726a9e689b1f02",
           "schema_version": "p5-search-index/v1"
+        },
+        "validation-fixture.json": {
+          "path": "fixtures/m5-6/validation/all-projections.json",
+          "sha256": "f39b59c086a0743c921d0e3ef98500ecedfab00af476fdb2ffe7b1e43bb0fd20",
+          "schema_version": "p5-m56-validation-fixture/v1"
         }
       },
       "validation_inputs": [

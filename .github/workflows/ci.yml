@@ -44,7 +44,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Validate governed M5.6 content contract
         run: node .inputs/content/scripts/validate-m5-6.mjs
-      - name: Build and run integrated M5.5 browser qualification
+      - name: Build and run integrated M5.5 and M5.6 browser qualification
         run: pnpm build
         env:
           FMC_REQUIRE_BROWSER: '1'

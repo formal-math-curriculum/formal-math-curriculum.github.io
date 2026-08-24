@@ -3,18 +3,19 @@ import GlobalSearch from '../components/GlobalSearch.astro';
 import OutlineNavigator from '../components/OutlineNavigator.astro';
 import PreferenceControls from '../components/PreferenceControls.astro';
 import PreferenceProvider from '../components/PreferenceProvider.astro';
+import { CONTENT_REVISION } from '../lib/m5-6-publication.mjs';
 import '../styles/custom.css';
 
 interface Props {
   title: string;
   description: string;
   canonicalPath: string;
-  pageKind: string;
+  courseRootRoute: string;
   outline?: unknown;
   searchDocuments: Array<Record<string, unknown>>;
 }
 
-const { title, description, canonicalPath, pageKind, outline, searchDocuments } = Astro.props;
+const { title, description, canonicalPath, courseRootRoute, outline, searchDocuments } = Astro.props;
 const canonical = new URL(canonicalPath, 'https://formal-math-curriculum.github.io').href;
 ---
 
@@ -30,7 +31,6 @@ const canonical = new URL(canonicalPath, 'https://formal-math-curriculum.github.
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta data-pagefind-filter="kind[content]" content={pageKind} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="canonical" href={canonical} />
     <title>{title} · Formal Mathematics Curriculum</title>
@@ -44,7 +44,7 @@ const canonical = new URL(canonicalPath, 'https://formal-math-curriculum.github.
         <span>Formal Mathematics Curriculum</span>
       </a>
       <nav aria-label="Primary">
-        <a href="/content/p5m56c0001/arithmetic-to-algebra/">Course</a>
+        <a href={courseRootRoute}>Course</a>
         <a href="/about/method/">Authority</a>
       </nav>
       <div class="fmc-site-actions">
@@ -74,7 +74,7 @@ const canonical = new URL(canonicalPath, 'https://formal-math-curriculum.github.
       </p>
       <p>
         Content authority <code>P5-M5.6-CONTENT-v1</code> at
-        <a href="https://github.com/formal-math-curriculum/content/commit/2da8fdb43074d00fea5fc6201d239e5f26a43250"><code>2da8fdb…</code></a>.
+        <a href={`https://github.com/formal-math-curriculum/content/commit/${CONTENT_REVISION}`}><code>{CONTENT_REVISION.slice(0, 8)}…</code></a>.
       </p>
     </footer>
   </body>

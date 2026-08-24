@@ -1,5 +1,6 @@
 ---
 import MathematicalBlock from './MathematicalBlock.astro';
+import RenderedMath from './RenderedMath.astro';
 import { CONTENT_REVISION, SOURCE_IDENTITY, toRepresentationBlock } from '../lib/m5-6-publication.mjs';
 
 interface Props {
@@ -97,7 +98,7 @@ const kindLabel = entity.kind.replaceAll('_', ' ');
         <div>
           {exerciseBlocks.map((block: any) => (
             <MathematicalBlock block={toRepresentationBlock(entity, block)}>
-              <p slot="rendered">{block.rendered}</p>
+              <RenderedMath slot="rendered" latex={block.latex} label={block.rendered} />
             </MathematicalBlock>
           ))}
         </div>
@@ -111,7 +112,7 @@ const kindLabel = entity.kind.replaceAll('_', ' ');
       <p>Rendered, LaTeX and Lean views share one identity. Exact/scoped correspondence is disclosed per block.</p>
       {directBlocks.map((block: any) => (
         <MathematicalBlock block={toRepresentationBlock(entity, block)}>
-          <p slot="rendered">{block.rendered}</p>
+          <RenderedMath slot="rendered" latex={block.latex} label={block.rendered} />
         </MathematicalBlock>
       ))}
     </section>
@@ -149,7 +150,10 @@ const kindLabel = entity.kind.replaceAll('_', ' ');
       {sources.map((source: any) => (
         <li>
           <a href={source.url}>{source.title}</a>
-          <span>{source.role.replaceAll('_', ' ')} · {source.payload_policy.replaceAll('_', ' ')}</span>
+          <span>
+            {source.role.replaceAll('_', ' ')} · {source.payload_policy.replaceAll('_', ' ')}
+            {source.license_state ? ` · license ${source.license_state.replaceAll('_', ' ')}` : ''}
+          </span>
         </li>
       ))}
     </ul>

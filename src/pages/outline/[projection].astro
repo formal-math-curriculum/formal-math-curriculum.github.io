@@ -1,6 +1,6 @@
 ---
 import CourseLayout from '../../layouts/CourseLayout.astro';
-import { loadSiteBundle } from '../../lib/m5-6-publication.mjs';
+import { getCourseRoot, loadSiteBundle } from '../../lib/m5-6-publication.mjs';
 
 export const prerender = true;
 
@@ -26,6 +26,7 @@ export async function getStaticPaths() {
 
 const { projection } = Astro.props as Props;
 const bundle = await loadSiteBundle();
+const courseRoot = getCourseRoot(bundle);
 const usable = ['current', 'stale-compatible'].includes(projection.state);
 const description = usable
   ? `${projection.label} is a usable navigation projection for the representative M5.6 corpus.`
@@ -36,7 +37,7 @@ const description = usable
   title={`${projection.label} outline`}
   description={description}
   canonicalPath={`/outline/${projection.id}/`}
-  pageKind="outline_landing"
+  courseRootRoute={courseRoot.route}
   searchDocuments={bundle.search.documents}
 >
   <article class="fmc-course-article">
@@ -70,8 +71,8 @@ const description = usable
         <div><dt>Fingerprint</dt><dd><code>{projection.fingerprint}</code></dd></div>
       </dl>
       <div class="fmc-course-card-grid">
-        <a class="fmc-course-card" href="/content/p5m56c0001/arithmetic-to-algebra/">
-          <small>Fail-safe Course</small><strong>Arithmetic to algebra</strong><span>Open the representative learner path.</span>
+        <a class="fmc-course-card" href={courseRoot.route}>
+          <small>Fail-safe Course</small><strong>{courseRoot.entity.title}</strong><span>Open the representative learner path.</span>
         </a>
       </div>
     </section>

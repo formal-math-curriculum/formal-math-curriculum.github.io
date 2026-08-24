@@ -1,3 +1,4 @@
+import sitemap from '@astrojs/sitemap';
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
@@ -5,6 +6,9 @@ export default defineConfig({
   site: 'https://formal-math-curriculum.github.io',
   trailingSlash: 'always',
   integrations: [
+    sitemap({
+      filter: (page) => !new URL(page).pathname.startsWith('/validation/')
+    }),
     starlight({
       title: 'Formal Mathematics Curriculum',
       description: 'A bounded, versioned course connecting mathematical exposition and Lean 4 evidence.',

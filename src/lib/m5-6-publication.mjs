@@ -1,21 +1,26 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { LATEX_MATHML_RENDERER } from './latex-mathml.mjs';
 import { validateOutlineManifest } from './outline-navigator.mjs';
 
-export const CONTENT_REVISION = '2da8fdb43074d00fea5fc6201d239e5f26a43250';
-export const CONTENT_TREE = 'd51b0c7cfe44feec2b6eb176fd6ce1825a8ab458';
-export const SOURCE_IDENTITY = 'P5-M5.6-CONTENT-v1';
-export const SELECTOR_SHA256 = '280ad055d9235077b398d26dd6abb40c9d13ae089ad6d5a8fd0b11baed805aaf';
-export const FORMAL_DEPENDENCY_SHA256 = 'f8c79c8d196952e4827c72d394039862935689b2e100f821697c41bad8cb1438';
-
 const root = resolve(process.env.FMC_SITE_ROOT ?? process.cwd());
+const inputLock = JSON.parse(await readFile(resolve(root, 'inputs.lock.json'), 'utf8'));
+const contentLock = inputLock.consumed?.content ?? {};
+
+export const CONTENT_REVISION = contentLock.revision;
+export const CONTENT_TREE = contentLock.tree;
+export const SOURCE_IDENTITY = contentLock.source_identity;
+export const SELECTOR_SHA256 = contentLock.selector_sha256;
+export const FORMAL_DEPENDENCY_SHA256 = contentLock.formal_dependency_sha256;
+
 const bundleNames = [
   'content-manifest.json',
   'outline-manifest.json',
   'provenance.json',
   'publication.json',
-  'search-index.json'
+  'search-index.json',
+  'validation-fixture.json'
 ];
 
 function isRecord(value) {
@@ -63,13 +68,14 @@ function universalTokens(entity, correspondence = 'unavailable') {
 
 export function validateSiteBundle(bundle) {
   const errors = [];
-  const { manifest, outline, provenance, publication, search } = bundle ?? {};
+  const { manifest, outline, provenance, publication, search, validationFixture } = bundle ?? {};
 
   if (manifest?.schema_version !== 'p5-content-manifest/v1') errors.push('content manifest schema mismatch');
   if (outline?.schemaVersion !== 'p5-outline-manifest/v1') errors.push('outline manifest schema mismatch');
   if (provenance?.schema_version !== 'p5-m56-provenance/v1') errors.push('provenance schema mismatch');
   if (publication?.schema_version !== 'p5-m56-publication/v1') errors.push('publication schema mismatch');
   if (search?.schema_version !== 'p5-search-index/v1') errors.push('search schema mismatch');
+  if (validationFixture?.schema_version !== 'p5-m56-validation-fixture/v1') errors.push('validation fixture schema mismatch');
 
   for (const record of [manifest, provenance, publication]) {
     if (record?.source_identity !== SOURCE_IDENTITY) errors.push('source identity mismatch');
@@ -81,7 +87,8 @@ export function validateSiteBundle(bundle) {
     errors.push('formal dependency hash mismatch');
   }
 
-  if (publication?.content?.length !== 15 || manifest?.routes?.length !== 15 || search?.documents?.length !== 15) {
+  const contentCount = publication?.content?.length ?? 0;
+  if (contentCount === 0 || manifest?.routes?.length !== contentCount || search?.documents?.length !== contentCount) {
     errors.push('representative corpus cardinality mismatch');
   }
 
@@ -102,13 +109,31 @@ export function validateSiteBundle(bundle) {
     }
   }
 
-  if ((publication?.course?.references ?? []).length !== 15) errors.push('Course reference count mismatch');
-  if ((publication?.readiness ?? []).length !== 2) errors.push('readiness authority count mismatch');
-  if ((publication?.formal_bindings ?? []).length !== 10) errors.push('formal binding count mismatch');
+  if (!ids.has(publication?.course?.root_content_id)) errors.push('Course root content identity mismatch');
+  if ((publication?.course?.references ?? []).length < Math.max(0, contentCount - 1)) errors.push('Course reference count mismatch');
+  if (!Array.isArray(publication?.readiness)) errors.push('readiness authority records missing');
+  const representedBlocks = (publication?.content ?? []).reduce((total, entity) => total + (entity.blocks?.length ?? 0), 0);
+  if ((publication?.formal_bindings ?? []).length !== representedBlocks) errors.push('formal binding count mismatch');
   if ((publication?.external_payloads ?? []).length !== 0) errors.push('external payload leakage');
   if ((manifest?.routes ?? []).some((route) => route.path.startsWith('/pt/'))) errors.push('fabricated Portuguese route');
 
-  const serialized = JSON.stringify(bundle);
+  if (
+    validationFixture?.classification !== 'synthetic_contract_fixture'
+    || validationFixture?.route !== '/validation/m5-6/'
+    || validationFixture?.robots !== 'noindex'
+    || validationFixture?.sitemap !== false
+    || validationFixture?.global_search !== false
+    || validationFixture?.canonical_publication_coverage !== false
+    || validationFixture?.fingerprint !== 'synthetic-m5-6-v1'
+    || !ids.has(validationFixture?.subject_content_id)
+  ) errors.push('validation fixture boundary mismatch');
+
+  const fixtureText = JSON.stringify(validationFixture ?? {});
+  for (const required of ['urn:fmc:validation:m5-6:onto:parent-a', 'urn:fmc:validation:m5-6:onto:parent-b', 'FMC-M56-A', 'FMC-M56-B', 'fmc.m56']) {
+    if (!fixtureText.includes(required)) errors.push(`validation fixture subject missing: ${required}`);
+  }
+
+  const serialized = JSON.stringify({ manifest, outline, provenance, publication, search });
   for (const reserved of ['urn:fmc:validation', 'FMC-M56-A', 'FMC-M56-B', 'fmc.m56']) {
     if (serialized.includes(reserved)) errors.push(`validation fixture leaked: ${reserved}`);
   }
@@ -120,13 +145,24 @@ export function validateSiteBundle(bundle) {
 }
 
 export async function loadSiteBundle({ bundleDir = resolve(root, '.generated/content/m5-6') } = {}) {
-  const values = await Promise.all(bundleNames.map(async (name) => JSON.parse(await readFile(resolve(bundleDir, name), 'utf8'))));
+  const values = await Promise.all(bundleNames.map(async (name) => {
+    const primary = resolve(bundleDir, name);
+    try {
+      return JSON.parse(await readFile(primary, 'utf8'));
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+      const governedPath = contentLock.outputs?.[name]?.path;
+      if (!governedPath) throw error;
+      return JSON.parse(await readFile(resolve(root, '.inputs/content', governedPath), 'utf8'));
+    }
+  }));
   const bundle = {
     manifest: values[0],
     outline: values[1],
     provenance: values[2],
     publication: values[3],
-    search: values[4]
+    search: values[4],
+    validationFixture: values[5]
   };
   const result = validateSiteBundle(bundle);
   if (!result.ok) throw new Error(`M5.6 site bundle rejected:\n${result.errors.join('\n')}`);
@@ -186,8 +222,16 @@ export function buildCourseModel(bundle) {
   };
 }
 
+export function getCourseRoot(bundle) {
+  const contentId = bundle.publication.course.root_content_id;
+  const entity = bundle.publication.content.find((candidate) => candidate.content_id === contentId);
+  if (!entity) throw new Error(`Course root content identity missing: ${contentId}`);
+  return { entity, route: routeFor(entity) };
+}
+
 export function toRepresentationBlock(entity, block) {
   const correspondence = block.formal_binding?.lean_state === 'exact' ? 'exact' : 'scoped';
+  const renderedInputHash = fingerprint(block.latex);
   return {
     schemaVersion: 1,
     identity: {
@@ -200,8 +244,9 @@ export function toRepresentationBlock(entity, block) {
       rendered: {
         availability: 'current',
         correspondence,
-        renderer: 'qualified-equivalent',
-        provenance: { subject: `${entity.content_id}:${block.block_id}:rendered`, revision: SOURCE_IDENTITY }
+        renderer: 'mathml',
+        provenance: { subject: LATEX_MATHML_RENDERER, revision: `sha256:${renderedInputHash}` },
+        note: `deterministically derived from exact governed LaTeX; content ${entity.content_id}:${block.block_id}`
       },
       latex: {
         availability: 'current',
@@ -315,6 +360,76 @@ export function makePageOutline(bundle, entity) {
   }
   const result = validateOutlineManifest(manifest);
   if (!result.ok) throw new Error(`page outline rejected for ${entity.content_id}: ${result.errors.join('; ')}`);
+  return result.value;
+}
+
+function validationExternalProjection(base, fixture, entity, route) {
+  const descriptor = fixture.projections.find((projection) => projection.id === base.id);
+  if (!descriptor) throw new Error(`validation fixture projection missing: ${base.id}`);
+  const tokens = universalTokens(entity, 'scoped');
+  const placements = [];
+
+  descriptor.placements.forEach((placement, index) => {
+    const externalId = placement.external_id;
+    const groupReference = `m56-validation-${base.id}-group-${index + 1}`;
+    const contentReference = `m56-validation-${base.id}-content-${index + 1}`;
+    placements.push({
+      referenceId: groupReference,
+      parentReferenceId: null,
+      kind: 'group',
+      label: `${externalId} — validation-only ${base.label} parent`,
+      order: index,
+      state: 'mapped',
+      contentId: `validation:${base.id}:${index + 1}`,
+      canonicalRoute: fixture.route,
+      aliases: [externalId, fixture.fingerprint, 'validation only'],
+      universalTokens: tokens,
+      structuralTokens: {}
+    });
+    placements.push({
+      referenceId: contentReference,
+      parentReferenceId: groupReference,
+      kind: 'reference',
+      label: `${entity.title} — ${placement.relation}`,
+      order: 0,
+      state: placement.relation === 'related' ? 'partially-mapped' : 'mapped',
+      contentId: entity.content_id,
+      canonicalRoute: route,
+      aliases: [externalId, placement.relation, entity.content_id],
+      universalTokens: tokens,
+      structuralTokens: {}
+    });
+  });
+
+  return {
+    ...base,
+    state: 'current',
+    fingerprint: `${fixture.fingerprint}:${base.id}:${fingerprint(descriptor.placements)}`,
+    activeReferenceId: placements.find((placement) => placement.contentId === entity.content_id)?.referenceId ?? null,
+    placements
+  };
+}
+
+export function makeValidationOutline(bundle) {
+  const fixture = bundle.validationFixture;
+  const entity = bundle.publication.content.find((candidate) => candidate.content_id === fixture.subject_content_id);
+  if (!entity) throw new Error(`validation fixture subject missing: ${fixture.subject_content_id}`);
+  const route = routeFor(entity);
+  const manifest = makePageOutline(bundle, entity);
+
+  for (const projectionId of ['ontomathpro', 'msc2020', 'arxiv']) {
+    const index = manifest.projections.findIndex((projection) => projection.id === projectionId);
+    manifest.projections[index] = validationExternalProjection(manifest.projections[index], fixture, entity, route);
+  }
+  manifest.validation = {
+    classification: fixture.classification,
+    fingerprint: fixture.fingerprint,
+    route: fixture.route,
+    leakage_guards: fixture.leakage_guards
+  };
+
+  const result = validateOutlineManifest(manifest);
+  if (!result.ok) throw new Error(`M5.6 validation outline rejected: ${result.errors.join('; ')}`);
   return result.value;
 }
 

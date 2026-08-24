@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -12,7 +12,7 @@ export async function prepareRelease(options = {}) {
   const root = resolve(options.root ?? repositoryRoot);
   const dist = resolve(root, options.dist ?? 'dist');
   const validationRoot = resolve(root, 'validation');
-  const selectorPath = resolve(root, options.selector ?? 'validation/m5-5-current.json');
+  const selectorPath = resolve(root, options.selector ?? 'validation/m5-6-current.json');
   if (!inside(validationRoot, selectorPath)) throw new Error('release selector must remain under validation/');
 
   const selector = JSON.parse(await readFile(selectorPath, 'utf8'));
@@ -31,18 +31,31 @@ export async function prepareRelease(options = {}) {
     throw new Error('deployment requires zero unresolved Blocker and Material findings');
   }
 
-  const fixtureDirectory = resolve(dist, 'validation', 'm5-5');
+  const fixtureDirectory = resolve(dist, 'validation');
   if (!inside(dist, fixtureDirectory)) throw new Error('invalid synthetic fixture path');
+  const syntheticRoutesRemoved = [];
+  async function collect(directory) {
+    for (const name of await readdir(directory).catch(() => [])) {
+      const path = resolve(directory, name);
+      const entry = await stat(path);
+      if (entry.isDirectory()) await collect(path);
+      if (entry.isFile() && name === 'index.html') {
+        const relativePath = relative(dist, dirname(path)).split(sep).join('/');
+        syntheticRoutesRemoved.push(`/${relativePath}/`);
+      }
+    }
+  }
+  await collect(fixtureDirectory);
   await rm(fixtureDirectory, { recursive: true, force: true });
 
   const sitemapPath = resolve(dist, 'sitemap-0.xml');
   let sitemap = await readFile(sitemapPath, 'utf8');
   sitemap = sitemap.replace(
-    /<url><loc>https:\/\/formal-math-curriculum\.github\.io\/validation\/m5-5\/[^<]*<\/loc><\/url>/gu,
+    /<url><loc>https:\/\/formal-math-curriculum\.github\.io\/validation\/[^<]*<\/loc><\/url>/gu,
     ''
   );
-  if (sitemap.includes('/validation/m5-5/')) {
-    throw new Error('synthetic M5.5 validation URL remains in the release sitemap');
+  if (sitemap.includes('/validation/')) {
+    throw new Error('synthetic validation URL remains in the release sitemap');
   }
   await writeFile(sitemapPath, sitemap);
 
@@ -53,7 +66,7 @@ export async function prepareRelease(options = {}) {
     selector: relative(root, selectorPath),
     releaseRecord: relative(root, recordPath),
     releaseRecordSchemaVersion: record.schemaVersion,
-    syntheticRoutesRemoved: ['/validation/m5-5/']
+    syntheticRoutesRemoved: syntheticRoutesRemoved.sort()
   };
   await writeFile(provenancePath, `${JSON.stringify(provenance, null, 2)}\n`);
   return provenance;
