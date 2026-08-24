@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "p5-m5.7-current-candidate/v1",
+  "candidateRecord": "validation/m5-7-candidate-v1.json",
+  "coreCommit": "6adab87f4feaba4c957df189936fbe0dd1e726b8",
+  "independentAuditRequired": "MAT-388",
+  "deploymentAuthorized": false
+}
