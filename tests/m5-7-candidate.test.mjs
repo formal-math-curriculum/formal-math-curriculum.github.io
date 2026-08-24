@@ -91,6 +91,9 @@ test('MAT-394 executes graded relevance, isolated scale and semantic reproducibi
   assert.match(scale, /8 \* 1024 \* 1024/u);
   assert.match(gate, /totalAcceptanceRows/u);
   assert.match(gate, /clean-build governed search semantics changed/u);
+  assert.match(gate, /successorMode = inputLock\.lock_version === 'p5-m5\.8-site-input-lock\/v1'/u);
+  assert.match(gate, /M5\.8 successor changed the governed M5\.6 publication bytes/u);
+  assert.match(gate, /M5\.8 successor relation regeneration is nondeterministic/u);
   assert.match(documentation, /P5-M5\.7-PAGEFIND-REPRODUCIBILITY-v2/u);
   assert.match(documentation, /does not authorize public deployment/i);
   assert.match(deploy, /fetch-depth: 0/u);
