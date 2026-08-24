@@ -276,6 +276,8 @@ test('N23 no-JavaScript output keeps Course hierarchy and ordinary projection/co
   assert.match(componentSource, /<OutlineList[\s\S]*nodes=\{courseTree\}/);
   assert.match(componentSource, /Projection switching, search and filters require JavaScript/);
   assert.match(componentSource, /fmc-outline-projection-links/);
+  assert.match(componentSource, /data-fmc-outline-enhancement hidden/);
+  assert.match(componentSource, /data-fmc-outline-enhancement[^}]*display: none/);
   assert.match(listSource, /href=\{node\.canonicalRoute\}/);
 });
 

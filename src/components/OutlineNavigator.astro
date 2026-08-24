@@ -123,7 +123,7 @@ const componentId = `fmc-outline-${value.currentContent.contentId.replace(/[^a-z
       </p>
       <p class="fmc-outline-live" role="status" aria-live="polite" data-fmc-outline-status></p>
 
-      <div class="fmc-outline-enhancement" data-fmc-outline-enhancement>
+      <div class="fmc-outline-enhancement" data-fmc-outline-enhancement hidden>
         <label class="fmc-outline-field">
           <span>Search this projection</span>
           <input type="search" data-fmc-control data-fmc-outline-query autocomplete="off" disabled />
@@ -235,6 +235,7 @@ const componentId = `fmc-outline-${value.currentContent.contentId.replace(/[^a-z
       }
       this.manifest = parsed.value;
       this.dataset.fmcEnhanced = 'true';
+      this.querySelector('[data-fmc-outline-enhancement]')?.removeAttribute('hidden');
       this.querySelectorAll('[data-fmc-outline-enhancement] [disabled]')
         .forEach((control) => control.removeAttribute('disabled'));
 
