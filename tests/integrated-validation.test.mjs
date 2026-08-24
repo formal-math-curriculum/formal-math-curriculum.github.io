@@ -128,6 +128,7 @@ test('M5.10 release workflow advances from exact authority through durable draft
   assert.equal((workflow.match(/\(cd release-assets && sha256sum --check SHA256SUMS\)/gu) ?? []).length, 2);
   assert.match(workflow, /releases\?per_page=100[\s\S]*git\/refs\/tags\/\$tag[\s\S]*-F force=true/u);
   assert.match(workflow, /releases\/assets\/\$asset_id[\s\S]*uploads\.github\.com[\s\S]*Accept: application\/octet-stream[\s\S]*cmp/u);
+  assert.doesNotMatch(workflow, /--slurp/u);
   assert.match(workflow, /verify-public-release\.mjs[\s\S]*-F draft=false/u);
   assert.match(workflow, /-F draft=false[\s\S]*'\.draft'\)" = "false"/u);
   assert.match(gate, /deploymentAuthorized !== true/);
