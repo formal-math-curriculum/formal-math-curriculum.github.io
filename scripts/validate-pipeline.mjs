@@ -112,6 +112,7 @@ export function validatePipeline({ ciSource, deploySource, lock }) {
   invariant(draftRun.indexOf("--jq '.draft')\" = \"true\"") < draftRun.indexOf('git/refs/tags/$tag'), 'a mismatched tag may move only for an existing draft');
   invariant(draftRun.includes('releases/assets/$asset_id') && draftRun.includes('uploads.github.com'), 'partial-run draft recovery must replace assets by release ID');
   invariant(draftRun.includes('Accept: application/octet-stream') && draftRun.includes('cmp "release-assets/$asset"'), 'staged release assets must be downloaded and byte-compared');
+  invariant(!draftRun.includes('--slurp'), 'runner-incompatible gh api slurp/jq combination is forbidden');
   const publishRun = String(releasePublish.run);
   invariant(publishRun.indexOf("--jq '.draft')\" = \"true\"") < publishRun.indexOf('-F draft=false'), 'release must remain draft until public verification completes');
   invariant(publishRun.indexOf('-F draft=false') < publishRun.lastIndexOf("--jq '.draft')\" = \"false\""), 'release publication must be confirmed');

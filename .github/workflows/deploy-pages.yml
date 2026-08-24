@@ -96,7 +96,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="p5-web-v0.1.0"
-          release_ids="$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[][] | select(.tag_name == \"$tag\") | .id")"
+          release_ids="$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[] | select(.tag_name == \"$tag\") | .id")"
           release_count="$(sed '/^$/d' <<<"$release_ids" | wc -l)"
           test "$release_count" -le 1
 
@@ -129,7 +129,7 @@ jobs:
           fi
 
           for asset in site-dist.tar.zst release-tuple.json software-dependencies.json THIRD_PARTY_NOTICES.md THIRD_PARTY_LICENSES.txt SHA256SUMS; do
-            asset_ids="$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases/$release_id/assets?per_page=100" --jq ".[][] | select(.name == \"$asset\") | .id")"
+            asset_ids="$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases/$release_id/assets?per_page=100" --jq ".[] | select(.name == \"$asset\") | .id")"
             for asset_id in $asset_ids; do
               gh api --method DELETE "repos/$GITHUB_REPOSITORY/releases/assets/$asset_id"
             done
@@ -144,7 +144,7 @@ jobs:
           test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --jq '.object.sha')" = "$GITHUB_SHA"
           mkdir existing-release-assets
           for asset in site-dist.tar.zst release-tuple.json software-dependencies.json THIRD_PARTY_NOTICES.md THIRD_PARTY_LICENSES.txt SHA256SUMS; do
-            asset_ids="$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases/$release_id/assets?per_page=100" --jq ".[][] | select(.name == \"$asset\") | .id")"
+            asset_ids="$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases/$release_id/assets?per_page=100" --jq ".[] | select(.name == \"$asset\") | .id")"
             test "$(sed '/^$/d' <<<"$asset_ids" | wc -l)" -eq 1
             gh api -H "Accept: application/octet-stream" \
               "repos/$GITHUB_REPOSITORY/releases/assets/$asset_ids" >"existing-release-assets/$asset"
@@ -200,7 +200,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="p5-web-v0.1.0"
-          release_ids="$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[][] | select(.tag_name == \"$tag\") | .id")"
+          release_ids="$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[] | select(.tag_name == \"$tag\") | .id")"
           test "$(sed '/^$/d' <<<"$release_ids" | wc -l)" -eq 1
           release_id="$release_ids"
           tag_revision="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/p5-web-v0.1.0" --jq '.object.sha')"
