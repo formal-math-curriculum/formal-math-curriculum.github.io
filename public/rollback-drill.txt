@@ -1,3 +1,0 @@
-MAT-400 rollback drill marker
-baseline_sha=d80031df7af88b0ec4ee50d900914ea45dafb650
-purpose=prove publish-and-restore recovery path
