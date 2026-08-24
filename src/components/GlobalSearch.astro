@@ -1,16 +1,29 @@
 ---
-interface Props {
-  documents: Array<Record<string, unknown>>;
+interface SearchFilter {
+  id: string;
+  label: string;
+  options: Array<{ value: string; label: string }>;
 }
 
-const { documents } = Astro.props;
+interface Props {
+  documentCount: number;
+  filters: SearchFilter[];
+  ranking: Record<string, unknown>;
+  fingerprint: string;
+}
+
+const { documentCount, filters, ranking, fingerprint } = Astro.props;
 ---
 
-<fmc-global-search>
+<fmc-global-search
+  data-fmc-document-count={documentCount}
+  data-fmc-ranking={JSON.stringify(ranking)}
+  data-fmc-index-fingerprint={fingerprint}
+>
   <details class="fmc-global-search">
     <summary data-fmc-control aria-keyshortcuts="/">Search course</summary>
     <div class="fmc-global-search__panel">
-      <label for="fmc-global-search-query">Search all {documents.length} course pages</label>
+      <label for="fmc-global-search-query">Search all {documentCount} governed learner pages</label>
       <input
         id="fmc-global-search-query"
         type="search"
@@ -20,31 +33,61 @@ const { documents } = Astro.props;
         data-fmc-global-query
         placeholder="Try distributive, exercise, FART…"
       />
-      <p class="fmc-global-search__hint">Press <kbd>/</kbd> anywhere to focus search.</p>
-      <p class="fmc-global-search__status" role="status" aria-live="polite" data-fmc-global-status>
-        {documents.length} pages available.
-      </p>
-      <ul class="fmc-global-search__results" data-fmc-global-results>
-        {documents.map((document) => (
-          <li data-fmc-search-item data-fmc-search-text={JSON.stringify(document).toLocaleLowerCase('en')}>
-            <a href={String(document.canonical_route)}>
-              <strong>{String(document.title)}</strong>
-              <span>{String(document.summary)}</span>
-              <small>{String(document.kind).replaceAll('_', ' ')}</small>
-            </a>
-          </li>
+      <fieldset class="fmc-global-search__filters">
+        <legend>Refine results</legend>
+        {filters.map((filter) => (
+          <label>
+            <span>{filter.label}</span>
+            <select data-fmc-control data-fmc-global-filter={filter.id}>
+              <option value="">Any</option>
+              {filter.options.map((option) => <option value={option.value}>{option.label}</option>)}
+            </select>
+          </label>
         ))}
-      </ul>
-      <p class="fmc-global-search__empty" data-fmc-global-empty hidden>
-        No course page matches every term. Clear the query or use the Course outline.
+      </fieldset>
+      <div class="fmc-global-search__actions">
+        <button type="button" data-fmc-control data-fmc-global-clear>Clear search and filters</button>
+        <p class="fmc-global-search__hint">Press <kbd>/</kbd> anywhere to focus search.</p>
+      </div>
+      <p class="fmc-global-search__status" role="status" aria-live="polite" data-fmc-global-status>
+        {documentCount} governed learner pages available. Type a query or choose a filter.
       </p>
+      <ul class="fmc-global-search__results" data-fmc-global-results></ul>
+      <p class="fmc-global-search__empty" data-fmc-global-empty hidden>
+        No governed learner page matches the query and filters. Clear them or use the Course outline.
+      </p>
+      <noscript>
+        <p class="fmc-global-search__no-script">
+          Indexed search needs JavaScript. The Course outline remains complete and usable without it.
+        </p>
+      </noscript>
     </div>
   </details>
 </fmc-global-search>
 
 <script>
+  import { buildPagefindFilters, normalizeSearchToken, sortSearchRows } from '../lib/m5-7-search-client.mjs';
+
+  interface PagefindResult {
+    id: string;
+    score: number;
+    data: () => Promise<{
+      url: string;
+      excerpt?: string;
+      meta?: Record<string, string>;
+    }>;
+  }
+
+  interface PagefindModule {
+    options: (options: Record<string, unknown>) => Promise<void>;
+    search: (query: string | null, options: Record<string, unknown>) => Promise<{ results: PagefindResult[] }>;
+  }
+
   class FMCGlobalSearch extends HTMLElement {
     controller?: AbortController;
+    pagefind?: Promise<PagefindModule>;
+    requestSequence = 0;
+    debounceTimer?: number;
 
     connectedCallback() {
       this.controller = new AbortController();
@@ -53,25 +96,97 @@ const { documents } = Astro.props;
       const input = this.querySelector<HTMLInputElement>('[data-fmc-global-query]');
       const status = this.querySelector<HTMLElement>('[data-fmc-global-status]');
       const empty = this.querySelector<HTMLElement>('[data-fmc-global-empty]');
-      const items = [...this.querySelectorAll<HTMLElement>('[data-fmc-search-item]')];
-      if (!details || !input || !status || !empty) return;
+      const results = this.querySelector<HTMLUListElement>('[data-fmc-global-results]');
+      const clear = this.querySelector<HTMLButtonElement>('[data-fmc-global-clear]');
+      const selects = [...this.querySelectorAll<HTMLSelectElement>('[data-fmc-global-filter]')];
+      const documentCount = Number(this.dataset.fmcDocumentCount ?? 0);
+      if (!details || !input || !status || !empty || !results || !clear) return;
 
-      const render = () => {
-        const terms = input.value.toLocaleLowerCase('en').trim().split(/\s+/u).filter(Boolean);
-        let visible = 0;
-        for (const item of items) {
-          const haystack = item.dataset.fmcSearchText ?? '';
-          const matches = terms.every((term) => haystack.includes(term));
-          item.hidden = !matches;
-          if (matches) visible += 1;
-        }
-        empty.hidden = visible !== 0;
-        status.textContent = terms.length
-          ? `${visible} matching course ${visible === 1 ? 'page' : 'pages'}.`
-          : `${visible} pages available.`;
+      const setIdle = () => {
+        results.replaceChildren();
+        empty.hidden = true;
+        status.textContent = `${documentCount} governed learner pages available. Type a query or choose a filter.`;
       };
 
-      input.addEventListener('input', render, { signal });
+      const renderRows = (rows: Array<{ url: string; score: number; meta: Record<string, string>; excerpt?: string }>) => {
+        results.replaceChildren(...rows.map((row) => {
+          const item = document.createElement('li');
+          item.dataset.fmcSearchItem = '';
+          item.dataset.fmcContentId = row.meta['content-id'] ?? '';
+          const anchor = document.createElement('a');
+          anchor.href = row.url;
+          const title = document.createElement('strong');
+          title.textContent = row.meta.title ?? row.meta['content-id'] ?? 'Untitled learner page';
+          const summary = document.createElement('span');
+          summary.textContent = row.meta.summary ?? row.excerpt?.replace(/<[^>]+>/gu, '') ?? '';
+          const kind = document.createElement('small');
+          kind.textContent = (row.meta['content-kind'] ?? 'learner content').replaceAll('_', ' ');
+          anchor.append(title, summary, kind);
+          item.append(anchor);
+          return item;
+        }));
+      };
+
+      const loadPagefind = () => {
+        if (!this.pagefind) {
+          const pagefindUrl = '/pagefind/pagefind.js';
+          this.pagefind = import(/* @vite-ignore */ pagefindUrl).then(async (module) => {
+            const pagefind = module as unknown as PagefindModule;
+            const configured = JSON.parse(this.dataset.fmcRanking ?? '{}') as Record<string, unknown>;
+            const { termFrequency, termSimilarity, pageLength, termSaturation, metaWeights } = configured;
+            await pagefind.options({ ranking: { termFrequency, termSimilarity, pageLength, termSaturation, metaWeights } });
+            return pagefind;
+          });
+        }
+        return this.pagefind;
+      };
+
+      const search = async () => {
+        const sequence = ++this.requestSequence;
+        const query = normalizeSearchToken(input.value);
+        const filters = buildPagefindFilters(selects);
+        const hasSelectedFilter = selects.some((select) => select.value !== '');
+        if (!query && !hasSelectedFilter) {
+          setIdle();
+          return;
+        }
+        status.textContent = 'Searching the static governed index…';
+        empty.hidden = true;
+        try {
+          const pagefind = await loadPagefind();
+          const response = await pagefind.search(query || null, { filters });
+          const rows = await Promise.all(response.results.map(async (result) => ({
+            ...(await result.data()),
+            score: result.score
+          })));
+          if (sequence !== this.requestSequence) return;
+          const sorted = sortSearchRows(rows, query);
+          renderRows(sorted);
+          empty.hidden = sorted.length !== 0;
+          status.textContent = `${sorted.length} matching governed learner ${sorted.length === 1 ? 'page' : 'pages'}.`;
+        } catch (error) {
+          if (sequence !== this.requestSequence) return;
+          results.replaceChildren();
+          empty.hidden = true;
+          status.textContent = 'Static search could not load. Use the Course outline; no cached or invented results are shown.';
+          console.error('FMC static search load failed', error);
+        }
+      };
+
+      const scheduleSearch = () => {
+        window.clearTimeout(this.debounceTimer);
+        this.debounceTimer = window.setTimeout(search, 100);
+      };
+
+      input.addEventListener('input', scheduleSearch, { signal });
+      for (const select of selects) select.addEventListener('change', scheduleSearch, { signal });
+      clear.addEventListener('click', () => {
+        input.value = '';
+        for (const select of selects) select.value = '';
+        this.requestSequence += 1;
+        setIdle();
+        input.focus();
+      }, { signal });
       details.addEventListener('toggle', () => {
         if (details.open) requestAnimationFrame(() => input.focus());
       }, { signal });
@@ -89,10 +204,11 @@ const { documents } = Astro.props;
           details.querySelector<HTMLElement>('summary')?.focus();
         }
       }, { signal });
-      render();
+      setIdle();
     }
 
     disconnectedCallback() {
+      window.clearTimeout(this.debounceTimer);
       this.controller?.abort();
     }
   }

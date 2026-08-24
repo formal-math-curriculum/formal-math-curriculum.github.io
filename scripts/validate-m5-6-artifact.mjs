@@ -40,10 +40,18 @@ async function validatePublishedPage(route, identity = null) {
   invariant(html.includes(`href="https://formal-math-curriculum.github.io${route}"`), `canonical mismatch: ${route}`);
   invariant(html.includes('data-pagefind-body'), `Pagefind body missing: ${route}`);
   invariant(
-    (html.match(/data-fmc-search-text=/g) ?? []).length === bundle.search.documents.length,
-    `global search corpus mismatch: ${route}`
+    (html.match(/data-fmc-search-text=/g) ?? []).length === 0,
+    `embedded global search corpus leaked into page HTML: ${route}`
   );
-  if (identity) invariant(html.includes(`data-fmc-content-id="${identity}"`), `content identity mismatch: ${route}`);
+  invariant(html.includes(`data-fmc-document-count="${bundle.search.documents.length}"`), `global search count mismatch: ${route}`);
+  invariant(/data-fmc-index-fingerprint="sha256:[a-f0-9]{64}"/u.test(html), `global search fingerprint missing: ${route}`);
+  if (identity) {
+    invariant(html.includes(`data-fmc-content-id="${identity}"`), `content identity mismatch: ${route}`);
+    invariant(html.includes('data-pagefind-filter="fmc-result-kind[content]" content="learner-content"'), `learner search boundary missing: ${route}`);
+    invariant(html.includes(`data-pagefind-meta="content-id[content]" content="${identity}"`), `learner search identity metadata missing: ${route}`);
+  } else {
+    invariant(!html.includes('data-pagefind-filter="fmc-result-kind[content]"'), `derived page entered learner search filter: ${route}`);
+  }
   for (const reserved of ['urn:fmc:validation', 'FMC-M56-A', 'FMC-M56-B', 'fmc.m56']) {
     invariant(!html.includes(reserved), `validation fixture leaked into ${route}: ${reserved}`);
   }

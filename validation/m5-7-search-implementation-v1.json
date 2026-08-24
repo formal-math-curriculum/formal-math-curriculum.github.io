@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "p5-m5.7-static-search-implementation/v1",
+  "issue": "MAT-363",
+  "decisionDocument": "aa5af416-ec64-4218-9c9d-a64271221acf",
+  "freezeDocument": "d879fd37-8602-4cf2-b3a8-aa19d0a6e588",
+  "entryBaseline": {
+    "websiteCommit": "b0661b5ab61d0b4a8acb50f59339c988e5c6158e",
+    "websiteTree": "633c2048872054801811312b73ad5f7a973e280c",
+    "contentCommit": "2da8fdb43074d00fea5fc6201d239e5f26a43250",
+    "contentTree": "d51b0c7cfe44feec2b6eb176fd6ce1825a8ab458"
+  },
+  "discoveryModel": {
+    "schemaVersion": "p5-m5.7-search-discovery/v1",
+    "fingerprint": "sha256:a686c3c5b0c90eb643397c8db88ce23b4e1c719ce45cd1f705bc43a66e2578a5",
+    "governedLearnerDocuments": 15,
+    "productionJudgments": ["G01-G14", "G18-G20"],
+    "validationScaleJudgments": ["G15-G17"]
+  },
+  "staticIndex": {
+    "engine": "Pagefind",
+    "version": "1.5.2",
+    "indexedPages": 42,
+    "governedResultBoundary": "fmc-result-kind=learner-content",
+    "filterDimensions": [
+      "content-kind",
+      "editorial-state",
+      "formal-state",
+      "publication-state",
+      "representation",
+      "locale",
+      "translation-state"
+    ],
+    "ranking": {
+      "termFrequency": 0.85,
+      "termSimilarity": 1,
+      "pageLength": 0.5,
+      "termSaturation": 1.2,
+      "metaWeights": {
+        "title": 10,
+        "content-id": 12,
+        "identifiers": 10,
+        "aliases": 7,
+        "summary": 3
+      }
+    },
+    "artifactEnvelope": {
+      "maximumPagefindFiles": 90,
+      "maximumPagefindBytes": 800000,
+      "integrity": "actual_path_byte_sha256_manifest_at_packaging",
+      "byteIdenticalRebuildRequired": false,
+      "reason": "Pagefind 1.5.2 filter shards are content-addressed but may be partitioned differently between identical builds"
+    }
+  },
+  "scaleFixture": {
+    "schemaVersion": "p5-m5.7-scale-search-fixture/v1",
+    "documents": 2000,
+    "fingerprint": "sha256:ae5a0a167e407bd267f9b1c72d03c3f718748fcef846939102d16a7d8045d011",
+    "validationOnly": true,
+    "generatedInProductionArtifact": false
+  },
+  "qualification": {
+    "nodeTestsAtCandidate": 120,
+    "browserRows": "D01-D20",
+    "browserRequiredInCI": true,
+    "browserLocalSkipMustBeExplicit": true,
+    "artifactGate": "scripts/validate-m5-7-search-artifact.mjs"
+  },
+  "boundaries": {
+    "backend": false,
+    "externalRuntimeRequests": false,
+    "queryOrFilterPersistence": false,
+    "embeddedCorpusInPageHtml": false,
+    "validationIdentifiersInProductionIndex": false,
+    "safeDomRendering": "textContent_and_node_construction",
+    "failureBehavior": "clear_results_and_direct_to_course_outline"
+  },
+  "deploymentAuthorized": false,
+  "nextIssue": "MAT-364",
+  "excludedClaims": [
+    "full-course search coverage",
+    "external-taxonomy coverage",
+    "manual screen-reader conformance",
+    "cross-engine conformance",
+    "public deployment authorization"
+  ]
+}

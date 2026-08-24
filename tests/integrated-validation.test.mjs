@@ -68,7 +68,7 @@ test('browser validation is pinned, required in CI and runs before search/artifa
   const workflow = await read('.github/workflows/ci.yml');
   assert.equal(pkg.devDependencies['playwright-core'], '1.62.1');
   assert.equal(pkg.scripts['test:browser'], 'node scripts/validate-m5-5-browser.mjs');
-  assert.match(pkg.scripts.build, /build:astro && pnpm run test:browser && pnpm run test:m5-6-browser && pnpm run build:search && pnpm run validate:m5-6-artifact && pnpm run verify:artifact/);
+  assert.match(pkg.scripts.build, /build:astro && pnpm run test:browser && pnpm run build:search && pnpm run test:m5-7-browser && pnpm run test:m5-6-browser && pnpm run validate:m5-7-artifact && pnpm run validate:m5-6-artifact && pnpm run verify:artifact/);
   assert.match(workflow, /FMC_REQUIRE_BROWSER: '1'/);
   assert.match(workflow, /FMC_SOURCE_REVISION: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/);
   assert.match(workflow, /runs-on: ubuntu-24\.04/);
@@ -188,4 +188,24 @@ test('M5.6 fixture and artifact validators enforce noindex, leakage and exact Ma
   assert.match(artifact, /required M5\.6 browser report is missing/);
   assert.match(search, /rm\(output/);
   assert.match(search, /RAYON_NUM_THREADS: '1'/);
+});
+
+test('M5.7 static search owns 20 browser rows, required CI execution and a separate artifact gate', async () => {
+  const [script, artifact, pkg, workflow] = await Promise.all([
+    read('scripts/validate-m5-7-search-browser.mjs'),
+    read('scripts/validate-m5-7-search-artifact.mjs'),
+    read('package.json').then(JSON.parse),
+    read('.github/workflows/ci.yml')
+  ]);
+  for (let id = 1; id <= 20; id += 1) assert.match(script, new RegExp(`['"]D${String(id).padStart(2, '0')}['"]`));
+  assert.equal(pkg.scripts['test:m5-7-browser'], 'node scripts/validate-m5-7-search-browser.mjs');
+  assert.equal(pkg.scripts['validate:m5-7-artifact'], 'node scripts/validate-m5-7-search-artifact.mjs');
+  assert.match(script, /p5-m5\.7-static-search-browser\/v1/u);
+  assert.match(script, /FMC_SKIP_BROWSER is forbidden when FMC_REQUIRE_BROWSER=1/u);
+  assert.match(script, /requires an identifiable Chrome executable/u);
+  assert.match(script, /validationScaleDocumentsInProduction: 0/u);
+  assert.match(artifact, /p5-m5\.7-static-search-artifact\/v1/u);
+  assert.match(artifact, /generatedInProductionArtifact: false/u);
+  assert.match(workflow, /FMC_REQUIRE_BROWSER: '1'/u);
+  assert.doesNotMatch(workflow, /FMC_SKIP_BROWSER/u);
 });

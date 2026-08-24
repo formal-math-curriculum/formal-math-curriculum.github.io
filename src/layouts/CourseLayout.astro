@@ -12,15 +12,41 @@ interface Props {
   canonicalPath: string;
   courseRootRoute: string;
   outline?: unknown;
-  searchDocuments: Array<Record<string, unknown>>;
+  searchModel: {
+    documents: Array<Record<string, any>>;
+    filters: Array<{ id: string; label: string; options: Array<{ value: string; label: string }> }>;
+    ranking: Record<string, unknown>;
+    fingerprint: string;
+  };
+  currentSearchDocument?: Record<string, any>;
 }
 
-const { title, description, canonicalPath, courseRootRoute, outline, searchDocuments } = Astro.props;
+const { title, description, canonicalPath, courseRootRoute, outline, searchModel, currentSearchDocument } = Astro.props;
 const canonical = new URL(canonicalPath, 'https://formal-math-curriculum.github.io').href;
+const pagefindMetadata = currentSearchDocument ? [
+  ['title', currentSearchDocument.title],
+  ['content-id', currentSearchDocument.contentId],
+  ['content-kind', currentSearchDocument.kind],
+  ['summary', currentSearchDocument.summary],
+  ['identifiers', currentSearchDocument.identifiers.join('|')],
+  ['aliases', currentSearchDocument.aliases.join('|')],
+  ['source-revision', currentSearchDocument.sourceRevision],
+  ['discovery-fingerprint', searchModel.fingerprint]
+] : [];
+const pagefindFilters = currentSearchDocument ? [
+  ['fmc-result-kind', 'learner-content'],
+  ['content-kind', currentSearchDocument.kind],
+  ['editorial-state', currentSearchDocument.editorialState],
+  ['formal-state', currentSearchDocument.formalState],
+  ['publication-state', currentSearchDocument.publicationState],
+  ...currentSearchDocument.representations.map((value: string) => ['representation', value]),
+  ['locale', currentSearchDocument.locale],
+  ...currentSearchDocument.translationStates.map((value: string) => ['translation-state', value])
+] : [];
 ---
 
 <!doctype html>
-<html lang="en" data-fmc-course-slice="p5-m5.6">
+<html lang="en" data-fmc-course-slice="p5-m5.7" data-fmc-search-fingerprint={searchModel.fingerprint}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
@@ -31,6 +57,8 @@ const canonical = new URL(canonicalPath, 'https://formal-math-curriculum.github.
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
+    {pagefindMetadata.map(([name, value]) => <meta data-pagefind-meta={`${name}[content]`} content={value} />)}
+    {pagefindFilters.map(([name, value]) => <meta data-pagefind-filter={`${name}[content]`} content={value} />)}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="canonical" href={canonical} />
     <title>{title} · Formal Mathematics Curriculum</title>
@@ -48,7 +76,12 @@ const canonical = new URL(canonicalPath, 'https://formal-math-curriculum.github.
         <a href="/about/method/">Authority</a>
       </nav>
       <div class="fmc-site-actions">
-        <GlobalSearch documents={searchDocuments} />
+        <GlobalSearch
+          documentCount={searchModel.documents.length}
+          filters={searchModel.filters}
+          ranking={searchModel.ranking}
+          fingerprint={searchModel.fingerprint}
+        />
         <PreferenceControls />
       </div>
     </header>
@@ -64,6 +97,11 @@ const canonical = new URL(canonicalPath, 'https://formal-math-curriculum.github.
         </aside>
       ) : null}
       <main id="main-content" class="fmc-course-main" data-pagefind-body>
+        {currentSearchDocument ? (
+          <span class="fmc-search-index-copy" aria-hidden="true" data-pagefind-weight="5">
+            {currentSearchDocument.searchText}
+          </span>
+        ) : null}
         <slot />
       </main>
     </div>

@@ -258,6 +258,7 @@ try {
     await waitForCourse(page);
     await page.locator('fmc-global-search summary').click();
     await page.locator('[data-fmc-global-query]').fill('FART-P2-000010');
+    await page.waitForFunction(() => document.querySelector('[data-fmc-global-status]')?.textContent?.includes('matching governed learner'));
     const visible = page.locator('[data-fmc-search-item]:visible a');
     const actual = { count: await visible.count(), href: await visible.first().getAttribute('href') };
     return { pass: actual.count === 1 && actual.href === '/content/p5m56c0006/distribute-and-cancel-exercise/', actual };
