@@ -1,0 +1,101 @@
+---
+interface Props {
+  documents: Array<Record<string, unknown>>;
+}
+
+const { documents } = Astro.props;
+---
+
+<fmc-global-search>
+  <details class="fmc-global-search">
+    <summary data-fmc-control aria-keyshortcuts="/">Search course</summary>
+    <div class="fmc-global-search__panel">
+      <label for="fmc-global-search-query">Search all 15 course pages</label>
+      <input
+        id="fmc-global-search-query"
+        type="search"
+        inputmode="search"
+        autocomplete="off"
+        data-fmc-control
+        data-fmc-global-query
+        placeholder="Try distributive, exercise, FART…"
+      />
+      <p class="fmc-global-search__hint">Press <kbd>/</kbd> anywhere to focus search.</p>
+      <p class="fmc-global-search__status" role="status" aria-live="polite" data-fmc-global-status>
+        {documents.length} pages available.
+      </p>
+      <ul class="fmc-global-search__results" data-fmc-global-results>
+        {documents.map((document) => (
+          <li data-fmc-search-item data-fmc-search-text={JSON.stringify(document).toLocaleLowerCase('en')}>
+            <a href={String(document.canonical_route)}>
+              <strong>{String(document.title)}</strong>
+              <span>{String(document.summary)}</span>
+              <small>{String(document.kind).replaceAll('_', ' ')}</small>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <p class="fmc-global-search__empty" data-fmc-global-empty hidden>
+        No course page matches every term. Clear the query or use the Course outline.
+      </p>
+    </div>
+  </details>
+</fmc-global-search>
+
+<script>
+  class FMCGlobalSearch extends HTMLElement {
+    controller?: AbortController;
+
+    connectedCallback() {
+      this.controller = new AbortController();
+      const signal = this.controller.signal;
+      const details = this.querySelector<HTMLDetailsElement>('details');
+      const input = this.querySelector<HTMLInputElement>('[data-fmc-global-query]');
+      const status = this.querySelector<HTMLElement>('[data-fmc-global-status]');
+      const empty = this.querySelector<HTMLElement>('[data-fmc-global-empty]');
+      const items = [...this.querySelectorAll<HTMLElement>('[data-fmc-search-item]')];
+      if (!details || !input || !status || !empty) return;
+
+      const render = () => {
+        const terms = input.value.toLocaleLowerCase('en').trim().split(/\s+/u).filter(Boolean);
+        let visible = 0;
+        for (const item of items) {
+          const haystack = item.dataset.fmcSearchText ?? '';
+          const matches = terms.every((term) => haystack.includes(term));
+          item.hidden = !matches;
+          if (matches) visible += 1;
+        }
+        empty.hidden = visible !== 0;
+        status.textContent = terms.length
+          ? `${visible} matching course ${visible === 1 ? 'page' : 'pages'}.`
+          : `${visible} pages available.`;
+      };
+
+      input.addEventListener('input', render, { signal });
+      details.addEventListener('toggle', () => {
+        if (details.open) requestAnimationFrame(() => input.focus());
+      }, { signal });
+      window.addEventListener('keydown', (event) => {
+        const target = event.target;
+        const typing = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement || (target instanceof HTMLElement && target.isContentEditable);
+        if (event.key === '/' && !typing && !event.metaKey && !event.ctrlKey && !event.altKey) {
+          event.preventDefault();
+          details.open = true;
+          input.focus();
+        }
+        if (event.key === 'Escape' && details.open && this.contains(document.activeElement)) {
+          event.preventDefault();
+          details.open = false;
+          details.querySelector<HTMLElement>('summary')?.focus();
+        }
+      }, { signal });
+      render();
+    }
+
+    disconnectedCallback() {
+      this.controller?.abort();
+    }
+  }
+
+  if (!customElements.get('fmc-global-search')) customElements.define('fmc-global-search', FMCGlobalSearch);
+</script>

@@ -1,0 +1,32 @@
+---
+import CoursePage from '../../../components/CoursePage.astro';
+import CourseLayout from '../../../layouts/CourseLayout.astro';
+import { buildCourseModel, loadSiteBundle, makePageOutline } from '../../../lib/m5-6-publication.mjs';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const bundle = await loadSiteBundle();
+  return bundle.publication.content.map((entity: any) => ({
+    params: { routeKey: entity.route_key, slug: entity.slug },
+    props: { contentId: entity.content_id }
+  }));
+}
+
+const { contentId } = Astro.props;
+const bundle = await loadSiteBundle();
+const model = buildCourseModel(bundle);
+const context = model.context(contentId);
+const outline = makePageOutline(bundle, context.entity);
+---
+
+<CourseLayout
+  title={context.entity.title}
+  description={context.entity.summary}
+  canonicalPath={context.route}
+  pageKind={context.entity.kind}
+  outline={outline}
+  searchDocuments={bundle.search.documents}
+>
+  <CoursePage context={context} publication={bundle.publication} />
+</CourseLayout>

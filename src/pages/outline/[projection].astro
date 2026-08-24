@@ -1,0 +1,79 @@
+---
+import CourseLayout from '../../layouts/CourseLayout.astro';
+import { loadSiteBundle } from '../../lib/m5-6-publication.mjs';
+
+export const prerender = true;
+
+interface Props {
+  projection: Record<string, any>;
+}
+
+export async function getStaticPaths() {
+  const bundle = await loadSiteBundle();
+  return bundle.outline.projections.map((projection: any) => ({
+    params: { projection: projection.id },
+    props: {
+      projection: {
+        id: projection.id,
+        label: projection.label,
+        state: projection.state,
+        fingerprint: projection.fingerprint,
+        placementCount: projection.placements.length
+      }
+    }
+  }));
+}
+
+const { projection } = Astro.props as Props;
+const bundle = await loadSiteBundle();
+const usable = ['current', 'stale-compatible'].includes(projection.state);
+const description = usable
+  ? `${projection.label} is a usable navigation projection for the representative M5.6 corpus.`
+  : `${projection.label} is explicitly ${projection.state}; Course remains the fail-safe projection.`;
+---
+
+<CourseLayout
+  title={`${projection.label} outline`}
+  description={description}
+  canonicalPath={`/outline/${projection.id}/`}
+  pageKind="outline_landing"
+  searchDocuments={bundle.search.documents}
+>
+  <article class="fmc-course-article">
+    <nav class="fmc-breadcrumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/">Home</a></li>
+        <li><span aria-current="page">{projection.label}</span></li>
+      </ol>
+    </nav>
+    <header class="fmc-course-hero">
+      <div class="fmc-course-hero__badges"><span>navigation projection</span><span>{projection.state}</span></div>
+      <p class="fmc-course-kicker">Five-projection outline</p>
+      <h1 data-pagefind-meta="title">{projection.label}</h1>
+      <p class="fmc-course-summary">{description}</p>
+    </header>
+    <section class="fmc-course-section" aria-labelledby="projection-state-title">
+      <h2 id="projection-state-title">Current governed state</h2>
+      {usable ? (
+        <>
+          <p>This projection has {projection.placementCount} bounded placements in the adopted manifest.</p>
+          <p>Open any learner page to explore it while preserving that page’s canonical identity.</p>
+        </>
+      ) : (
+        <p>
+          No production placement payload is available. The site does not substitute the synthetic
+          validation fixture or invent taxonomy correspondence.
+        </p>
+      )}
+      <dl class="fmc-projection-metadata">
+        <div><dt>State</dt><dd>{projection.state}</dd></div>
+        <div><dt>Fingerprint</dt><dd><code>{projection.fingerprint}</code></dd></div>
+      </dl>
+      <div class="fmc-course-card-grid">
+        <a class="fmc-course-card" href="/content/p5m56c0001/arithmetic-to-algebra/">
+          <small>Fail-safe Course</small><strong>Arithmetic to algebra</strong><span>Open the representative learner path.</span>
+        </a>
+      </div>
+    </section>
+  </article>
+</CourseLayout>

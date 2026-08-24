@@ -9,8 +9,8 @@ const lock = JSON.parse(await readFile('inputs.lock.json', 'utf8'));
 const source = resolve(process.env.CONTENT_INPUT_DIR ?? '.inputs/content');
 
 async function fixture() {
-  const target = await mkdtemp(resolve(tmpdir(), 'm54-ingest-'));
-  for (const path of [lock.consumed.content.manifest_path, lock.consumed.content.validator_path]) {
+  const target = await mkdtemp(resolve(tmpdir(), 'm56-ingest-'));
+  for (const path of lock.consumed.content.validation_inputs) {
     await mkdir(dirname(resolve(target, path)), { recursive: true });
     await copyFile(resolve(source, path), resolve(target, path));
   }
@@ -32,12 +32,21 @@ test('qualified immutable content is ingested with provenance', async () => {
   const config = await options(inputDir);
   const provenance = await ingest(config);
   assert.equal(provenance.consumed.revision, lock.consumed.content.revision);
-  assert.equal(JSON.parse(await readFile(config.publicProvenancePath, 'utf8')).consumed.manifest_sha256, lock.consumed.content.manifest_sha256);
+  assert.equal(provenance.consumed.tree, lock.consumed.content.tree);
+  assert.equal(provenance.consumed.selector_sha256, lock.consumed.content.selector_sha256);
+  assert.equal(
+    JSON.parse(await readFile(config.publicProvenancePath, 'utf8')).consumed.outputs['publication.json'].observed_sha256,
+    lock.consumed.content.outputs['publication.json'].sha256
+  );
+  assert.equal(
+    JSON.parse(await readFile(resolve(config.generatedDir, 'm5-6/publication.json'), 'utf8')).content.length,
+    15
+  );
 });
 
 test('missing manifest fails closed', async () => {
   const inputDir = await fixture();
-  await rm(resolve(inputDir, lock.consumed.content.manifest_path));
+  await rm(resolve(inputDir, lock.consumed.content.outputs['content-manifest.json'].path));
   await assert.rejects(ingest(await options(inputDir)), /ENOENT/);
 });
 
@@ -50,7 +59,7 @@ test('stale checkout revision fails closed', async () => {
 
 test('incompatible manifest hash fails closed', async () => {
   const inputDir = await fixture();
-  const path = resolve(inputDir, lock.consumed.content.manifest_path);
+  const path = resolve(inputDir, lock.consumed.content.outputs['content-manifest.json'].path);
   await writeFile(path, `${await readFile(path, 'utf8')}\n`);
-  await assert.rejects(ingest(await options(inputDir)), /incompatible content manifest hash/);
+  await assert.rejects(ingest(await options(inputDir)), /incompatible governed output hash/);
 });

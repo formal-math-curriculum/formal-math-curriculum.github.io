@@ -1,6 +1,6 @@
 # Formal Mathematics Curriculum website
 
-Static Astro + Starlight source for the bounded public course. Authoritative
+Static Astro + Starlight source for the bounded course candidate. Authoritative
 content and Lean facts are validated inputs; generated routes, projection menus,
 and Pagefind indexes are disposable build outputs.
 
@@ -40,11 +40,16 @@ The MAT-375 candidate gate mounts those surfaces together on a synthetic noindex
 and runs required Chromium interaction/accessibility/responsive evidence before the
 artifact is hashed. See `docs/architecture/m5-5-candidate-validation.md`.
 
-This repository still contains no production course corpus, external taxonomy
-snapshot, Portuguese translation, populated representation instance,
-populated projection manifest, or release qualification.
+MAT-361 consumes the exact MAT-362 content merge and publishes a representative M5.6
+candidate: 15 canonical English content routes, derived bounded formal routes, three
+deep Course branches, ten populated representation blocks, one closed-by-default
+exercise solution, a deterministic global search, page-centered five-projection
+outlines, source links and explicit recovery states. It is not a full-course,
+Portuguese-translation, external-mapping, accessibility-conformance, deployment or
+release-qualification claim. See `docs/architecture/m5-6-vertical-slice.md`.
 
-`inputs.lock.json` freezes every cross-repository subject. The build refuses a
-different checkout, source hash, schema version, or unqualified content manifest.
+`inputs.lock.json` freezes every cross-repository subject and all five governed M5.6
+outputs. The build refuses a different checkout, tree, validator/generator hash,
+output hash, schema version or source identity.
 PR CI produces a seven-day `site-preview` artifact; production Pages deployment
 remains the separately governed manual workflow.

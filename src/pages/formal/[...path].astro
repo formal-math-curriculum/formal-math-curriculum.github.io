@@ -1,0 +1,83 @@
+---
+import CourseLayout from '../../layouts/CourseLayout.astro';
+import { buildFormalRecords, loadSiteBundle } from '../../lib/m5-6-publication.mjs';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const bundle = await loadSiteBundle();
+  return buildFormalRecords(bundle).map((record) => ({
+    params: { path: record.route.replace(/^\/formal\//u, '').replace(/\/$/u, '') },
+    props: { record }
+  }));
+}
+
+const record = Astro.props.record as any;
+const bundle = await loadSiteBundle();
+const uniqueEntries = record.entries.filter((entry: any, index: number, entries: any[]) =>
+  entries.findIndex((candidate: any) => candidate.entity.content_id === entry.entity.content_id && candidate.block.block_id === entry.block.block_id) === index
+);
+const description = record.kind === 'artifact'
+  ? `Bounded formal artifact ${record.title} and its learner-facing correspondences.`
+  : `Exact formal module ${record.title} and its bounded learner-facing correspondences.`;
+---
+
+<CourseLayout
+  title={record.title}
+  description={description}
+  canonicalPath={record.route}
+  pageKind={`formal_${record.kind}`}
+  searchDocuments={bundle.search.documents}
+>
+  <article class="fmc-course-article fmc-formal-record">
+    <nav class="fmc-breadcrumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/">Home</a></li>
+        <li><a href="/content/p5m56c0001/arithmetic-to-algebra/">Course</a></li>
+        <li><span aria-current="page">{record.title}</span></li>
+      </ol>
+    </nav>
+
+    <header class="fmc-course-hero">
+      <div class="fmc-course-hero__badges"><span>formal {record.kind}</span><span>bounded provenance</span></div>
+      <p class="fmc-course-kicker">Lean / mathlib projection record</p>
+      <h1 data-pagefind-meta="title">{record.title}</h1>
+      <p class="fmc-course-summary">{description}</p>
+    </header>
+
+    <section class="fmc-course-section" aria-labelledby="correspondence-title">
+      <h2 id="correspondence-title">Learner-facing correspondences</h2>
+      <p>
+        This derived route keeps formal navigation resolvable. It does not create a new formal authority;
+        exact identities and revisions remain owned by the content and Lean release records.
+      </p>
+      <div class="fmc-course-card-grid">
+        {uniqueEntries.map((entry: any) => (
+          <a class="fmc-course-card" href={entry.learnerRoute}>
+            <small>{entry.block.formal_binding.lean_state} correspondence</small>
+            <strong>{entry.entity.title}</strong>
+            <span>{entry.block.title}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="fmc-course-section" aria-labelledby="technical-title">
+      <h2 id="technical-title">Exact technical subjects</h2>
+      <ul class="fmc-formal-entry-list">
+        {uniqueEntries.map((entry: any) => (
+          <li>
+            <p><strong>{entry.block.title}</strong></p>
+            <dl>
+              <div><dt>FART / FLOC / FLINK</dt><dd><code>{entry.block.formal_binding.fart_id} / {entry.block.formal_binding.floc_id} / {entry.block.formal_binding.flink_id}</code></dd></div>
+              <div><dt>Module</dt><dd><code>{entry.block.lean.module}</code></dd></div>
+              <div><dt>Declarations</dt><dd>{entry.block.lean.declarations.map((declaration: string) => <code>{declaration}</code>)}</dd></div>
+              <div><dt>Repository revision</dt><dd><code>{entry.block.lean.repository}@{entry.block.lean.revision}</code></dd></div>
+              <div><dt>Source kind</dt><dd>{entry.block.lean.source_kind.replaceAll('_', ' ')}</dd></div>
+            </dl>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </article>
+</CourseLayout>
