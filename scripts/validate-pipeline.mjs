@@ -92,6 +92,8 @@ export function validatePipeline({ ciSource, deploySource, lock }) {
   const transfer = actionSteps(deploy).find(step => step.uses.startsWith('actions/upload-artifact@'));
   invariant(transfer?.with?.name === 'p5-web-v0.1.0-release-assets', 'durable release transfer identity drift');
   invariant(transfer?.with?.['retention-days'] === 7 && transfer?.with?.['if-no-files-found'] === 'error', 'release transfer retention/failure contract drift');
+  const checksumSteps = steps(deploy).filter(step => step.run === '(cd release-assets && sha256sum --check SHA256SUMS)');
+  invariant(checksumSteps.length === 2, 'release checksum verification must resolve names inside release-assets before attestation and draft');
 
   for (const workflow of [ci, deploy]) {
     const build = steps(workflow).find(step => step.run === 'pnpm build');

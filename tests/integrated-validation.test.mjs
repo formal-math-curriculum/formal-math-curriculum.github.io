@@ -125,6 +125,7 @@ test('M5.10 release workflow advances from exact authority through durable draft
   assert.match(workflow, /prepare-release\.mjs validation\/m5-10-current\.json/);
   assert.ok(workflow.indexOf('prepare-release.mjs') < workflow.indexOf('actions/upload-pages-artifact'));
   assert.match(workflow, /actions\/attest@[0-9a-f]{40}/u);
+  assert.equal((workflow.match(/\(cd release-assets && sha256sum --check SHA256SUMS\)/gu) ?? []).length, 2);
   assert.match(workflow, /gh release create p5-web-v0\.1\.0[\s\S]*--draft/u);
   assert.match(workflow, /verify-public-release\.mjs[\s\S]*gh release edit p5-web-v0\.1\.0/u);
   assert.match(gate, /deploymentAuthorized !== true/);
