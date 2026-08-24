@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { validateM58Operations } from '../scripts/validate-m5-8-operations.mjs';
@@ -55,4 +56,21 @@ test('unapproved installed license expression is rejected', async () => {
   const inventory = structuredClone(base.inventory);
   inventory.packages[0].license = 'UNDECLARED';
   await assert.rejects(validateM58Operations({ ...base, inventory }), /unapproved license expression/u);
+});
+
+test('public-release license evidence has zero metadata-only rows and nine exact governed fallbacks', async () => {
+  const fallbackPolicy = JSON.parse(await readFile('operations/m5-8/license-fallbacks.json', 'utf8'));
+  const governed = base.inventory.packages.filter((entry) => entry.license_text_status === 'governed_exact_fallback');
+  assert.equal(base.inventory.metadata_only_count, 0);
+  assert.equal(base.inventory.release_gate, 'eligible_for_human_review');
+  assert.equal(governed.length, 9);
+  assert.deepEqual(governed.map(({ id }) => id), Object.keys(fallbackPolicy.packages));
+  for (const entry of governed) {
+    const evidence = entry.governed_license_evidence;
+    const text = await readFile(evidence.text_path, 'utf8');
+    assert.equal(createHash('sha256').update(text).digest('hex'), evidence.text_sha256);
+    assert.equal(evidence.text_sha256, fallbackPolicy.packages[entry.id].text_sha256);
+    assert.match(evidence.registry_integrity, /^sha512-/u);
+    assert.match(evidence.source_revision, /^[0-9a-f]{40}$/u);
+  }
 });

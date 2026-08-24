@@ -11,7 +11,7 @@ Before tagging, materialize one atomic release tuple containing every field name
 ## Qualification and durable assets
 
 1. Run the frozen install and all content, licensing, operations, unit, ingestion, static-build, browser, search, scale, artifact, and candidate checks on the exact tuple.
-2. Confirm that `generated/licenses/software-dependencies.json` has no `metadata_only` records and that every content snapshot projected publicly is explicitly eligible. The current inventory has nine metadata-only blockers, so it is not release-eligible.
+2. Confirm that `generated/licenses/software-dependencies.json` has no `metadata_only` records and that every content snapshot projected publicly is explicitly eligible. The M5.9 remediation inventory has zero metadata-only records; its nine governed fallbacks are hash-bound to exact package identities, registry integrity and immutable source evidence.
 3. Create a draft GitHub Release. Attach `site-dist.tar.zst`, `release-tuple.json`, the software inventory, both third-party notice files, and `SHA256SUMS`.
 4. Independently verify every SHA-256 digest and the required attestation before publishing.
 5. Publish as an immutable release only after review. The release tag and assets then become durable authority; do not replace them.
@@ -40,4 +40,4 @@ A redirect table may contain at most eight raw edges, no cycles, and must collap
 
 ## Privacy boundary
 
-The static site has no application analytics, optional tracking, cookies, or accounts. It stores only the versioned preference key `formal-math-curriculum:preferences:v1`. Provider operational logs are infrastructure records, not application analytics. Because there is no optional tracking, no consent banner is shown. Both CI and deployment set `ASTRO_TELEMETRY_DISABLED=1`; adding telemetry, analytics, cookies, accounts, or another storage key requires a new policy, privacy review, fixtures, and candidate.
+The static site has no application analytics, optional tracking, cookies, or accounts. It stores only the versioned preference key `fmc:site-preferences:v1`. Provider operational logs are infrastructure records, not application analytics. Because there is no optional tracking, no consent banner is shown. Both CI and deployment set `ASTRO_TELEMETRY_DISABLED=1`; adding telemetry, analytics, cookies, accounts, or another storage key requires a new policy, privacy review, fixtures, and candidate.

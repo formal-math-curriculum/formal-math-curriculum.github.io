@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "p5-m5.9-remediation-candidate/v1",
+  "issue": "MAT-397",
+  "candidateId": "P5-M5.9-REMEDIATION-v1",
+  "status": "candidate_requires_m5_9_requalification",
+  "lineage": {
+    "previousCandidate": "P5-M5.8-CANDIDATE-v2",
+    "previousRecord": "validation/m5-8-dogfood-candidate-v2.json",
+    "immutableAudit": "P5-M5.9-ADVERSARIAL-AUDIT-v1",
+    "auditIssue": "MAT-390"
+  },
+  "exactBases": {
+    "site": "23c76800ccd19dcc40f2b16c21297283fb2c7f20",
+    "siteTree": "7060d821d216655d762019f15e1ba7a18d18d078",
+    "content": "3a1e87c7c55c7b17e9fa7b3eb4deafd8b991e828",
+    "contentTree": "59d0e0c49851b534bf528e46dd6ce74f46173c6c",
+    "lean": "3f1a315f438af37a327eaf8b9b9c1dbc6f409394",
+    "leanCore": "d8b18978322de05a8f3dba51ef03cf5461676c17",
+    "mathlib": "db584cd6d46c92f209a44c0f1c829460d327499d",
+    "formalDependencySha256": "f8c79c8d196952e4827c72d394039862935689b2e100f821697c41bad8cb1438"
+  },
+  "matrix": {
+    "path": "validation/m5-9-remediation-matrix-v1.json",
+    "sha256": "43838c7585c18c5f2e070220d4752bdf801c0c185d1f5b089378f079581a7cd1"
+  },
+  "coreContracts": {
+    "editorialPolicy": {
+      "path": ".inputs/content/source/m5-8/editorial-workflow-policy.json",
+      "sha256": "021f98f27cca533139b9c36218542ee025e22cd63b40980e7c7bf5587172e474"
+    },
+    "snapshotPolicy": {
+      "path": ".inputs/content/source/m5-8/external-snapshot-policy.json",
+      "sha256": "bd864c4d98cde7f2e0ad16de29d230d5f4e6a87a3a6d7904547e8a7b12df5d01"
+    },
+    "releasePolicy": {
+      "path": "operations/m5-8/release-policy.json",
+      "sha256": "ac2f5916f6686f8d048ecb47a27eed28d96d7f36e15542549a6d430cf744aaea"
+    },
+    "softwareInventory": {
+      "path": "generated/licenses/software-dependencies.json",
+      "sha256": "4e6403a7c242b59b550804d767eb4a8423890f582a0e79e7f41edb46b2e2b4a1",
+      "metadataOnlyReleaseBlockers": 0,
+      "governedFallbacks": 9
+    }
+  },
+  "requiredEvidence": {
+    "dogfoodCases": 20,
+    "negativeControls": 12,
+    "hostedBrowserAcceptanceRows": 121,
+    "contentSnapshotCases": 10,
+    "governedLicenseFallbacks": 9,
+    "metadataOnlyLicenseRecords": 0,
+    "cleanProcessContributor": true,
+    "organizationalIndependenceClaimed": false,
+    "deploymentAuthorized": false
+  },
+  "auditDisposition": {
+    "immutableAudits": [
+      "P5-M5.8-AUDIT-v1",
+      "P5-M5.9-ADVERSARIAL-AUDIT-v1"
+    ],
+    "m5_8MaterialFindingsRetained": [
+      "MAT385-F01",
+      "MAT385-F02"
+    ],
+    "m5_9MandatoryFindings": [
+      "MAT390-F01",
+      "MAT390-F02",
+      "MAT390-F03",
+      "MAT390-F04",
+      "MAT390-F05"
+    ],
+    "accessibilityRiskDecision": "P5-DEC-033",
+    "accessibilityNonPassesNeverRelabeled": true
+  },
+  "knownLimitations": [
+    "real NVDA and VoiceOver lanes remain unexecuted and no accessibility-conformance claim is authorized",
+    "no external taxonomy snapshot or mapping is eligible for public projection",
+    "Portuguese is a future locale only; no translation coverage is claimed",
+    "deployed HTTPS, response headers, custom-404 status, cache behavior and rollback remain M5.10 obligations",
+    "clean-process contributor evidence establishes reproducibility and procedural role separation, not organizational independence",
+    "preview artifacts expire after seven days and are not release or rollback authority"
+  ],
+  "revalidationTriggers": [
+    "any editorial, translation, snapshot, release, privacy, license, redirect or rollback policy/schema change",
+    "any site, content, Lean, Lean-core, mathlib, Node, pnpm, runner, browser or dependency revision change",
+    "any change to the accessibility risk decision or its bounded non-claim language",
+    "any change to canonical identity, locale routing, analytics, robots, sitemap or durable release assets",
+    "any audit finding disposition or candidate selector change"
+  ],
+  "handoff": {
+    "nextIssue": "MAT-339",
+    "mutationPolicy": "this_candidate_requires_new_version_after_qualification",
+    "findingSeverityOrder": [
+      "Blocker",
+      "Material",
+      "Minor",
+      "Observation"
+    ]
+  },
+  "deploymentAuthorized": false
+}

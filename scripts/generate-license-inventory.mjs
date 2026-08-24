@@ -6,6 +6,8 @@ import { parse } from 'yaml';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const packageStore = resolve(repositoryRoot, 'node_modules/.pnpm');
+const fallbackEvidencePath = resolve(repositoryRoot, 'operations/m5-8/license-fallbacks.json');
+const fallbackTextRoot = resolve(repositoryRoot, 'operations/m5-8/license-texts');
 const outputPaths = {
   inventory: resolve(repositoryRoot, 'generated/licenses/software-dependencies.json'),
   notices: resolve(repositoryRoot, 'THIRD_PARTY_NOTICES.md'),
@@ -145,13 +147,19 @@ function unpeeredId(snapshot) {
 }
 
 async function makeInventory() {
-  const [lockSource, packageSource, packages] = await Promise.all([
+  const [lockSource, packageSource, fallbackSource, packages] = await Promise.all([
     readFile(resolve(repositoryRoot, 'pnpm-lock.yaml'), 'utf8'),
     readFile(resolve(repositoryRoot, 'package.json'), 'utf8'),
+    readFile(fallbackEvidencePath, 'utf8'),
     packageRoots()
   ]);
   const lock = parse(lockSource);
   const packageJson = JSON.parse(packageSource);
+  const fallbackEvidence = JSON.parse(fallbackSource);
+  invariant(fallbackEvidence.schema_version === 'p5-m5.9-license-evidence-fallbacks/v1', 'license fallback evidence schema is incompatible');
+  invariant(fallbackEvidence.packages && typeof fallbackEvidence.packages === 'object' && !Array.isArray(fallbackEvidence.packages), 'license fallback package map is invalid');
+  const fallbacks = new Map(Object.entries(fallbackEvidence.packages));
+  const usedFallbacks = new Set();
   const importer = lock.importers?.['.'];
   invariant(importer, 'root lock importer is missing');
   const production = reachableSnapshots(
@@ -186,6 +194,7 @@ async function makeInventory() {
     let sources = bundled.get(id);
     let textStatus = 'bundled';
     let sourcePackage = item;
+    let governedFallback = null;
     if (sources.length === 0) {
       const candidates = byRepository.get(repositoryIdentity(repositoryUrl(metadata))) ?? [];
       const sameVersion = candidates.find(candidate => candidate.metadata.version === metadata.version);
@@ -193,11 +202,31 @@ async function makeInventory() {
       sources = sourcePackage === item ? [] : bundled.get(sourcePackage.id);
       textStatus = sources.length > 0 ? 'same_repository_fallback' : 'metadata_only';
     }
+    if (sources.length === 0 && fallbacks.has(id)) {
+      governedFallback = fallbacks.get(id);
+      invariant(governedFallback.license === metadata.license, `governed license fallback expression mismatch for ${id}`);
+      invariant(typeof governedFallback.source_kind === 'string' && governedFallback.source_kind.length > 0, `governed license fallback source kind is missing for ${id}`);
+      invariant(/^[0-9a-f]{40}$/u.test(governedFallback.source_revision), `governed license fallback revision is invalid for ${id}`);
+      invariant(/^https:\/\/github\.com\//u.test(governedFallback.source_url), `governed license fallback URL is invalid for ${id}`);
+      invariant(/^sha512-/u.test(governedFallback.registry_integrity), `governed license fallback registry integrity is invalid for ${id}`);
+      invariant(/^[0-9a-f]{64}$/u.test(governedFallback.text_sha256), `governed license fallback text hash is invalid for ${id}`);
+      const evidencePath = resolve(repositoryRoot, governedFallback.text_path);
+      invariant(evidencePath.startsWith(`${fallbackTextRoot}${sep}`), `governed license fallback path escapes its authority root for ${id}`);
+      invariant(await isFile(evidencePath), `governed license fallback text is missing for ${id}`);
+      const evidenceText = normalizeText(await readFile(evidencePath, 'utf8'));
+      invariant(sha256(evidenceText) === governedFallback.text_sha256, `governed license fallback text hash drift for ${id}`);
+      sources = [evidencePath];
+      sourcePackage = null;
+      textStatus = 'governed_exact_fallback';
+      usedFallbacks.add(id);
+    }
     const textRefs = [];
     for (const source of sources) {
       const content = normalizeText(await readFile(source, 'utf8'));
       const digest = sha256(content);
-      const label = `${sourcePackage.id}:${relative(sourcePackage.root, source).split(sep).join('/')}`;
+      const label = governedFallback
+        ? `governed:${id}:${governedFallback.source_revision}:${governedFallback.source_url}`
+        : `${sourcePackage.id}:${relative(sourcePackage.root, source).split(sep).join('/')}`;
       const record = texts.get(digest) ?? { sha256: digest, content, sources: new Set(), packages: new Set() };
       record.sources.add(label);
       record.packages.add(id);
@@ -213,10 +242,21 @@ async function makeInventory() {
       repository: repositoryUrl(metadata),
       homepage: metadata.homepage ?? null,
       license_text_status: textStatus,
-      license_texts: textRefs.sort((a, b) => a.source.localeCompare(b.source))
+      license_texts: textRefs.sort((a, b) => a.source.localeCompare(b.source)),
+      ...(governedFallback ? {
+        governed_license_evidence: {
+          source_kind: governedFallback.source_kind,
+          source_revision: governedFallback.source_revision,
+          source_url: governedFallback.source_url,
+          registry_integrity: governedFallback.registry_integrity,
+          text_path: governedFallback.text_path,
+          text_sha256: governedFallback.text_sha256
+        }
+      } : {})
     });
   }
 
+  invariant(usedFallbacks.size === fallbacks.size, 'license fallback evidence contains unused or stale package identities');
   const metadataOnly = entries.filter(entry => entry.license_text_status === 'metadata_only');
   const countsByLicense = Object.fromEntries(
     [...approvedLicenses].sort().map(license => [license, entries.filter(entry => entry.license === license).length])
@@ -249,7 +289,7 @@ async function makeInventory() {
     const textsForPackage = entry.license_texts.map(text => `\`${text.sha256.slice(0, 12)}\``).join(', ') || '—';
     return `| \`${entry.id}\` | ${entry.scope} | ${entry.license} | ${entry.license_text_status} | ${textsForPackage} |`;
   });
-  const notices = normalizeText(`# Third-party notices\n\nThis inventory is generated from the frozen pnpm install for the Linux x64 glibc build target. \`public_build_input\` is a conservative classification: the package can affect generated public output, but this does not assert that every package is copied verbatim into the static site. The site has no Node.js production runtime.\n\nA \`metadata_only\` row is not silently accepted. Public release remains blocked until the package's source archive has supplied and a reviewer has verified the applicable license/copyright text. Full captured texts are deduplicated in \`THIRD_PARTY_LICENSES.txt\`; the machine-readable authority is \`generated/licenses/software-dependencies.json\`.\n\n- Frozen lock packages: ${inventory.lock_counts.packages}\n- Frozen lock snapshots: ${inventory.lock_counts.snapshots}\n- Installed unique package versions: ${entries.length}\n- Platform/optional alternatives not installed: ${inventory.lock_counts.excluded_platform_or_optional_name_versions}\n- Metadata-only blockers: ${metadataOnly.length}\n\n| Package | Scope | SPDX expression | Text status | Text SHA-256 prefixes |\n|---|---|---|---|---|\n${noticeRows.join('\n')}\n`);
+  const notices = normalizeText(`# Third-party notices\n\nThis inventory is generated from the frozen pnpm install for the Linux x64 glibc build target. \`public_build_input\` is a conservative classification: the package can affect generated public output, but this does not assert that every package is copied verbatim into the static site. The site has no Node.js production runtime.\n\nA \`metadata_only\` row is not silently accepted. Public release remains blocked until every package has captured text. Exact immutable repository texts, same-repository fallbacks and governed evidence paired with exact registry integrity are recorded explicitly; no network retrieval occurs during the build. Full captured texts are deduplicated in \`THIRD_PARTY_LICENSES.txt\`; the machine-readable authority is \`generated/licenses/software-dependencies.json\`.\n\n- Frozen lock packages: ${inventory.lock_counts.packages}\n- Frozen lock snapshots: ${inventory.lock_counts.snapshots}\n- Installed unique package versions: ${entries.length}\n- Platform/optional alternatives not installed: ${inventory.lock_counts.excluded_platform_or_optional_name_versions}\n- Metadata-only blockers: ${metadataOnly.length}\n\n| Package | Scope | SPDX expression | Text status | Text SHA-256 prefixes |\n|---|---|---|---|---|\n${noticeRows.join('\n')}\n`);
 
   const textSections = [...texts.values()].sort((a, b) => a.sha256.localeCompare(b.sha256)).map(record => [
     '='.repeat(80),
@@ -261,7 +301,7 @@ async function makeInventory() {
     record.content.trimEnd(),
     ''
   ].join('\n'));
-  const licenseTexts = normalizeText(`THIRD-PARTY LICENSE AND NOTICE TEXTS\n\nGenerated from the exact frozen Linux x64 glibc dependency install. Identical texts are stored once and mapped to every package above each section. Packages marked metadata_only in THIRD_PARTY_NOTICES.md have no captured text and block public release.\n\n${textSections.join('\n')}`);
+  const licenseTexts = normalizeText(`THIRD-PARTY LICENSE AND NOTICE TEXTS\n\nGenerated from the exact frozen Linux x64 glibc dependency install. Identical texts are stored once and mapped to every package above each section. Governed fallbacks are local, hash-bound and paired with immutable upstream or exact-registry evidence. Packages marked metadata_only in THIRD_PARTY_NOTICES.md have no captured text and block public release.\n\n${textSections.join('\n')}`);
   return {
     [outputPaths.inventory]: `${JSON.stringify(inventory, null, 2)}\n`,
     [outputPaths.notices]: notices,

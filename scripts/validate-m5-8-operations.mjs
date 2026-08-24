@@ -108,7 +108,7 @@ export async function validateM58Operations({
   invariant(policy.privacy.optional_tracking === 'none', 'optional tracking drift');
   invariant(policy.privacy.application_cookies === 'none' && policy.privacy.accounts === 'none', 'cookie/account privacy drift');
   invariant(policy.privacy.consent_banner_required === false, 'a consent banner must not imply nonexistent optional tracking');
-  invariant(exactArray(policy.privacy.local_storage_keys, ['formal-math-curriculum:preferences:v1']), 'local-storage allowlist drift');
+  invariant(exactArray(policy.privacy.local_storage_keys, ['fmc:site-preferences:v1']), 'local-storage allowlist drift');
   invariant(policy.privacy.astro_telemetry_environment?.ASTRO_TELEMETRY_DISABLED === '1', 'Astro telemetry must be disabled');
 
   invariant(inventory.schema_version === policy.licensing.inventory_schema, 'software inventory schema drift');
@@ -118,7 +118,8 @@ export async function validateM58Operations({
   invariant(inventory.lock_counts.snapshots === policy.licensing.expected_lock_snapshots, 'lock snapshot count drift');
   invariant(inventory.lock_counts.installed_unique_name_versions === policy.licensing.expected_installed_unique_name_versions, 'installed package count drift');
   invariant(inventory.packages.length === policy.licensing.expected_installed_unique_name_versions, 'software inventory package list drift');
-  invariant(inventory.metadata_only_count > 0 && inventory.release_gate === 'blocked_missing_bundled_license_text', 'metadata-only license blockers must fail closed');
+  invariant(policy.licensing.required_metadata_only_count_for_public_release === 0, 'public release must require complete license text evidence');
+  invariant(inventory.metadata_only_count === 0 && inventory.release_gate === 'eligible_for_human_review', 'license inventory is not eligible for public review');
   const allowed = new Set(policy.licensing.allowed_expressions);
   invariant(inventory.packages.every(item => allowed.has(item.license)), 'software inventory contains an unapproved license expression');
   invariant(policy.licensing.metadata_only_texts_block_public_release === true, 'missing license text must block public release');

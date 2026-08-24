@@ -173,7 +173,9 @@ test('N14 expand/collapse targets only visible groups in the active filtered pro
 test('N15 disclosure buttons and adjacent links use native list/document keyboard semantics', () => {
   assert.match(listSource, /<ul class="fmc-outline-list"/);
   assert.match(listSource, /<li data-fmc-reference-id/);
-  assert.match(listSource, /<button[\s\S]*aria-expanded="true"[\s\S]*aria-controls=/);
+  assert.match(listSource, /<button[\s\S]*aria-expanded="false"[\s\S]*aria-controls=[\s\S]*disabled/);
+  assert.match(listSource, /<div id=\{childrenId\} hidden>/);
+  assert.match(componentSource, /data-fmc-static-outline[^}]*\[hidden\][^}]*display: block !important/);
   assert.match(listSource, /<a href=/);
   assert.doesNotMatch(componentSource + listSource, /role=["']tree|ArrowLeft|ArrowRight|ArrowUp|ArrowDown/);
 });
@@ -274,6 +276,8 @@ test('N23 no-JavaScript output keeps Course hierarchy and ordinary projection/co
   assert.match(componentSource, /<OutlineList[\s\S]*nodes=\{courseTree\}/);
   assert.match(componentSource, /Projection switching, search and filters require JavaScript/);
   assert.match(componentSource, /fmc-outline-projection-links/);
+  assert.match(componentSource, /data-fmc-outline-enhancement hidden/);
+  assert.match(componentSource, /data-fmc-outline-enhancement[^}]*display: none/);
   assert.match(listSource, /href=\{node\.canonicalRoute\}/);
 });
 

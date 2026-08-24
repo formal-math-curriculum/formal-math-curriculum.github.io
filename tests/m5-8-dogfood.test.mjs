@@ -3,13 +3,13 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { runM58Dogfood, validateBrowserEvidence } from '../scripts/run-m5-8-dogfood.mjs';
 
-const candidate = JSON.parse(await readFile('validation/m5-8-dogfood-candidate-v2.json', 'utf8'));
+const candidate = JSON.parse(await readFile('validation/m5-9-remediation-candidate-v1.json', 'utf8'));
 const current = JSON.parse(await readFile('validation/m5-8-current.json', 'utf8'));
-const matrix = JSON.parse(await readFile('validation/m5-8-dogfood-matrix-v2.json', 'utf8'));
+const matrix = JSON.parse(await readFile('validation/m5-9-remediation-matrix-v1.json', 'utf8'));
 const report = await runM58Dogfood({ write: false, requireBrowser: false });
 
-test('MAT-396 remediated dogfood executes all durable cases and negative controls locally', () => {
-  assert.equal(report.schemaVersion, 'p5-m5.8-dogfood-report/v2');
+test('MAT-397 remediation regression executes all durable cases and negative controls locally', () => {
+  assert.equal(report.schemaVersion, 'p5-m5.9-regression-report/v1');
   assert.equal(report.status, 'local_structural_evidence_only');
   assert.deepEqual(report.execution, {
     total: 20,
@@ -38,13 +38,14 @@ test('dogfood covers valid, invalid, missing, stale, incompatible, accessibility
 });
 
 test('candidate, selector and audit handoff remain immutable and deployment-inert', () => {
-  assert.equal(candidate.status, 'candidate_requires_required_ci_and_remediation_disposition');
+  assert.equal(candidate.status, 'candidate_requires_m5_9_requalification');
   assert.equal(candidate.requiredEvidence.hostedBrowserAcceptanceRows, 121);
-  assert.deepEqual(candidate.auditDisposition.materialFindings, ['MAT385-F01', 'MAT385-F02']);
-  assert.equal(candidate.handoff.nextIssue, 'MAT-338');
+  assert.deepEqual(candidate.auditDisposition.m5_9MandatoryFindings, ['MAT390-F01', 'MAT390-F02', 'MAT390-F03', 'MAT390-F04', 'MAT390-F05']);
+  assert.equal(candidate.auditDisposition.accessibilityRiskDecision, 'P5-DEC-033');
+  assert.equal(candidate.handoff.nextIssue, 'MAT-339');
   assert.equal(candidate.handoff.mutationPolicy, 'this_candidate_requires_new_version_after_qualification');
   assert.equal(candidate.deploymentAuthorized, false);
-  assert.equal(current.candidateRecord, 'validation/m5-8-dogfood-candidate-v2.json');
+  assert.equal(current.candidateRecord, 'validation/m5-9-remediation-candidate-v1.json');
   assert.equal(current.deploymentAuthorized, false);
   assert.equal(report.boundaries.deploymentAuthorized, false);
   assert.equal(report.boundaries.publicReleaseAuthorized, false);

@@ -34,7 +34,7 @@ export async function runM58FreshSession({ sourceRevision = process.env.FMC_SOUR
     schema: '.inputs/content/schemas/m5-8-change-packet.schema.json',
     validator: '.inputs/content/scripts/validate-m5-8-workflow.mjs',
     governedFixtures: '.inputs/content/fixtures/m5-8/workflow-cases.json',
-    candidate: 'validation/m5-8-dogfood-candidate-v2.json',
+    candidate: 'validation/m5-9-remediation-candidate-v1.json',
     current: 'validation/m5-8-current.json'
   };
   const [instructions, policySource, schemaSource, validatorSource, fixturesSource, candidate, current] = await Promise.all([
@@ -45,13 +45,13 @@ export async function runM58FreshSession({ sourceRevision = process.env.FMC_SOUR
   invariant(instructions.includes('## Fresh-contributor path') && instructions.includes('candidate_not_deployed'), 'durable fresh-contributor instructions are incomplete');
   invariant(schemaSource.includes('p5-m58-change-packet/v1') && schemaSource.includes('contributor_actor_ids'), 'portable change-packet schema is incomplete');
   invariant(policy.schema_version === 'p5-m58-editorial-workflow-policy/v1', 'fresh session received incompatible workflow policy');
-  invariant(candidate.candidateId === 'P5-M5.8-CANDIDATE-v2' && current.candidateRecord === paths.candidate, 'fresh session candidate selector drift');
+  invariant(candidate.candidateId === 'P5-M5.9-REMEDIATION-v1' && current.candidateRecord === paths.candidate, 'fresh session candidate selector drift');
 
   const sourceTree = git('rev-parse', `${sourceRevision}^{tree}`);
-  const sourceDigest = sha256('MAT-396 clean-process disposable editorial source');
+  const sourceDigest = sha256('MAT-397 clean-process disposable editorial source');
   const packet = {
     schema_version: 'p5-m58-change-packet/v1',
-    issue: 'MAT-396',
+    issue: 'MAT-397',
     change_id: `fresh-process-${sourceRevision.slice(0, 12)}`,
     exact_bases: {
       content: candidate.exactBases.content,
@@ -65,7 +65,7 @@ export async function runM58FreshSession({ sourceRevision = process.env.FMC_SOUR
       { actor_id: 'fresh-process-release-coordinator', roles: ['release_coordinator'] }
     ],
     attribution: {
-      source_references: ['src:mat396:fresh-process'],
+        source_references: ['src:mat397:fresh-process'],
       contributor_actor_ids: ['fresh-process-author', 'fresh-process-math-reviewer', 'fresh-process-release-coordinator']
     },
     change_families: ['editorial', 'publication_candidate'],
@@ -80,13 +80,13 @@ export async function runM58FreshSession({ sourceRevision = process.env.FMC_SOUR
         author_id: 'fresh-process-author',
         reviewer_id: 'fresh-process-math-reviewer',
         review_decision: 'approved',
-        source_refs: ['src:mat396:fresh-process'],
+        source_refs: ['src:mat397:fresh-process'],
         result_source_sha256: sourceDigest
       }
     ],
     publication_changes: [
       {
-        candidate_id: 'P5-M5.8-CANDIDATE-v2',
+        candidate_id: 'P5-M5.9-REMEDIATION-v1',
         from: 'draft',
         to: 'candidate_not_deployed',
         coordinator_id: 'fresh-process-release-coordinator',
@@ -103,7 +103,7 @@ export async function runM58FreshSession({ sourceRevision = process.env.FMC_SOUR
 
   return {
     schemaVersion: 'p5-m5.8-fresh-session-report/v1',
-    issue: 'MAT-396',
+    issue: 'MAT-397',
     status: errors.length ? 'failed' : 'fresh_process_completed',
     exactSubject: {
       siteRevision: sourceRevision,

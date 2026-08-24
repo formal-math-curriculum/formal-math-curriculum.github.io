@@ -2,13 +2,13 @@
 
 This inventory is generated from the frozen pnpm install for the Linux x64 glibc build target. `public_build_input` is a conservative classification: the package can affect generated public output, but this does not assert that every package is copied verbatim into the static site. The site has no Node.js production runtime.
 
-A `metadata_only` row is not silently accepted. Public release remains blocked until the package's source archive has supplied and a reviewer has verified the applicable license/copyright text. Full captured texts are deduplicated in `THIRD_PARTY_LICENSES.txt`; the machine-readable authority is `generated/licenses/software-dependencies.json`.
+A `metadata_only` row is not silently accepted. Public release remains blocked until every package has captured text. Exact immutable repository texts, same-repository fallbacks and governed evidence paired with exact registry integrity are recorded explicitly; no network retrieval occurs during the build. Full captured texts are deduplicated in `THIRD_PARTY_LICENSES.txt`; the machine-readable authority is `generated/licenses/software-dependencies.json`.
 
 - Frozen lock packages: 551
 - Frozen lock snapshots: 552
 - Installed unique package versions: 440
 - Platform/optional alternatives not installed: 111
-- Metadata-only blockers: 9
+- Metadata-only blockers: 0
 
 | Package | Scope | SPDX expression | Text status | Text SHA-256 prefixes |
 |---|---|---|---|---|
@@ -50,7 +50,7 @@ A `metadata_only` row is not silently accepted. Public release remains blocked u
 | `@expressive-code/plugin-shiki@0.44.1` | public_build_input | MIT | bundled | `4c81807ac60e` |
 | `@expressive-code/plugin-text-markers@0.44.1` | public_build_input | MIT | bundled | `4c81807ac60e` |
 | `@img/colour@1.1.0` | public_build_input | MIT | bundled | `e2eaa4603c14` |
-| `@img/sharp-libvips-linux-x64@1.3.2` | public_build_input | LGPL-3.0-or-later | metadata_only | — |
+| `@img/sharp-libvips-linux-x64@1.3.2` | public_build_input | LGPL-3.0-or-later | governed_exact_fallback | `b40930bbcf80` |
 | `@img/sharp-linux-x64@0.35.3` | public_build_input | Apache-2.0 | bundled | `73ba74dfaa52` |
 | `@jridgewell/sourcemap-codec@1.5.5` | public_build_input | MIT | bundled | `769d154fbde3` |
 | `@mdx-js/mdx@3.1.1` | public_build_input | MIT | bundled | `a68016580b55` |
@@ -89,13 +89,13 @@ A `metadata_only` row is not silently accepted. Public release remains blocked u
 | `@volar/source-map@2.4.28` | build_test_only | MIT | bundled | `a56351045b45` |
 | `@volar/typescript@2.4.28` | build_test_only | MIT | bundled | `a56351045b45` |
 | `@vscode/emmet-helper@2.11.0` | build_test_only | MIT | bundled | `d0e26984080b`, `11836e522508` |
-| `@vscode/l10n@0.0.18` | build_test_only | MIT | metadata_only | — |
+| `@vscode/l10n@0.0.18` | build_test_only | MIT | governed_exact_fallback | `c2cfccb812fe` |
 | `acorn-jsx@5.3.2` | public_build_input | MIT | bundled | `cfa72b62b9ae` |
 | `acorn@8.18.0` | public_build_input | MIT | bundled | `76a876cf886f` |
 | `ajv-draft-04@1.0.0` | build_test_only | MIT | bundled | `6e737548e1fc` |
 | `ajv-i18n@4.2.0` | build_test_only | MIT | bundled | `3bcd27020721` |
 | `ajv@8.20.0` | build_test_only | MIT | bundled | `9b6a90e9be78` |
-| `am-i-vibing@0.4.0` | public_build_input | MIT | metadata_only | — |
+| `am-i-vibing@0.4.0` | public_build_input | MIT | governed_exact_fallback | `8a9bdc8062db` |
 | `ansi-regex@6.3.0` | build_test_only | MIT | bundled | `5c932d88256b` |
 | `ansi-styles@4.3.0` | public_build_input | MIT | bundled | `48da2f39e100` |
 | `ansi-styles@6.2.3` | build_test_only | MIT | bundled | `5c932d88256b` |
@@ -111,7 +111,7 @@ A `metadata_only` row is not silently accepted. Public release remains blocked u
 | `bail@2.0.2` | public_build_input | MIT | bundled | `63cb98b3f6ab` |
 | `bcp-47-match@2.0.3` | public_build_input | MIT | bundled | `3deefaee9d13` |
 | `bcp-47@2.1.1` | public_build_input | MIT | bundled | `dd1081884a92` |
-| `boolbase@1.0.0` | public_build_input | ISC | metadata_only | — |
+| `boolbase@1.0.0` | public_build_input | ISC | governed_exact_fallback | `cdf4d87ae0a6` |
 | `ccount@2.0.1` | public_build_input | MIT | bundled | `63cb98b3f6ab` |
 | `chalk@4.1.2` | public_build_input | MIT | bundled | `48da2f39e100` |
 | `character-entities-html4@2.1.0` | public_build_input | MIT | bundled | `63cb98b3f6ab` |
@@ -320,7 +320,7 @@ A `metadata_only` row is not silently accepted. Public release remains blocked u
 | `parse-latin@7.0.0` | public_build_input | MIT | bundled | `9966260ba3ea` |
 | `parse5@7.3.0` | public_build_input | MIT | bundled | `8c535800331e` |
 | `path-browserify@1.0.1` | build_test_only | MIT | bundled | `a22b9d5763f5` |
-| `piccolore@0.1.3` | public_build_input | ISC | metadata_only | — |
+| `piccolore@0.1.3` | public_build_input | ISC | governed_exact_fallback | `6582629e2979` |
 | `picocolors@1.1.1` | public_build_input | ISC | bundled | `6582629e2979` |
 | `picomatch@2.3.2` | public_build_input | MIT | bundled | `d0cd141b0c32` |
 | `picomatch@4.0.5` | public_build_input | MIT | bundled | `d0cd141b0c32` |
@@ -330,7 +330,7 @@ A `metadata_only` row is not silently accepted. Public release remains blocked u
 | `postcss@8.5.26` | public_build_input | MIT | bundled | `5be1f3465bba` |
 | `prettier@3.9.6` | build_test_only | MIT | bundled | `b0f241719988` |
 | `prismjs@1.30.0` | public_build_input | MIT | bundled | `2b947f0901a7` |
-| `process-ancestry@0.1.0` | public_build_input | MIT | metadata_only | — |
+| `process-ancestry@0.1.0` | public_build_input | MIT | governed_exact_fallback | `92c654f99842` |
 | `property-information@7.2.0` | public_build_input | MIT | bundled | `5d0698266086` |
 | `radix3@1.1.2` | public_build_input | MIT | bundled | `46231df5a773` |
 | `readdirp@4.1.2` | build_test_only | MIT | bundled | `dffec71d93f2` |
@@ -360,10 +360,10 @@ A `metadata_only` row is not silently accepted. Public release remains blocked u
 | `request-light@0.7.0` | build_test_only | MIT | bundled | `d0e26984080b` |
 | `require-from-string@2.0.2` | build_test_only | MIT | bundled | `6ee0feb1f6ef` |
 | `resolve-pkg-maps@1.0.0` | public_build_input | MIT | bundled | `10c904a49af4` |
-| `retext-latin@4.0.0` | public_build_input | MIT | metadata_only | — |
+| `retext-latin@4.0.0` | public_build_input | MIT | governed_exact_fallback | `9966260ba3ea` |
 | `retext-smartypants@6.2.0` | public_build_input | MIT | bundled | `dd1081884a92` |
-| `retext-stringify@4.0.0` | public_build_input | MIT | metadata_only | — |
-| `retext@9.0.0` | public_build_input | MIT | metadata_only | — |
+| `retext-stringify@4.0.0` | public_build_input | MIT | governed_exact_fallback | `9966260ba3ea` |
+| `retext@9.0.0` | public_build_input | MIT | governed_exact_fallback | `9966260ba3ea` |
 | `rolldown@1.2.5` | public_build_input | MIT | bundled | `23ecfff35a5a` |
 | `satteri@0.10.5` | public_build_input | MIT | bundled | `902c04ca4779` |
 | `satteri@0.9.5` | public_build_input | MIT | bundled | `902c04ca4779` |

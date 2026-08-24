@@ -27,8 +27,8 @@
     "MPL-2.0": 2,
     "Python-2.0": 1
   },
-  "metadata_only_count": 9,
-  "release_gate": "blocked_missing_bundled_license_text",
+  "metadata_only_count": 0,
+  "release_gate": "eligible_for_human_review",
   "packages": [
     {
       "id": "@astrojs/check@0.9.10",
@@ -646,8 +646,21 @@
       "license": "LGPL-3.0-or-later",
       "repository": "git+https://github.com/lovell/sharp-libvips.git",
       "homepage": "https://sharp.pixelplumbing.com",
-      "license_text_status": "metadata_only",
-      "license_texts": []
+      "license_text_status": "governed_exact_fallback",
+      "license_texts": [
+        {
+          "sha256": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
+          "source": "governed:@img/sharp-libvips-linux-x64@1.3.2:4da6d14c0d59866adfb9d8cf52bcaa53846dc4f6:https://github.com/lovell/sharp-libvips/blob/4da6d14c0d59866adfb9d8cf52bcaa53846dc4f6/LICENSE"
+        }
+      ],
+      "governed_license_evidence": {
+        "source_kind": "exact_repository_license",
+        "source_revision": "4da6d14c0d59866adfb9d8cf52bcaa53846dc4f6",
+        "source_url": "https://github.com/lovell/sharp-libvips/blob/4da6d14c0d59866adfb9d8cf52bcaa53846dc4f6/LICENSE",
+        "registry_integrity": "sha512-ITPEtgffGJ0S6G9dRyw/366tJQqFRcHWPHhC+Stpg3Z8AEMrDrTr2lhdz4f/Y/HMbRh//7Z5mBzEpVdi62Oc3w==",
+        "text_path": "operations/m5-8/license-texts/sharp-libvips-1.3.2-LICENSE.txt",
+        "text_sha256": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1"
+      }
     },
     {
       "id": "@img/sharp-linux-x64@0.35.3",
@@ -1277,8 +1290,21 @@
       "license": "MIT",
       "repository": "https://github.com/Microsoft/vscode-l10n.git",
       "homepage": null,
-      "license_text_status": "metadata_only",
-      "license_texts": []
+      "license_text_status": "governed_exact_fallback",
+      "license_texts": [
+        {
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "source": "governed:@vscode/l10n@0.0.18:fc7e3d79ddb91a2cc24a9730aad912026a43dbf2:https://github.com/microsoft/vscode-l10n/blob/fc7e3d79ddb91a2cc24a9730aad912026a43dbf2/LICENSE"
+        }
+      ],
+      "governed_license_evidence": {
+        "source_kind": "exact_repository_license",
+        "source_revision": "fc7e3d79ddb91a2cc24a9730aad912026a43dbf2",
+        "source_url": "https://github.com/microsoft/vscode-l10n/blob/fc7e3d79ddb91a2cc24a9730aad912026a43dbf2/LICENSE",
+        "registry_integrity": "sha512-KYSIHVmslkaCDyw013pphY+d7x1qV8IZupYfeIfzNA+nsaWHbn5uPuQRvdRFsa9zFzGeudPuoGoZ1Op4jrJXIQ==",
+        "text_path": "operations/m5-8/license-texts/vscode-l10n-0.0.18-LICENSE.txt",
+        "text_sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+      }
     },
     {
       "id": "acorn-jsx@5.3.2",
@@ -1368,8 +1394,21 @@
       "license": "MIT",
       "repository": "git+https://github.com:ascorbic/am-i-vibing.git",
       "homepage": "https://github.com/ascorbic/am-i-vibing",
-      "license_text_status": "metadata_only",
-      "license_texts": []
+      "license_text_status": "governed_exact_fallback",
+      "license_texts": [
+        {
+          "sha256": "8a9bdc8062db5b70315548b504918bde768b382971a7fdeb4340cf1d87abf2ec",
+          "source": "governed:am-i-vibing@0.4.0:7e343f755e33876bf17a614af821e90005349a98:https://github.com/ascorbic/am-i-vibing/tree/7e343f755e33876bf17a614af821e90005349a98"
+        }
+      ],
+      "governed_license_evidence": {
+        "source_kind": "governed_spdx_reconstruction_from_exact_registry_metadata",
+        "source_revision": "7e343f755e33876bf17a614af821e90005349a98",
+        "source_url": "https://github.com/ascorbic/am-i-vibing/tree/7e343f755e33876bf17a614af821e90005349a98",
+        "registry_integrity": "sha512-MxT4XZL7pzLHpuvhDKdMaQHMGGkJDLluKBLsbstn+8wv9sWcFT6h+0ve9qkml95amVTZtZV83gQe2hY+ojgHLg==",
+        "text_path": "operations/m5-8/license-texts/am-i-vibing-0.4.0-MIT.txt",
+        "text_sha256": "8a9bdc8062db5b70315548b504918bde768b382971a7fdeb4340cf1d87abf2ec"
+      }
     },
     {
       "id": "ansi-regex@6.3.0",
@@ -1619,8 +1658,21 @@
       "license": "ISC",
       "repository": "https://github.com/fb55/boolbase",
       "homepage": "https://github.com/fb55/boolbase",
-      "license_text_status": "metadata_only",
-      "license_texts": []
+      "license_text_status": "governed_exact_fallback",
+      "license_texts": [
+        {
+          "sha256": "cdf4d87ae0a6c160227263bf4e39a0a10e30e89ae7256e0f7ac7bde0836552c6",
+          "source": "governed:boolbase@1.0.0:bc0a6dd5984134a1efe4d59d4cc54b41c9a7cc2c:https://github.com/fb55/boolbase/blob/bc0a6dd5984134a1efe4d59d4cc54b41c9a7cc2c/LICENSE"
+        }
+      ],
+      "governed_license_evidence": {
+        "source_kind": "exact_repository_license_for_matching_package_metadata",
+        "source_revision": "bc0a6dd5984134a1efe4d59d4cc54b41c9a7cc2c",
+        "source_url": "https://github.com/fb55/boolbase/blob/bc0a6dd5984134a1efe4d59d4cc54b41c9a7cc2c/LICENSE",
+        "registry_integrity": "sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==",
+        "text_path": "operations/m5-8/license-texts/boolbase-1.0.0-LICENSE.txt",
+        "text_sha256": "cdf4d87ae0a6c160227263bf4e39a0a10e30e89ae7256e0f7ac7bde0836552c6"
+      }
     },
     {
       "id": "ccount@2.0.1",
@@ -4962,8 +5014,21 @@
       "license": "ISC",
       "repository": "delucis/piccolore",
       "homepage": null,
-      "license_text_status": "metadata_only",
-      "license_texts": []
+      "license_text_status": "governed_exact_fallback",
+      "license_texts": [
+        {
+          "sha256": "6582629e2979466878f6014313dcc2f3756c9616148682227ce3063dde310750",
+          "source": "governed:piccolore@0.1.3:0e7c4af2de299dd7bc5916f2bddd151fa2f66740:https://github.com/alexeyraspopov/picocolors/blob/0e7c4af2de299dd7bc5916f2bddd151fa2f66740/LICENSE"
+        }
+      ],
+      "governed_license_evidence": {
+        "source_kind": "exact_declared_fork_ancestry_license",
+        "source_revision": "0e7c4af2de299dd7bc5916f2bddd151fa2f66740",
+        "source_url": "https://github.com/alexeyraspopov/picocolors/blob/0e7c4af2de299dd7bc5916f2bddd151fa2f66740/LICENSE",
+        "registry_integrity": "sha512-o8bTeDWjE086iwKrROaDf31K0qC/BENdm15/uH9usSC/uZjJOKb2YGiVHfLY4GhwsERiPI1jmwI2XrA7ACOxVw==",
+        "text_path": "operations/m5-8/license-texts/piccolore-0.1.3-ISC.txt",
+        "text_sha256": "6582629e2979466878f6014313dcc2f3756c9616148682227ce3063dde310750"
+      }
     },
     {
       "id": "picocolors@1.1.1",
@@ -5125,8 +5190,21 @@
       "license": "MIT",
       "repository": "git+https://github.com/ascorbic/process-ancestry.git",
       "homepage": "https://github.com/ascorbic/process-ancestry",
-      "license_text_status": "metadata_only",
-      "license_texts": []
+      "license_text_status": "governed_exact_fallback",
+      "license_texts": [
+        {
+          "sha256": "92c654f99842c45ccd10c69bb06887e384de126784857205ac0b45c764c83a36",
+          "source": "governed:process-ancestry@0.1.0:45004fd6155437eef40a632877a567db1b9addc5:https://github.com/ascorbic/process-ancestry/tree/45004fd6155437eef40a632877a567db1b9addc5"
+        }
+      ],
+      "governed_license_evidence": {
+        "source_kind": "governed_spdx_reconstruction_from_exact_registry_metadata",
+        "source_revision": "45004fd6155437eef40a632877a567db1b9addc5",
+        "source_url": "https://github.com/ascorbic/process-ancestry/tree/45004fd6155437eef40a632877a567db1b9addc5",
+        "registry_integrity": "sha512-tGqJW/UnclpYASFcM6Xh8D8l/BMtaQ9+CSG0vlJSJTcdMM4lDRv4c6H0Pdcsfted+bVczdYSfk2fdukg2gQkZg==",
+        "text_path": "operations/m5-8/license-texts/process-ancestry-0.1.0-MIT.txt",
+        "text_sha256": "92c654f99842c45ccd10c69bb06887e384de126784857205ac0b45c764c83a36"
+      }
     },
     {
       "id": "property-information@7.2.0",
@@ -5600,8 +5678,21 @@
       "license": "MIT",
       "repository": "https://github.com/retextjs/retext/tree/main/packages/retext-latin",
       "homepage": "https://github.com/retextjs/retext",
-      "license_text_status": "metadata_only",
-      "license_texts": []
+      "license_text_status": "governed_exact_fallback",
+      "license_texts": [
+        {
+          "sha256": "9966260ba3ea9d6a5f839297dca80ddc99735a34b4ae82811cac7b956d2e3afd",
+          "source": "governed:retext-latin@4.0.0:2ce29e891b9e344d45cc9db9e8ca8770b7120b0d:https://github.com/retextjs/retext/blob/2ce29e891b9e344d45cc9db9e8ca8770b7120b0d/license"
+        }
+      ],
+      "governed_license_evidence": {
+        "source_kind": "exact_repository_license",
+        "source_revision": "2ce29e891b9e344d45cc9db9e8ca8770b7120b0d",
+        "source_url": "https://github.com/retextjs/retext/blob/2ce29e891b9e344d45cc9db9e8ca8770b7120b0d/license",
+        "registry_integrity": "sha512-hv9woG7Fy0M9IlRQloq/N6atV82NxLGveq+3H2WOi79dtIYWN8OaxogDm77f8YnVXJL2VD3bbqowu5E3EMhBYA==",
+        "text_path": "operations/m5-8/license-texts/retext-LICENSE.txt",
+        "text_sha256": "9966260ba3ea9d6a5f839297dca80ddc99735a34b4ae82811cac7b956d2e3afd"
+      }
     },
     {
       "id": "retext-smartypants@6.2.0",
@@ -5627,8 +5718,21 @@
       "license": "MIT",
       "repository": "https://github.com/retextjs/retext/tree/main/packages/retext-stringify",
       "homepage": "https://github.com/retextjs/retext",
-      "license_text_status": "metadata_only",
-      "license_texts": []
+      "license_text_status": "governed_exact_fallback",
+      "license_texts": [
+        {
+          "sha256": "9966260ba3ea9d6a5f839297dca80ddc99735a34b4ae82811cac7b956d2e3afd",
+          "source": "governed:retext-stringify@4.0.0:0ceda984ab36cd24d5e01f4e600e76f3c86e3ccc:https://github.com/retextjs/retext/blob/0ceda984ab36cd24d5e01f4e600e76f3c86e3ccc/license"
+        }
+      ],
+      "governed_license_evidence": {
+        "source_kind": "exact_repository_license",
+        "source_revision": "0ceda984ab36cd24d5e01f4e600e76f3c86e3ccc",
+        "source_url": "https://github.com/retextjs/retext/blob/0ceda984ab36cd24d5e01f4e600e76f3c86e3ccc/license",
+        "registry_integrity": "sha512-rtfN/0o8kL1e+78+uxPTqu1Klt0yPzKuQ2BfWwwfgIUSayyzxpM1PJzkKt4V8803uB9qSy32MvI7Xep9khTpiA==",
+        "text_path": "operations/m5-8/license-texts/retext-LICENSE.txt",
+        "text_sha256": "9966260ba3ea9d6a5f839297dca80ddc99735a34b4ae82811cac7b956d2e3afd"
+      }
     },
     {
       "id": "retext@9.0.0",
@@ -5638,8 +5742,21 @@
       "license": "MIT",
       "repository": "https://github.com/retextjs/retext/tree/main/packages/retext",
       "homepage": "https://github.com/retextjs/retext",
-      "license_text_status": "metadata_only",
-      "license_texts": []
+      "license_text_status": "governed_exact_fallback",
+      "license_texts": [
+        {
+          "sha256": "9966260ba3ea9d6a5f839297dca80ddc99735a34b4ae82811cac7b956d2e3afd",
+          "source": "governed:retext@9.0.0:cd8ad9311a6da12d020f196c3a0547e548745d5b:https://github.com/retextjs/retext/blob/cd8ad9311a6da12d020f196c3a0547e548745d5b/license"
+        }
+      ],
+      "governed_license_evidence": {
+        "source_kind": "exact_repository_license",
+        "source_revision": "cd8ad9311a6da12d020f196c3a0547e548745d5b",
+        "source_url": "https://github.com/retextjs/retext/blob/cd8ad9311a6da12d020f196c3a0547e548745d5b/license",
+        "registry_integrity": "sha512-sbMDcpHCNjvlheSgMfEcVrZko3cDzdbe1x/e7G66dFp0Ff7Mldvi2uv6JkJQzdRcvLYE8CA8Oe8siQx8ZOgTcA==",
+        "text_path": "operations/m5-8/license-texts/retext-LICENSE.txt",
+        "text_sha256": "9966260ba3ea9d6a5f839297dca80ddc99735a34b4ae82811cac7b956d2e3afd"
+      }
     },
     {
       "id": "rolldown@1.2.5",

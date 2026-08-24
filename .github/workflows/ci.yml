@@ -18,7 +18,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -60,6 +60,35 @@ jobs:
           FMC_REQUIRE_BROWSER: '1'
           FMC_SOURCE_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
           FMC_RUNNER_IMAGE_LABEL: ubuntu-24.04
+      - name: Install frozen M5.9 browser engines
+        run: pnpm exec playwright-core install --with-deps chromium firefox webkit
+      - name: Execute M5.9 accessibility, responsive, browser and performance qualification
+        id: m59-accessibility
+        continue-on-error: true
+        run: node scripts/validate-m5-9-accessibility-browser.mjs
+        env:
+          FMC_REQUIRE_BROWSER: '1'
+          FMC_M59_CANDIDATE_REVISION: cc137e0f47e324acbb8b864212a1dd4387c54d23
+          FMC_M59_HARNESS_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+          FMC_RUNNER_IMAGE_LABEL: ubuntu-24.04
+      - name: Execute M5.9 security and content-integrity qualification
+        id: m59-security-integrity
+        continue-on-error: true
+        run: node scripts/validate-m5-9-security-integrity.mjs
+        env:
+          FMC_REQUIRE_M59: '1'
+          FMC_SOURCE_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+          FMC_RUNNER_IMAGE_LABEL: ubuntu-24.04
+      - name: Upload immutable M5.9 qualification evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: m5-9-qualification-${{ github.sha }}
+          path: |
+            dist/_validation/m5-9-accessibility-v1
+            dist/_validation/m5-9-security-v1
+          if-no-files-found: error
+          retention-days: 7
       - name: Upload bounded preview artifact
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
@@ -67,3 +96,8 @@ jobs:
           path: dist
           if-no-files-found: error
           retention-days: 7
+      - name: Enforce M5.9 mandatory qualification outcome
+        if: always() && (steps.m59-accessibility.outcome == 'failure' || steps.m59-security-integrity.outcome == 'failure')
+        run: |
+          echo "M5.9 mandatory qualification failed after evidence upload." >&2
+          exit 1

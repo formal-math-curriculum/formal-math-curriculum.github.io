@@ -1,0 +1,223 @@
+{
+  "schema_version": "p5-m5.9-remediation-matrix/v1",
+  "issue": "MAT-397",
+  "candidate_id": "P5-M5.9-REMEDIATION-v1",
+  "environment": {
+    "runner": "ubuntu-24.04",
+    "node": "24.19.0",
+    "pnpm": "11.23.0",
+    "hosted_browser_required": true,
+    "static_architecture": true
+  },
+  "cases": [
+    {
+      "id": "D01",
+      "requirement": "a fresh contributor in a separate clean process uses only durable artifacts to author and procedurally review a unique preview-only packet without claiming organizational independence",
+      "executor": "fresh_session",
+      "expected": "pass",
+      "severity_if_wrong": "Material",
+      "negative_control": false,
+      "command": "spawn run-m5-8-fresh-session.mjs --json and validate its exact report"
+    },
+    {
+      "id": "D02",
+      "requirement": "a changed canonical source records a reviewed Portuguese translation as stale with visible-disclosure evidence",
+      "executor": "workflow_fixture",
+      "fixture": "W02-valid-stale-translation",
+      "expected": "pass",
+      "severity_if_wrong": "Blocker",
+      "negative_control": false,
+      "command": "validateChangePacket(editorial policy, current-base W02 packet)"
+    },
+    {
+      "id": "D03",
+      "requirement": "a stale translation cannot claim current status or hreflang equivalence",
+      "executor": "workflow_fixture",
+      "fixture": "W04-stale-source-marked-current",
+      "expected": "reject",
+      "error_includes": "state must be stale",
+      "severity_if_wrong": "Blocker",
+      "negative_control": true,
+      "command": "validateChangePacket(editorial policy, stale-as-current packet)"
+    },
+    {
+      "id": "D04",
+      "requirement": "compilation or a nearby Lean declaration cannot establish semantic correspondence",
+      "executor": "workflow_fixture",
+      "fixture": "W05-nearby-lean-without-traceability",
+      "expected": "reject",
+      "error_includes": "missing exact fart_id",
+      "severity_if_wrong": "Blocker",
+      "negative_control": true,
+      "command": "validateChangePacket(editorial policy, compilation-only correspondence packet)"
+    },
+    {
+      "id": "D05",
+      "requirement": "the website cannot become canonical editorial authority",
+      "executor": "workflow_fixture",
+      "fixture": "W07-wrong-authority-repository",
+      "expected": "reject",
+      "error_includes": "wrong authority repository for editorial",
+      "severity_if_wrong": "Blocker",
+      "negative_control": true,
+      "command": "validateChangePacket(editorial policy, wrong-authority packet)"
+    },
+    {
+      "id": "D06",
+      "requirement": "a missing exact site base fails closed",
+      "executor": "workflow_fixture",
+      "fixture": "W09-missing-exact-base",
+      "expected": "reject",
+      "error_includes": "missing or invalid exact base: site",
+      "severity_if_wrong": "Blocker",
+      "negative_control": true,
+      "command": "validateChangePacket(editorial policy, missing-base packet)"
+    },
+    {
+      "id": "D07",
+      "requirement": "an incompatible future change-packet schema fails closed",
+      "executor": "workflow_fixture",
+      "fixture": "W10-incompatible-packet-schema",
+      "expected": "reject",
+      "error_includes": "unknown change packet schema",
+      "severity_if_wrong": "Blocker",
+      "negative_control": true,
+      "command": "validateChangePacket(editorial policy, incompatible-schema packet)"
+    },
+    {
+      "id": "D08",
+      "requirement": "deprecation retains reason, replacement/recovery and exact lineage",
+      "executor": "workflow_fixture",
+      "fixture": "W12-valid-deprecation-with-lineage",
+      "expected": "pass",
+      "severity_if_wrong": "Material",
+      "negative_control": false,
+      "command": "validateChangePacket(editorial policy, current-base deprecation packet)"
+    },
+    {
+      "id": "D09",
+      "requirement": "a material editorial change cannot omit dependent revalidation",
+      "executor": "workflow_fixture",
+      "fixture": "W13-material-change-without-revalidation",
+      "expected": "reject",
+      "error_includes": "material change requires dependent revalidation records",
+      "severity_if_wrong": "Blocker",
+      "negative_control": true,
+      "command": "validateChangePacket(editorial policy, missing-revalidation packet)"
+    },
+    {
+      "id": "D10",
+      "requirement": "attribution/licensing snapshot evidence is accepted without inventing public coverage",
+      "executor": "snapshot_fixture",
+      "fixture": "S01-current-observed-policy",
+      "expected": "pass",
+      "severity_if_wrong": "Blocker",
+      "negative_control": false,
+      "command": "validateSnapshotPolicy(current external-snapshot policy)"
+    },
+    {
+      "id": "D11",
+      "requirement": "OpenStax restrictions prevent ingestion and copying",
+      "executor": "snapshot_fixture",
+      "fixture": "S10-openstax-ingestion",
+      "expected": "reject",
+      "error_includes": "OpenStax remains link/paraphrase only",
+      "severity_if_wrong": "Blocker",
+      "negative_control": true,
+      "command": "validateSnapshotPolicy(OpenStax-ingestion mutation)"
+    },
+    {
+      "id": "D12",
+      "requirement": "the integrated release/privacy policy is internally valid and deployment-inert",
+      "executor": "operations_fixture",
+      "fixture": "valid-current-policy",
+      "expected": "pass",
+      "severity_if_wrong": "Blocker",
+      "negative_control": false,
+      "command": "validateM58Operations(current integrated subjects)"
+    },
+    {
+      "id": "D13",
+      "requirement": "an incompatible release-policy schema fails closed",
+      "executor": "operations_fixture",
+      "fixture": "incompatible-policy-schema",
+      "expected": "reject",
+      "error_includes": "schema is incompatible",
+      "severity_if_wrong": "Blocker",
+      "negative_control": true,
+      "command": "validateM58Operations(incompatible policy mutation)"
+    },
+    {
+      "id": "D14",
+      "requirement": "rollback cannot mix site, content or toolchain tuple members",
+      "executor": "operations_fixture",
+      "fixture": "negative-mixed-rollback",
+      "expected": "reject",
+      "error_includes": "complete tuple",
+      "severity_if_wrong": "Blocker",
+      "negative_control": true,
+      "command": "validateM58Operations(mixed-rollback mutation)"
+    },
+    {
+      "id": "D15",
+      "requirement": "release simulation is stopped by the independent deployment-authorization gate",
+      "executor": "release_gate",
+      "expected": "reject",
+      "error_includes": "deployment is not authorized",
+      "severity_if_wrong": "Blocker",
+      "negative_control": true,
+      "command": "prepareRelease(validation/m5-6-current.json)"
+    },
+    {
+      "id": "D16",
+      "requirement": "preview, changelog and redirect boundary matches durable instructions",
+      "executor": "static_contract",
+      "contract": "preview_changelog_redirect",
+      "expected": "pass",
+      "severity_if_wrong": "Material",
+      "negative_control": false,
+      "command": "inspect workflows, changelog and release-policy redirect bounds"
+    },
+    {
+      "id": "D17",
+      "requirement": "English-root, future-locale, no-copy provenance, analytics and storage boundaries remain intact",
+      "executor": "static_contract",
+      "contract": "authority_locale_privacy",
+      "expected": "pass",
+      "severity_if_wrong": "Blocker",
+      "negative_control": false,
+      "command": "inspect content/site policies, routes, telemetry and generated-authority flags"
+    },
+    {
+      "id": "D18",
+      "requirement": "accessibility and integrated browser regressions pass on the exact candidate",
+      "executor": "browser_regression",
+      "expected": "pass",
+      "severity_if_wrong": "Blocker",
+      "negative_control": false,
+      "command": "validate exact M5.7 remediated-candidate report schema, source and 121 hosted-browser rows"
+    },
+    {
+      "id": "D19",
+      "requirement": "a stale hosted-browser report cannot qualify the current dogfood subject",
+      "executor": "browser_evidence_fixture",
+      "fixture": "stale-source-revision",
+      "expected": "reject",
+      "error_includes": "hosted-browser source revision mismatch",
+      "severity_if_wrong": "Material",
+      "negative_control": true,
+      "command": "validateBrowserEvidence(stale source-revision mutation)"
+    },
+    {
+      "id": "D20",
+      "requirement": "an incompatible hosted-browser report schema cannot qualify the current dogfood subject",
+      "executor": "browser_evidence_fixture",
+      "fixture": "incompatible-report-schema",
+      "expected": "reject",
+      "error_includes": "hosted-browser report schema is incompatible",
+      "severity_if_wrong": "Material",
+      "negative_control": true,
+      "command": "validateBrowserEvidence(incompatible schema mutation)"
+    }
+  ]
+}

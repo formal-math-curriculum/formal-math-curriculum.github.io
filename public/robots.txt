@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /validation/
+
+Sitemap: https://formal-math-curriculum.github.io/sitemap-index.xml
