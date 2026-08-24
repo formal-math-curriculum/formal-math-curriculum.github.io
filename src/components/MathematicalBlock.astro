@@ -1,0 +1,390 @@
+---
+import {
+  createRepresentationDomId,
+  encodeSourcePayload,
+  getOperableViews,
+  REPRESENTATION_LABELS,
+  REPRESENTATION_VIEWS,
+  validateRepresentationBlock
+} from '../lib/representation-block.mjs';
+
+interface Props {
+  block: unknown;
+}
+
+const { block } = Astro.props;
+const parsed = validateRepresentationBlock(block, {
+  hasRenderedContent: Astro.slots.has('rendered')
+});
+
+if (!parsed.ok || !parsed.value) {
+  throw new Error(`MAT-360 representation block rejected: ${parsed.errors.join('; ')}`);
+}
+
+const value = parsed.value;
+const domId = createRepresentationDomId(value.identity);
+const operableViews = getOperableViews(value);
+const initialView = operableViews.includes('rendered') ? 'rendered' : (operableViews[0] ?? null);
+const isOperable = (view: string) => operableViews.includes(view);
+const statusLabel = (value: string) => value.replaceAll('-', ' ');
+const sourcePayload = (view: 'latex' | 'lean') =>
+  encodeSourcePayload(value.representations[view].source ?? '');
+---
+
+<fmc-mathematical-block
+  class="fmc-math-block"
+  data-fmc-block-id={value.identity.blockId}
+  data-fmc-content-id={value.identity.contentId}
+  data-fmc-revision={value.identity.revision}
+  data-fmc-operable={operableViews.join(' ')}
+  data-fmc-effective-view={initialView ?? 'unavailable'}
+>
+  <header class="fmc-math-block__header">
+    <div>
+      <p class="fmc-math-block__eyebrow">Mathematical representation</p>
+      <h2 id={`${domId}-title`}>{value.title}</h2>
+    </div>
+    <button
+      type="button"
+      class="fmc-math-block__restore"
+      data-fmc-control
+      data-fmc-restore-global
+      hidden
+    >
+      Use global default
+    </button>
+  </header>
+
+  {operableViews.length > 0 ? (
+    <div
+      class="fmc-representation-tabs"
+      data-fmc-tabs
+      data-fmc-tablist-label={`${domId}-title`}
+      hidden
+    >
+      {operableViews.map((view) => (
+        <button
+          type="button"
+          data-fmc-control
+          data-fmc-tab={view}
+          data-fmc-tab-id={`${domId}-tab-${view}`}
+          data-fmc-panel-id={`${domId}-panel-${view}`}
+          hidden
+        >
+          {REPRESENTATION_LABELS[view]}
+        </button>
+      ))}
+    </div>
+  ) : null}
+
+  <p class="fmc-math-block__fallback" data-fmc-fallback hidden></p>
+  <p class="fmc-math-block__live" data-fmc-block-status role="status" aria-live="polite"></p>
+
+  {isOperable('rendered') ? (
+    <section
+      id={`${domId}-panel-rendered`}
+      class="fmc-representation-panel fmc-representation-panel--math"
+      data-fmc-panel="rendered"
+      data-fmc-tab-id={`${domId}-tab-rendered`}
+    >
+      <h3>Rendered mathematics</h3>
+      <div class="fmc-math-block__rendered" data-fmc-rendered-kind={value.representations.rendered.renderer}>
+        <slot name="rendered" />
+      </div>
+    </section>
+  ) : null}
+
+  {isOperable('latex') ? (
+    <section
+      id={`${domId}-panel-latex`}
+      class="fmc-representation-panel"
+      data-fmc-panel="latex"
+      data-fmc-tab-id={`${domId}-tab-latex`}
+    >
+      <h3>LaTeX source</h3>
+      <div class="fmc-source-shell">
+        <div class="fmc-source-shell__toolbar">
+          <span>Exact source bytes</span>
+          <button
+            type="button"
+            data-fmc-control
+            data-fmc-copy="latex"
+            data-fmc-source-payload={sourcePayload('latex')}
+          >Copy LaTeX</button>
+        </div>
+        <pre tabindex="0"><code>{value.representations.latex.source}</code></pre>
+      </div>
+    </section>
+  ) : null}
+
+  {isOperable('lean') ? (
+    <section
+      id={`${domId}-panel-lean`}
+      class="fmc-representation-panel"
+      data-fmc-panel="lean"
+      data-fmc-tab-id={`${domId}-tab-lean`}
+    >
+      <h3>Lean source</h3>
+      <div class="fmc-source-shell">
+        <div class="fmc-source-shell__toolbar">
+          <span>Exact source bytes</span>
+          <button
+            type="button"
+            data-fmc-control
+            data-fmc-copy="lean"
+            data-fmc-source-payload={sourcePayload('lean')}
+          >Copy Lean</button>
+        </div>
+        <pre tabindex="0"><code>{value.representations.lean.source}</code></pre>
+      </div>
+    </section>
+  ) : null}
+
+  {!isOperable('latex') && value.representations.latex.source ? (
+    <details class="fmc-representation-evidence">
+      <summary data-fmc-control>
+        LaTeX source evidence ({statusLabel(value.representations.latex.availability)})
+      </summary>
+      <pre tabindex="0"><code>{value.representations.latex.source}</code></pre>
+    </details>
+  ) : null}
+
+  {!isOperable('lean') && value.representations.lean.source ? (
+    <details class="fmc-representation-evidence">
+      <summary data-fmc-control>
+        Lean source evidence ({statusLabel(value.representations.lean.availability)})
+      </summary>
+      <pre tabindex="0"><code>{value.representations.lean.source}</code></pre>
+    </details>
+  ) : null}
+
+  {operableViews.length === 0 ? (
+    <p class="fmc-math-block__unavailable" role="status">
+      No current compatible representation is available. Provenance and failure states remain below.
+    </p>
+  ) : null}
+
+  <aside class="fmc-representation-provenance" aria-labelledby={`${domId}-provenance-title`}>
+    <h3 id={`${domId}-provenance-title`}>Representation status and provenance</h3>
+    <ul>
+      {REPRESENTATION_VIEWS.map((view) => {
+        const representation = value.representations[view];
+        return (
+          <li data-fmc-representation-state={view}>
+            <strong>{REPRESENTATION_LABELS[view]}:</strong>{' '}
+            <span>availability {statusLabel(representation.availability)};</span>{' '}
+            <span>correspondence {statusLabel(representation.correspondence)};</span>{' '}
+            <span>
+              source <code>{representation.provenance.subject}@{representation.provenance.revision}</code>
+            </span>
+            {representation.note ? <span>; {representation.note}</span> : null}
+          </li>
+        );
+      })}
+    </ul>
+  </aside>
+
+  <noscript>
+    <p class="fmc-math-block__noscript">
+      All current representations are shown as ordinary sections because interactive tabs require JavaScript.
+    </p>
+  </noscript>
+</fmc-mathematical-block>
+
+<script>
+  import { createPreferenceStore } from '../lib/preferences.mjs';
+  import {
+    createRepresentationController,
+    decodeSourcePayload,
+    REPRESENTATION_LABELS,
+    REPRESENTATION_VIEWS
+  } from '../lib/representation-block.mjs';
+
+  declare global {
+    interface Window {
+      FMCPreferenceStore?: ReturnType<typeof createPreferenceStore>;
+    }
+  }
+
+  class FMCMathematicalBlock extends HTMLElement {
+    initialized = false;
+    abortController?: AbortController;
+    controller?: ReturnType<typeof createRepresentationController>;
+    unsubscribeStore?: () => void;
+
+    connectedCallback() {
+      if (this.initialized) return;
+      this.initialized = true;
+      this.abortController = new AbortController();
+      const signal = this.abortController.signal;
+
+      const operableViews = (this.dataset.fmcOperable ?? '')
+        .split(' ')
+        .filter((view) => REPRESENTATION_VIEWS.includes(view));
+      const initialGlobal = document.documentElement.dataset.fmcRepresentation ?? 'rendered';
+      const controller = createRepresentationController(operableViews, initialGlobal);
+      this.controller = controller;
+
+      const tablist = this.querySelector<HTMLElement>('[data-fmc-tabs]');
+      const tabs = [...this.querySelectorAll<HTMLButtonElement>('[data-fmc-tab]')];
+      const panels = [...this.querySelectorAll<HTMLElement>('[data-fmc-panel]')];
+      const restore = this.querySelector<HTMLButtonElement>('[data-fmc-restore-global]');
+      const fallback = this.querySelector<HTMLElement>('[data-fmc-fallback]');
+      const live = this.querySelector<HTMLElement>('[data-fmc-block-status]');
+
+      if (tablist) {
+        tablist.hidden = false;
+        tablist.setAttribute('role', 'tablist');
+        tablist.setAttribute('aria-orientation', 'horizontal');
+        tablist.setAttribute('aria-labelledby', tablist.dataset.fmcTablistLabel ?? '');
+      }
+
+      for (const tab of tabs) {
+        tab.hidden = false;
+        tab.id = tab.dataset.fmcTabId ?? '';
+        tab.setAttribute('role', 'tab');
+        tab.setAttribute('aria-controls', tab.dataset.fmcPanelId ?? '');
+      }
+
+      for (const panel of panels) {
+        panel.setAttribute('role', 'tabpanel');
+        panel.setAttribute('aria-labelledby', panel.dataset.fmcTabId ?? '');
+        panel.tabIndex = 0;
+      }
+
+      const announce = (message: string) => {
+        if (live) live.textContent = message;
+      };
+
+      const viewLabel = (view: string | null | undefined) =>
+        view && REPRESENTATION_LABELS[view]
+          ? REPRESENTATION_LABELS[view]
+          : 'no available representation';
+
+      const render = (detail: ReturnType<typeof controller.getSnapshot>) => {
+        this.dataset.fmcEffectiveView = detail.effectiveView ?? 'unavailable';
+
+        for (const tab of tabs) {
+          const selected = tab.dataset.fmcTab === detail.effectiveView;
+          tab.setAttribute('aria-selected', String(selected));
+          tab.tabIndex = selected ? 0 : -1;
+        }
+
+        for (const panel of panels) {
+          panel.hidden = panel.dataset.fmcPanel !== detail.effectiveView;
+        }
+
+        if (restore) {
+          restore.hidden = detail.override === null;
+          restore.textContent = `Use global default (${viewLabel(detail.globalDefault)})`;
+        }
+
+        if (fallback) {
+          fallback.hidden = detail.fallbackReason === null;
+          fallback.textContent =
+            detail.fallbackReason === 'requested-unavailable'
+              ? `${viewLabel(detail.requestedView)} was requested but is not current and compatible. Showing ${viewLabel(detail.effectiveView)}.`
+              : detail.fallbackReason === 'no-operable-view'
+                ? 'No current compatible representation is available.'
+                : '';
+        }
+
+        if (detail.source === 'override') {
+          announce(`Showing ${viewLabel(detail.effectiveView)} for this block. Local override active.`);
+        }
+        if (detail.source === 'restore-global') {
+          announce(`Local override cleared. Following global default: ${viewLabel(detail.globalDefault)}.`);
+        }
+        if (detail.source === 'reset') {
+          announce(`Block override cleared. Following global default: ${viewLabel(detail.globalDefault)}.`);
+        }
+        if (detail.source === 'storage' || (detail.source === 'global' && detail.changed)) {
+          if (detail.override === null) {
+            announce(`Global default changed. Showing ${viewLabel(detail.effectiveView)}.`);
+          }
+        }
+      };
+
+      controller.subscribe(render);
+
+      const activate = (tab: HTMLButtonElement, focus = false) => {
+        const view = tab.dataset.fmcTab;
+        if (!view) return;
+        controller.select(view);
+        if (focus) tab.focus();
+      };
+
+      for (const tab of tabs) {
+        tab.addEventListener('click', () => activate(tab), { signal });
+        tab.addEventListener('keydown', (event) => {
+          const currentIndex = tabs.indexOf(tab);
+          let targetIndex: number | null = null;
+
+          if (event.key === 'ArrowLeft') targetIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+          if (event.key === 'ArrowRight') targetIndex = (currentIndex + 1) % tabs.length;
+          if (event.key === 'Home') targetIndex = 0;
+          if (event.key === 'End') targetIndex = tabs.length - 1;
+
+          if (targetIndex !== null) {
+            event.preventDefault();
+            activate(tabs[targetIndex], true);
+            return;
+          }
+
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            activate(tab);
+          }
+        }, { signal });
+      }
+
+      restore?.addEventListener('click', () => controller.restoreGlobal(), { signal });
+
+      for (const button of this.querySelectorAll<HTMLButtonElement>('[data-fmc-copy]')) {
+        button.addEventListener('click', async () => {
+          try {
+            if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
+            const source = decodeSourcePayload(button.dataset.fmcSourcePayload ?? '');
+            await navigator.clipboard.writeText(source);
+            announce(`${viewLabel(button.dataset.fmcCopy)} copied exactly.`);
+          } catch {
+            announce(`${viewLabel(button.dataset.fmcCopy)} could not be copied. The source remains selectable.`);
+          }
+        }, { signal });
+      }
+
+      const attachStore = (store: ReturnType<typeof createPreferenceStore>) => {
+        if (this.unsubscribeStore) return;
+        const snapshot = store.getSnapshot();
+        controller.updateGlobal(snapshot.preferences.representationDefault, 'global-init');
+        this.unsubscribeStore = store.subscribe((detail) => {
+          if (detail.source === 'reset') {
+            controller.reset(detail.preferences.representationDefault);
+          } else {
+            const source = detail.source === 'storage' ? 'storage' : 'global';
+            controller.updateGlobal(detail.preferences.representationDefault, source);
+          }
+        });
+      };
+
+      if (window.FMCPreferenceStore) attachStore(window.FMCPreferenceStore);
+      window.addEventListener('fmc:preference-store-ready', () => {
+        if (window.FMCPreferenceStore) attachStore(window.FMCPreferenceStore);
+      }, { signal });
+    }
+
+    disconnectedCallback() {
+      this.abortController?.abort();
+      this.unsubscribeStore?.();
+      this.controller?.destroy();
+      this.unsubscribeStore = undefined;
+      this.controller = undefined;
+      this.abortController = undefined;
+      this.initialized = false;
+    }
+  }
+
+  if (!customElements.get('fmc-mathematical-block')) {
+    customElements.define('fmc-mathematical-block', FMCMathematicalBlock);
+  }
+</script>

@@ -73,6 +73,7 @@
   const preferenceWindow = window;
   const store = preferenceWindow.FMCPreferenceStore ?? createPreferenceStore();
   preferenceWindow.FMCPreferenceStore = store;
+  preferenceWindow.dispatchEvent(new CustomEvent('fmc:preference-store-ready'));
 
   class FMCPreferenceControls extends HTMLElement {
     unsubscribe?: () => void;

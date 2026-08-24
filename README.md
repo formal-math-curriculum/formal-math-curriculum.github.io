@@ -26,9 +26,13 @@ one validated preference store, forced-colors/reduced-motion behavior, and globa
 preference controls through documented Starlight component overrides. See
 `docs/architecture/preferences.md`.
 
+The MAT-360 baseline adds a validated, progressively enhanced mathematical block for
+rendered/LaTeX/Lean representations, local overrides, exact copy behavior and explicit
+state/provenance. See `docs/architecture/representation-block.md`.
+
 This repository still contains no production course corpus, external taxonomy
-snapshot, Portuguese translation, multi-representation block, five-projection
-navigator, or release qualification.
+snapshot, Portuguese translation, populated representation instance,
+five-projection navigator, or release qualification.
 
 `inputs.lock.json` freezes every cross-repository subject. The build refuses a
 different checkout, source hash, schema version, or unqualified content manifest.
