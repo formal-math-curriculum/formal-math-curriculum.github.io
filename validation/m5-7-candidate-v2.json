@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "p5-m5.7-remediated-candidate/v2",
+  "issue": "MAT-394",
+  "status": "remediated_candidate_requires_required_ci",
+  "auditSubject": {
+    "commit": "4b7e4e989ae4297ef2f09549e678f731fccfc1e7",
+    "tree": "264f78b5fbea33272096aab4b08dc24417690cd7"
+  },
+  "immutableAuditDocumentId": "1f3d98e5-677f-40e0-8faf-d9a18c611473",
+  "remediationDecisionDocumentId": "80ead78d-3298-40ee-b785-69c88665f691",
+  "remediationRecord": "validation/m5-7-remediation-v2.json",
+  "models": {
+    "searchFingerprint": "sha256:a686c3c5b0c90eb643397c8db88ce23b4e1c719ce45cd1f705bc43a66e2578a5",
+    "relationFingerprint": "sha256:5431b20b93dc0045933a74e92c9b1f9fbd74412be2bb556bd46c33f57cca67e8",
+    "searchScaleFingerprint": "sha256:ae5a0a167e407bd267f9b1c72d03c3f718748fcef846939102d16a7d8045d011",
+    "relationScaleFingerprint": "sha256:24a49b6c6cf902702c6ff5df1e9e14927ea9eefcfa9293cbdaf0e3b8b15fb5b6"
+  },
+  "requiredEvidence": {
+    "legacyBrowserRows": 92,
+    "remediationBrowserRows": 29,
+    "baselineComparisonRows": 28,
+    "totalAcceptanceRows": 121,
+    "nodePipelineRequired": true,
+    "browserRequiredInCi": true,
+    "scaleArtifactSchema": "p5-m5.7-scale-artifact/v2"
+  },
+  "relevanceThresholds": {
+    "perGradedQueryMrr": 1,
+    "perGradedQueryRecallAt5": 1,
+    "perGradedQueryNdcgAt5Minimum": 0.75,
+    "aggregateMinimum": 0.9
+  },
+  "operationalGovernanceDecision": {
+    "m5_8ReadyAfterSuccessfulRequiredCi": true,
+    "excludedClaims": [
+      "public deployment authorization",
+      "full-course coverage",
+      "Portuguese coverage",
+      "external-taxonomy payload coverage",
+      "manual screen-reader conformance",
+      "cross-engine conformance"
+    ]
+  },
+  "deploymentAuthorized": false,
+  "nextIssue": "MAT-395"
+}

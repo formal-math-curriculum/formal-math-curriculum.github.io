@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "p5-m5.7-remediation/v2",
+  "issue": "MAT-394",
+  "immutableAudit": {
+    "issue": "MAT-388",
+    "linearDocumentId": "1f3d98e5-677f-40e0-8faf-d9a18c611473",
+    "subjectCommit": "4b7e4e989ae4297ef2f09549e678f731fccfc1e7",
+    "subjectTree": "264f78b5fbea33272096aab4b08dc24417690cd7",
+    "preserved": true
+  },
+  "decisionDocumentId": "80ead78d-3298-40ee-b785-69c88665f691",
+  "reproducibilityPolicy": "P5-M5.7-PAGEFIND-REPRODUCIBILITY-v2",
+  "findingDispositions": [
+    { "id": "M57-AUD-M01", "severity": "Material", "disposition": "remediated", "evidence": "G12 graded browser order and metrics" },
+    { "id": "M57-AUD-M02", "severity": "Material", "disposition": "remediated", "evidence": "G01-G20 MRR, recall@5 and nDCG@5" },
+    { "id": "M57-AUD-M03", "severity": "Material", "disposition": "remediated", "evidence": "isolated 2,000-document and 2,200-placement runtime" },
+    { "id": "M57-AUD-M04", "severity": "Material", "disposition": "remediated_by_versioned_policy", "evidence": "exact input and per-build manifests plus semantic equality" },
+    { "id": "M57-AUD-M05", "severity": "Material", "disposition": "remediated", "evidence": "full-history production checkout" }
+  ],
+  "unresolvedFindings": { "Blocker": 0, "Material": 0, "Minor": 0 },
+  "pagefindReproducibility": {
+    "exactDirectoryBytesRequired": false,
+    "exactInputFingerprintsRequired": true,
+    "exactPerArtifactPathByteSha256ManifestRequired": true,
+    "identicalGovernedQueryIdsOrderAndMetricsRequired": true,
+    "byteDifferencesReported": true
+  },
+  "scaleBoundaries": {
+    "searchDocuments": 2000,
+    "relationDocuments": 2000,
+    "relationPlacements": 2200,
+    "generatedUnderDist": false,
+    "publicCoverage": false,
+    "releasePayload": false
+  },
+  "deploymentAuthorized": false
+}
